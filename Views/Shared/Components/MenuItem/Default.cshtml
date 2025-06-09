@@ -1,0 +1,33 @@
+@model List<KD_Restaurant.Models.tblMenuCategory>
+
+@foreach (var category in Model)
+{
+    <div class="row">
+        @foreach (var item in category.tblMenuItems)
+        {
+            string sUrl = $"/menu/{item.Alias}-{item.IdMenuItem}.html";
+            <div class="col-lg-6 menu-item isotope-item filter-@category.Alias">
+                <img src="@Url.Content(item.Image)" class="menu-img" alt="@item.Title">
+                <div class="menu-content">
+                    <a href="@sUrl">@item.Title</a>
+                    <span>
+                        @if (item.PriceSale.HasValue && item.PriceSale.Value > 0 && item.PriceSale.Value < item.Price)
+                        {
+                            <span style="text-decoration:line-through; color:#888;">@item.Price.ToString("N0") VNĐ</span>
+                            <span style="color:#ff5722; font-weight:bold; margin-left:8px;">@item.PriceSale.Value.ToString("N0") VNĐ</span>
+                        }
+                        else
+                        {
+                            <span style="text-decoration:line-through; color:#888;">
+                                @item.Price.ToString("N0") <text>VNĐ</text>
+                            </span>
+                        }
+                    </span>
+                </div>
+                <div class="menu-ingredients">
+                    @item.Description
+                </div>
+            </div>
+        }
+    </div>
+}

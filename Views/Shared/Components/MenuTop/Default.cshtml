@@ -1,0 +1,12 @@
+﻿@model IEnumerable<KD_Restaurant.Models.tblMenu>
+
+<nav>
+    <ul class="menu-top">
+        @foreach (var item in Model)
+        {
+            <li>
+                <a href="@item.UrlPath" class="nav-link">@item.Title</a>
+            </li>
+        }
+    </ul>
+</nav>

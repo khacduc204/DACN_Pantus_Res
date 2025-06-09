@@ -1,0 +1,82 @@
+@model IEnumerable<KD_Restaurant.Models.tblMenu>
+
+@{
+    ViewData["Title"] = "Quản lý Menu";
+    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+}
+
+
+
+    <div class="pagetitle">
+        <h2>Danh sách menu</h2>
+    </div>
+
+    <p>
+        <a class="btn btn-success" asp-area="Admin" asp-controller="Menu" asp-action="Create">
+            <i class="bi bi-file-earmark-text me-1"></i>Thêm menu
+        </a>
+    </p>
+
+    <section class="section dashboard">
+        <div class="row">
+            <div class="col-12">
+                <div class="card recent-sales overflow-auto">
+                    <div class="card-body mt-4">
+                        <table class="table table-borderless datatable">
+                            <thead>
+                                <tr>
+                                    <th class="col-1 text-center">Mã Menu</th>
+                                    <th class="col-3 text-center">Tiêu đề</th>
+                                    <th class="col-2 text-center">Alias</th>
+                                    <th class="col-1 text-center">Mức</th>
+                                    <th class="col-1 text-center">Menu cha</th>
+                                    <th class="col-1 text-center">Thứ tự</th>
+                                    <th class="col-1 text-center">Hiện/Ẩn</th>
+                                    <th class="col-3 text-center">Chức năng</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model != null)
+                                {
+                                    int stt = 1;
+                                    foreach (var item in Model)
+                                    {
+                                        <tr>
+                                            <td class="text-center" scope="row">@stt</td>
+                                            <td class="text-center">@item.Title</td>
+                                            <td class="text-center">@item.Alias</td>
+                                            <td class="text-center">@item.Levels</td>
+                                            <td class="text-center">
+                                                @(item.ParentId.HasValue ? Model.FirstOrDefault(m => m.IdMenu == item.ParentId)?.Title : "-")
+                                            </td>
+                                            <td class="text-center">@item.Position</td>
+                                            <td class="text-center">
+                                                @if (item.IsActive)
+                                                {
+                                                    <span class="badge bg-success">Hiện</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-secondary">Ẩn</span>
+                                                }
+                                            </td>
+                                            <td class="text-center">
+                                                
+                                                <a asp-area="Admin" asp-controller="Menu" asp-action="Edit" asp-route-id="@item.IdMenu" class="btn btn-primary btn-sm" title="Sửa nội dung bài viết">
+                                                    <i class="bi bi-pencil"></i>
+                                                </a>
+                                                <a asp-area="Admin" asp-controller="Menu" asp-action="Delete" asp-route-id="@item.IdMenu" class="btn btn-danger btn-sm" title="Xóa thông tin bài viết" onclick="return confirm('Bạn có chắc muốn xoá menu này?');">
+                                                    <i class="bi bi-trash"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        stt++;
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>

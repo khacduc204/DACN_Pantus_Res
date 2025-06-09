@@ -1,0 +1,651 @@
+@model KD_Restaurant.Models.tblMenuItem
+@using KD_Restaurant.Models
+
+@{
+    var MenuReview = ViewBag.MenuReviews as List<tblMenuReview>;
+    var MenuRelated = ViewBag.MenuRelated as List<tblMenuItem>;
+    var menuCategories = ViewBag.MenuCategories as List<tblMenuCategory>;
+}
+
+
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    }
+
+    .product-detail-section {
+        padding: 60px 0;
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    }
+
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+
+    .product-detail-content {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 60px;
+        background: white;
+        border-radius: 20px;
+        padding: 40px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .product-image-gallery {
+        position: relative;
+    }
+
+    .main-image {
+        position: relative;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        transition: transform 0.3s ease;
+    }
+
+    .main-image:hover {
+        transform: translateY(-5px);
+    }
+
+    .main-image img {
+        width: 100%;
+        height: 400px;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+
+    .main-image:hover img {
+        transform: scale(1.05);
+    }
+
+    .image-thumbnails {
+        display: flex;
+        gap: 15px;
+        margin-top: 20px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .image-thumbnails img {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 3px solid transparent;
+    }
+
+    .image-thumbnails img:hover {
+        border-color: #ff6b35;
+        transform: scale(1.1);
+        box-shadow: 0 8px 25px rgba(255, 107, 53, 0.3);
+    }
+
+    .product-info {
+        display: flex;
+        flex-direction: column;
+        gap: 25px;
+    }
+
+    .product-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 10px;
+        background: linear-gradient(135deg, #2c3e50, #3498db);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .price-section {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin: 20px 0;
+    }
+
+    .new-price {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #e74c3c;
+        background: linear-gradient(135deg, #e74c3c, #c0392b);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .old-price {
+        font-size: 1.4rem;
+        color: #95a5a6;
+        text-decoration: line-through;
+        font-weight: 500;
+    }
+
+    .rating-review {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 15px 20px;
+        background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+        border-radius: 15px;
+        border: 1px solid #f39c12;
+    }
+
+    .rating {
+        display: flex;
+        gap: 5px;
+    }
+
+    .rating .fas.fa-star {
+        color: #f39c12;
+        font-size: 18px;
+        filter: drop-shadow(0 2px 4px rgba(243, 156, 18, 0.3));
+    }
+
+    .rating-review span {
+        color: #8b7d00;
+        font-weight: 500;
+    }
+
+    .description {
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        padding: 25px;
+        border-radius: 15px;
+        border-left: 4px solid #3498db;
+    }
+
+    .description p {
+        font-size: 1.1rem;
+        line-height: 1.8;
+        color: #2c3e50;
+    }
+
+    .quantity-cart {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: 25px;
+        background: linear-gradient(135deg, #ffffff, #f8f9fa);
+        border-radius: 15px;
+        border: 2px solid #e9ecef;
+    }
+
+    .quantity-cart label {
+        font-weight: 600;
+        color: #2c3e50;
+        font-size: 1.1rem;
+    }
+
+    .quantity-cart input[type="number"] {
+        width: 80px;
+        padding: 12px;
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        font-size: 1.1rem;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+
+    .quantity-cart input[type="number"]:focus {
+        outline: none;
+        border-color: #3498db;
+        box-shadow: 0 0 15px rgba(52, 152, 219, 0.2);
+    }
+
+    .add-to-cart {
+        background: linear-gradient(135deg, #e74c3c, #c0392b);
+        color: white;
+        padding: 15px 30px;
+        border: none;
+        border-radius: 12px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        box-shadow: 0 8px 25px rgba(231, 76, 60, 0.3);
+    }
+
+    .add-to-cart:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 35px rgba(231, 76, 60, 0.4);
+        background: linear-gradient(135deg, #c0392b, #a52a2a);
+    }
+
+    .product-category, .product-tags {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 15px 20px;
+        background: linear-gradient(135deg, #f8f9fa, #ffffff);
+        border-radius: 12px;
+        border: 1px solid #e9ecef;
+    }
+
+    .product-category span, .product-tags span {
+        font-weight: 600;
+        color: #2c3e50;
+    }
+
+    .product-category a, .product-tags a {
+        color: #3498db;
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.3s ease;
+    }
+
+    .product-category a:hover, .product-tags a:hover {
+        color: #2980b9;
+        text-decoration: underline;
+    }
+
+    .social-share {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 20px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        border-radius: 15px;
+        color: white;
+    }
+
+    .social-share span {
+        font-weight: 600;
+        color: white;
+    }
+
+    .social-share a {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 45px;
+        height: 45px;
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        border-radius: 50%;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+    }
+
+    .social-share a:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+    }
+
+    .product-detail {
+        margin: 60px 0;
+        padding: 40px;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    }
+
+    .reviews-section {
+        max-width: 1200px;
+        margin: 60px auto;
+        padding: 40px;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    }
+
+    .reviews-title {
+        text-align: center;
+        margin-bottom: 40px;
+        font-size: 2.2rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #2c3e50, #3498db);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .reviews-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 30px;
+        margin-bottom: 60px;
+    }
+
+    .review-card {
+        background: linear-gradient(135deg, #ffffff, #f8f9fa);
+        border: 1px solid #e9ecef;
+        border-radius: 20px;
+        padding: 30px;
+        transition: all 0.3s ease;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+    }
+
+    .review-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        border-color: #3498db;
+    }
+
+    .reviewer-info {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .reviewer-avatar {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 50%;
+        margin-bottom: 15px;
+        border: 4px solid #3498db;
+        box-shadow: 0 8px 25px rgba(52, 152, 219, 0.3);
+    }
+
+    .reviewer-name {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 8px;
+    }
+
+    .review-date {
+        color: #3498db;
+        font-weight: 500;
+        margin-bottom: 15px;
+    }
+
+    .review-rating {
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    .review-rating .fas.fa-star {
+        color: #f39c12;
+        font-size: 18px;
+        margin: 0 2px;
+        filter: drop-shadow(0 2px 4px rgba(243, 156, 18, 0.3));
+    }
+
+    .review-text {
+        color: #e74c3c;
+        font-size: 1rem;
+        line-height: 1.6;
+        text-align: center;
+        font-style: italic;
+    }
+
+    .write-review-section {
+        background: linear-gradient(135deg, #f8f9fa, #ffffff);
+        padding: 40px;
+        border-radius: 20px;
+        border: 2px solid #e9ecef;
+    }
+
+    .write-review-title {
+        font-size: 1.8rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 30px;
+    }
+
+    .review-form {
+        display: grid;
+        gap: 25px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .form-input, .form-textarea {
+        width: 100%;
+        padding: 15px 20px;
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background: white;
+    }
+
+    .form-input:focus, .form-textarea:focus {
+        outline: none;
+        border-color: #3498db;
+        box-shadow: 0 0 20px rgba(52, 152, 219, 0.2);
+        transform: translateY(-2px);
+    }
+
+    .form-textarea {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+    .submit-review-btn {
+        background: linear-gradient(135deg, #27ae60, #2ecc71);
+        color: white;
+        padding: 18px 40px;
+        border: none;
+        border-radius: 12px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        box-shadow: 0 8px 25px rgba(39, 174, 96, 0.3);
+    }
+
+    .submit-review-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 35px rgba(39, 174, 96, 0.4);
+        background: linear-gradient(135deg, #2ecc71, #27ae60);
+    }
+
+    
+</style>
+
+<!-- Chi tiết món ăn -->
+<div class="product-detail-section">
+    <div class="container">
+        <div class="product-detail-content">
+            <div class="product-image-gallery">
+                <!-- Hình ảnh chính của món ăn -->
+                <div class="main-image">
+                    <img src="@Model.Image" alt="Hình Ảnh Món Ăn">
+                </div>
+                <!-- Thumbnail ảnh món ăn liên quan -->
+                <div class="image-thumbnails">                dotnet add package Microsoft.VisualStudio.Web.CodeGeneration.Design
+                    @if (MenuRelated != null)
+                    {
+                        foreach (var p in MenuRelated)
+                        {
+                            <img src="@p.Image" alt="Hình Ảnh Món Ăn">
+                        }
+                    }
+                </div>
+            </div>
+            <div class="product-info">
+                <!-- Tên món ăn -->
+                <h2 class="product-title">@Model.Title</h2>
+
+                <!-- Giá món ăn -->
+                <div class="price-section">
+                    @if (Model.PriceSale.HasValue && Model.PriceSale.Value > 0 && Model.PriceSale.Value < Model.Price)
+                    {
+                        <span class="new-price">@string.Format(new System.Globalization.CultureInfo("vi-VN"), "{0:C0}", Model.PriceSale)</span>
+                        <span class="old-price">@string.Format(new System.Globalization.CultureInfo("vi-VN"), "{0:C0}", Model.Price)</span>
+                    }
+                    else
+                    {
+                        <span class="new-price">@string.Format(new System.Globalization.CultureInfo("vi-VN"), "{0:C0}", Model.Price)</span>
+                    }
+                </div>
+
+                <!-- Đánh giá món ăn -->
+                <div class="rating-review">
+                    <div class="rating">
+                        @for (var i = 0; i < Model.Star; i++)
+                        {
+                            <i class="fas fa-star"></i>
+                        }
+                    </div>
+                    <span>(@(MenuReview?.Count() ?? 0) đánh giá của khách hàng)</span>
+                </div>
+
+                <!-- Mô tả món ăn -->
+                <div class="description">
+                    <p>@Model.Description</p>
+                </div>
+
+                <!-- Chọn số lượng và nút mua hàng -->
+                <div class="quantity-cart">
+                    <label for="quantity">Số lượng:</label>
+                    <input type="number" id="quantity" value="1" min="1" max="@Model.Quantity">
+                    <button class="add-to-cart">Thêm vào giỏ hàng</button>
+                </div>
+
+                <!-- Danh mục món ăn -->
+                <div class="product-category">
+                    <span>Danh Mục: </span>
+                    <a href="/Home/Menu">@Model.Category?.Title</a>
+                </div>
+
+                <!-- Thẻ sản phẩm -->
+                <div class="product-tags">
+                    <span>Thẻ: </span>
+                    <a href="#">Đồ Ăn</a>, <a href="#">Ẩm Thực</a>, <a href="#">Món chính</a>
+                </div>
+
+                <!-- Chia sẻ trên mạng xã hội -->
+                <div class="social-share">
+                    <span>Chia sẻ: </span>
+                    <a href="#"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-pinterest-p"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="product-detail">
+    <div class="container">
+        @Html.Raw(Model.Detail)
+    </div>
+</div>
+
+<!-- Đánh giá khách hàng -->
+<div class="reviews-section">
+    <h2 class="reviews-title">Khách Hàng Đánh Giá</h2>
+    <div class="reviews-container">
+        @if (MenuReview != null)
+        {
+            foreach (var p in MenuReview)
+            {
+                <div class="review-card">
+                    <div class="reviewer-info">
+                        <img src="@p.Image" alt="Reviewer Avatar" class="reviewer-avatar">
+                        <h4 class="reviewer-name">@p.Name</h4>
+                        <span class="review-date">
+                            @(p.CreatedDate.HasValue ? p.CreatedDate.Value.ToString("dd/MM/yyyy") : "")
+                        </span>
+                    </div>
+                    <div class="review-rating">
+                        @for (var i = 0; i < p.Rating; i++)
+                        {
+                            <i class="fas fa-star"></i>
+                        }
+                    </div>
+                    <p class="review-text">@p.Detail</p>
+                </div>
+            }
+        }
+    </div>
+
+    <!-- Khu vực thêm review -->
+    <div class="write-review-section">
+        <h2 class="write-review-title">Viết Đánh Giá</h2>
+        <form id="reviewForm" action="#" method="post" class="review-form">
+            <input type="hidden" id="c_menuid" name="menuid" value="@Model.IdMenuItem" />
+            <div class="form-group">
+                <input id="c_name" type="text" name="name" placeholder="Tên của bạn" required class="form-input">
+            </div>
+            <div class="form-group">
+                <input id="c_phone" type="text" name="phone" placeholder="Số điện thoại của bạn" required class="form-input">
+            </div>
+            <div class="form-group">
+                <input id="c_rating" type="number" name="rating" placeholder="Đánh Giá ⭐ của bạn (1-5)" required min="1" max="5" class="form-input">
+            </div>
+            <div class="form-group">
+                <textarea id="c_message" name="message" placeholder="Viết đánh giá của bạn ở đây..." required class="form-textarea"></textarea>
+            </div>
+            <button id="c_submit" type="button" class="submit-review-btn">
+                Gửi Đánh Giá
+            </button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $("#c_submit").click(function (e) {
+                e.preventDefault();
+                let _name = $("#c_name").val();
+                let _phone = $("#c_phone").val();
+                let _rating = $("#c_rating").val();
+                let _message = $("#c_message").val();
+                let _menuid = $("#c_menuid").val();
+
+                $.ajax({
+                    url: "/Menu/CreateReview",
+                    type: "POST",
+                    data: {
+                        menuid: _menuid,
+                        name: _name,
+                        phone: _phone,
+                        rating: _rating,
+                        message: _message
+                    },
+                    success: function (result) {
+                        if (result.status) {
+                            $("#c_name").val("");
+                            $("#c_phone").val("");
+                            $("#c_rating").val("");
+                            $("#c_message").val("");
+                            toastr.success('Gửi thành công!');
+                        } else {
+                            toastr.error('Gửi không thành công!');
+                        }
+                    },
+                    error: function () {
+                        toastr.error('Có lỗi xảy ra, vui lòng thử lại!');
+                    }
+                });
+            });
+
+            // Thêm tương tác cho thumbnail images
+            $('.image-thumbnails img').click(function () {
+                var newSrc = $(this).attr('src');
+                $('.main-image img').attr('src', newSrc);
+            });
+        });
+    </script>
+}

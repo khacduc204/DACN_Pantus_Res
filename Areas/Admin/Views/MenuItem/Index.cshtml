@@ -1,0 +1,90 @@
+@model IEnumerable<KD_Restaurant.Models.tblMenuItem>
+
+@{
+    ViewData["Title"] = "Quản lý món ăn";
+    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+}
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="pagetitle">
+    <h2>Danh sách món ăn</h2>
+</div>
+
+<p>
+    <a class="btn btn-success" asp-area="Admin" asp-controller="MenuItem" asp-action="Create">
+        <i class="bi bi-file-earmark-text me-1"></i>Thêm món ăn
+    </a>
+</p>
+
+<section class="section dashboard">
+    <div class="row">
+        <div class="col-12">
+            <div class="card recent-sales overflow-auto">
+                <div class="card-body mt-4">
+                    <table class="table table-borderless datatable">
+                        <thead>
+                            <tr>
+                                <th scope="col">Mã</th>
+                                <th scope="col">Tên món</th>
+                                <th scope="col">Alias</th>
+                                <th scope="col">Mô tả</th>
+                                <th scope="col">Giá</th>
+                                <th scope="col">Giá KM</th>
+                                <th scope="col">Ảnh</th>
+                                <th scope="col">Loại</th>
+                                <th scope="col">Số lượng</th>
+                                <th scope="col">Sao</th>
+                                <th scope="col">Trạng thái</th>
+                                <th scope="col">Chức năng</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td class="align-middle">@item.IdMenuItem</td>
+                                    <td class="align-middle">@item.Title</td>
+                                    <td class="align-middle">@item.Alias</td>
+                                    <td class="align-middle">@item.Description</td>
+                                    <td class="align-middle">@String.Format("{0:N0}", item.Price)</td>
+                                    <td class="align-middle">@((item.PriceSale.HasValue) ? String.Format("{0:N0}", item.PriceSale) : "-")</td>
+                                    <td class="align-middle">
+                                         @if (!string.IsNullOrEmpty(item.Image))
+                                        {
+                                            <img src="@item.Image" alt="@item.Title" style="max-width:60px;max-height:40px;" />
+                                        }
+                                    </td>
+                                    <td class="align-middle">@item.IdCategory</td>
+                                    <td class="align-middle">@item.Quantity</td>
+                                    <td class="align-middle">@item.Star</td>
+                                    <td class="align-middle">
+                                        <div class="badge p-2 my-1 @(item.IsActive ? "bg-success" : "bg-warning text-dark")">
+                                        @(item.IsActive ? "Hiện" : "Ẩn")
+                                        </div>
+                                    </td>
+                                    <td class="align-middle" style="min-width: 160px; width: 160px;">
+                                        <a href="/Admin/MenuItem/IsActive/@item.IdMenuItem" class="btn @(item.IsActive ? "btn-warning" : "btn-success") mx-1 px-2 py-1" title="Đổi trạng thái">
+                                            <i class="fa-regular @(item.IsActive ? "fa-eye-slash" : "fa-eye") fs-6"></i>
+                                        </a>
+                                        <a href="/Admin/MenuItem/Edit/@item.IdMenuItem" class="btn btn-primary mx-1 px-2 py-1" title="Sửa">
+                                            <i class="fa-regular fa-edit fs-6"></i>
+                                        </a>
+                                        <a href="/Admin/MenuItem/Delete/@item.IdMenuItem" class="btn btn-danger mx-1 px-2 py-1" title="Xóa" onclick="return confirm('Bạn có chắc muốn xoá món này?');">
+                                            <i class="fa-regular fa-trash-can fs-6"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

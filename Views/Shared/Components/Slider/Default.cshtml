@@ -1,0 +1,38 @@
+@model List<KD_Restaurant.Models.tblSlider>
+
+<section id="hero" class="hero section dark-background">
+    <div id="hero-carousel" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="5000">
+        
+            @for (int i = 0; i < Model.Count; i++)
+            {
+                var item = Model[i];
+                <div class="carousel-item @(i == 0 ? "active" : "")">
+                    <img src="@Url.Content(item.ImagePath)" alt="@item.Title">
+                    <div class="carousel-container">
+                        <h2><span>@item.Title</span></h2>
+                        <p>@item.Description</p>
+                        <div>
+                            <a href="#menu" class="btn-get-started">THỰC ĐƠN</a>
+                            <a href="#book-a-table" class="btn-get-started">ĐẶT BÀN</a>
+                        </div>
+                    </div>
+                </div>
+            }
+
+
+        <a class="carousel-control-prev" href="#hero-carousel" role="button" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon bi bi-chevron-left" aria-hidden="true"></span>
+        </a>
+
+        <a class="carousel-control-next" href="#hero-carousel" role="button" data-bs-slide="next">
+            <span class="carousel-control-next-icon bi bi-chevron-right" aria-hidden="true"></span>
+        </a>
+
+        <ol class="carousel-indicators"></ol>
+            @for (int i = 0; i < Model.Count; i++)
+            {
+                <li data-bs-target="#hero-carousel" data-bs-slide-to="@i" class="@(i == 0 ? "active" : "")"></li>
+            }
+        </ol>
+    </div>
+</section>

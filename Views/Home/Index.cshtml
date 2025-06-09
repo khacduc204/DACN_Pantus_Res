@@ -1,0 +1,632 @@
+﻿@{
+    var categories = ViewBag.Categories as List<KD_Restaurant.Models.tblMenuCategory>;
+    var menuItems = Model as List<KD_Restaurant.Models.tblMenuItem>; // Nếu Model là List<tblMenuItem>
+}
+
+        <!-- About Section -->
+        <section id="about" class="about section light-background">
+
+            <div class="container">
+
+                <div class="row gy-4">
+                    <div class="col-lg-6 position-relative align-self-start" data-aos="fade-up" data-aos-delay="100">
+                        <img src="~/assets/img/about.jpg" class="img-fluid" alt="">
+                        <a href="https://www.youtube.com/watch?v=Ya1qN34l8LI" class="glightbox pulsating-play-btn"></a>
+                    </div>
+                    <div class="col-lg-6 content" data-aos="fade-up" data-aos-delay="200">
+                        <h3>Những trải nghiệm ẩm thực tuyệt vời đang chờ đón bạn</h3>
+                        <p class="fst-italic">
+                            Chúng tôi tự hào mang đến những trải nghiệm ẩm thực đặc sắc, được chế biến từ những nguyên liệu tươi ngon nhất. Với sự kết hợp tinh tế giữa hương vị truyền thống và phong cách hiện đại, mỗi món ăn tại nhà hàng của chúng tôi sẽ làm hài lòng mọi thực khách.
+                        </p>
+                        <ul>
+                            <li><i class="bi bi-check2-all"></i> <span>Luôn cam kết mang đến những món ăn chất lượng, giàu hương vị.</span></li>
+                            <li><i class="bi bi-check2-all"></i> <span>Phục vụ tận tâm, chuyên nghiệp, làm hài lòng mọi khách hàng.</span></li>
+                            <li><i class="bi bi-check2-all"></i> <span>Không gian sang trọng, ấm cúng, tạo nên những buổi tiệc đáng nhớ.</span></li>
+                            <li><i class="bi bi-check2-all"></i> <span>Đội ngũ đầu bếp giàu kinh nghiệm, sáng tạo trong từng món ăn.</span></li>
+                            <li><i class="bi bi-check2-all"></i> <span>Luôn cập nhật những xu hướng ẩm thực mới nhất để phục vụ khách hàng.</span></li>
+                        </ul>
+                        <p>
+                            Đến với chúng tôi, bạn sẽ tận hưởng những khoảnh khắc tuyệt vời bên gia đình và bạn bè, đồng thời trải nghiệm những món ăn tinh tế, đậm đà hương vị. Hãy để chúng tôi mang lại cho bạn bữa ăn thật hoàn hảo và đáng nhớ!
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+
+        </section><!-- /About Section -->
+        <!-- Why Us Section -->
+        <section id="why-us" class="why-us section">
+
+            <!-- Section Title -->
+            <div class="container section-title" data-aos="fade-up">
+                <h2>Giới thiệu</h2>
+                <div><span>Lí do lựa chọn</span> <span class="description-title">Nhà hàng của chúng tôi</span></div>
+            </div><!-- End Section Title -->
+
+            <div class="container">
+
+                <div class="row gy-4">
+
+                    <div class="col-lg-4" data-aos="fade-up" data-aos-delay="100">
+                        <div class="card-item">
+                            <span>01</span>
+                            <h4><a href="" class="stretched-link">Nguyên liệu tươi ngon</a></h4>
+                            <p>Chúng tôi chỉ sử dụng những nguyên liệu tươi ngon nhất để đảm bảo hương vị và chất lượng món ăn.</p>
+                        </div>
+                    </div><!-- Card Item -->
+
+                    <div class="col-lg-4" data-aos="fade-up" data-aos-delay="200">
+                        <div class="card-item">
+                            <span>02</span>
+                            <h4><a href="" class="stretched-link">Dịch vụ chuyên nghiệp</a></h4>
+                            <p>Nhân viên phục vụ chu đáo, chuyên nghiệp, mang đến trải nghiệm ẩm thực tuyệt vời cho bạn.</p>
+                        </div>
+                    </div><!-- Card Item -->
+
+                    <div class="col-lg-4" data-aos="fade-up" data-aos-delay="300">
+                        <div class="card-item">
+                            <span>03</span>
+                            <h4><a href="" class="stretched-link">Không gian ấm cúng</a></h4>
+                            <p>Không gian sang trọng, ấm cúng, phù hợp cho những buổi họp mặt, hẹn hò hay những dịp đặc biệt.</p>
+                        </div>
+                    </div><!-- Card Item -->
+
+                </div>
+
+            </div>
+
+        </section><!-- /Why Us Section -->
+
+   <!-- Menu Section -->
+    <section id="menu" class="menu section">
+
+      <!-- Section Title -->
+      <div class="container section-title" data-aos="fade-up">
+        <h2>Thực Đơn</h2>
+        <div><span>Các món ăn của</span> <span class="description-title">Nhà Hàng</span></div>
+      </div><!-- End Section Title -->
+
+      <div class="container isotope-layout" data-default-filter="*" data-layout="masonry" data-sort="original-order">
+
+        <div class="row" data-aos="fade-up" data-aos-delay="100">
+             <div class="col-lg-12 d-flex justify-content-center">
+                <ul class="menu-filters isotope-filters">
+                    <li data-filter="*" class="filter-active">All</li>
+
+            @if (ViewBag.Categories != null)
+            {
+                foreach (var category in ViewBag.Categories)
+                {
+                    <li data-filter=".filter-@category.Alias">@category.Title</li>
+                }
+            }
+                </ul>
+            </div>
+        </div>
+
+
+        <div class="row isotope-container" data-aos="fade-up" data-aos-delay="200">
+
+               @await Component.InvokeAsync("MenuItem")
+               
+
+        </div>
+
+
+
+      </div>
+
+    </section><!-- /Menu Section -->
+
+
+       
+        <!-- Events Section -->
+        <section id="events" class="events section">
+
+            <img class="slider-bg" src="~/assets/img/events-bg.jpg" alt="" data-aos="fade-in">
+
+            <div class="container">
+
+                <div class="swiper init-swiper" data-aos="fade-up" data-aos-delay="100">
+                    <script type="application/json" class="swiper-config">
+                        {
+                          "loop": true,
+                          "speed": 600,
+                          "autoplay": {
+                            "delay": 5000
+                          },
+                          "slidesPerView": "auto",
+                          "pagination": {
+                            "el": ".swiper-pagination",
+                            "type": "bullets",
+                            "clickable": true
+                          }
+                        }
+                    </script>
+                    <div class="swiper-wrapper">
+
+                        <div class="swiper-slide">
+                            <div class="row gy-4 event-item">
+                                <div class="col-lg-6">
+                                    <img src="~/assets/img/events-slider/events-slider-1.jpg" class="img-fluid" alt="">
+                                </div>
+                                <div class="col-lg-6 pt-4 pt-lg-0 content">
+                                    <h3>Birthday Parties</h3>
+                                    <div class="price">
+                                        <p><span>$189</span></p>
+                                    </div>
+                                    <p class="fst-italic">
+                                        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
+                                        magna aliqua.
+                                    </p>
+                                    <ul>
+                                        <li><i class="bi bi-check2-circle"></i> <span>Ullamco laboris nisi ut aliquip ex ea commodo consequat.</span></li>
+                                        <li><i class="bi bi-check2-circle"></i> <span>Duis aute irure dolor in reprehenderit in voluptate velit.</span></li>
+                                        <li><i class="bi bi-check2-circle"></i> <span>Ullamco laboris nisi ut aliquip ex ea commodo consequat.</span></li>
+                                    </ul>
+                                    <p>
+                                        Ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate
+                                        velit esse cillum dolore eu fugiat nulla pariatur
+                                    </p>
+                                </div>
+                            </div>
+                        </div><!-- End Slider item -->
+
+                        <div class="swiper-slide">
+                            <div class="row gy-4 event-item">
+                                <div class="col-lg-6">
+                                    <img src="~/assets/img/events-slider/events-slider-2.jpg" class="img-fluid" alt="">
+                                </div>
+                                <div class="col-lg-6 pt-4 pt-lg-0 content">
+                                    <h3>Private Parties</h3>
+                                    <div class="price">
+                                        <p><span>$290</span></p>
+                                    </div>
+                                    <p class="fst-italic">
+                                        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
+                                        magna aliqua.
+                                    </p>
+                                    <ul>
+                                        <li><i class="bi bi-check2-circle"></i> <span>Ullamco laboris nisi ut aliquip ex ea commodo consequat.</span></li>
+                                        <li><i class="bi bi-check2-circle"></i> <span>Duis aute irure dolor in reprehenderit in voluptate velit.</span></li>
+                                        <li><i class="bi bi-check2-circle"></i> <span>Ullamco laboris nisi ut aliquip ex ea commodo consequat.</span></li>
+                                    </ul>
+                                    <p>
+                                        Ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate
+                                        velit esse cillum dolore eu fugiat nulla pariatur
+                                    </p>
+                                </div>
+                            </div>
+                        </div><!-- End Slider item -->
+
+                        <div class="swiper-slide">
+                            <div class="row gy-4 event-item">
+                                <div class="col-lg-6">
+                                    <img src="~/assets/img/events-slider/events-slider-3.jpg" class="img-fluid" alt="">
+                                </div>
+                                <div class="col-lg-6 pt-4 pt-lg-0 content">
+                                    <h3>Custom Parties</h3>
+                                    <div class="price">
+                                        <p><span>$99</span></p>
+                                    </div>
+                                    <p class="fst-italic">
+                                        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
+                                        magna aliqua.
+                                    </p>
+                                    <ul>
+                                        <li><i class="bi bi-check2-circle"></i> <span>Ullamco laboris nisi ut aliquip ex ea commodo consequat.</span></li>
+                                        <li><i class="bi bi-check2-circle"></i> <span>Duis aute irure dolor in reprehenderit in voluptate velit.</span></li>
+                                        <li><i class="bi bi-check2-circle"></i> <span>Ullamco laboris nisi ut aliquip ex ea commodo consequat.</span></li>
+                                    </ul>
+                                    <p>
+                                        Ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate
+                                        velit esse cillum dolore eu fugiat nulla pariatur
+                                    </p>
+                                </div>
+                            </div>
+                        </div><!-- End Slider item -->
+
+                    </div>
+                    <div class="swiper-pagination"></div>
+                </div>
+
+            </div>
+
+        </section><!-- /Events Section -->
+        <!-- Book A Table Section -->
+        <section id="book-a-table" class="book-a-table section">
+
+            <!-- Section Title -->
+            <div class="container section-title" data-aos="fade-up">
+                <h2>Đặt Bàn</h2>
+                <div><span>Bạn muốn có một vị trí ngồi thuận lợi!</span> <span class="description-title">Đặt bàn ngay nào</span></div>
+            </div><!-- End Section Title -->
+
+            <div class="container">
+
+                <div class="row g-0" data-aos="fade-up" data-aos-delay="100">
+
+                   <div class="col-lg-4 reservation-img" style="background-image: url('@Url.Content("~/assets/img/reservation.jpg")');"></div>
+
+                    <div class="col-lg-8 d-flex align-items-center reservation-form-bg" data-aos="fade-up" data-aos-delay="200">
+                        <form action="forms/book-a-table.php" method="post" role="form" class="php-email-form">
+                            <div class="row gy-4">
+                                <div class="col-lg-4 col-md-6">
+                                    <input type="text" name="name" class="form-control" id="name" placeholder="Your Name" required="">
+                                </div>
+                                <div class="col-lg-4 col-md-6">
+                                    <input type="email" class="form-control" name="email" id="email" placeholder="Your Email" required="">
+                                </div>
+                                <div class="col-lg-4 col-md-6">
+                                    <input type="text" class="form-control" name="phone" id="phone" placeholder="Your Phone" required="">
+                                </div>
+                                <div class="col-lg-4 col-md-6">
+                                    <input type="date" name="date" class="form-control" id="date" placeholder="Date" required="">
+                                </div>
+                                <div class="col-lg-4 col-md-6">
+                                    <input type="time" class="form-control" name="time" id="time" placeholder="Time" required="">
+                                </div>
+                                <div class="col-lg-4 col-md-6">
+                                    <input type="number" class="form-control" name="people" id="people" placeholder="# of people" required="">
+                                </div>
+                            </div>
+
+                            <div class="form-group mt-3">
+                                <textarea class="form-control" name="message" rows="5" placeholder="Message"></textarea>
+                            </div>
+
+                            <div class="text-center mt-3">
+                                <div class="loading">Loading</div>
+                                <div class="error-message"></div>
+                                <div class="sent-message">Your booking request was sent. We will call back or send an Email to confirm your reservation. Thank you!</div>
+                                <button type="submit">Book a Table</button>
+                            </div>
+                        </form>
+                    </div><!-- End Reservation Form -->
+
+                </div>
+
+            </div>
+
+        </section><!-- /Book A Table Section -->
+        <!-- Gallery Section -->
+        <section id="gallery" class="gallery section">
+
+            <!-- Section Title -->
+            <div class="container section-title" data-aos="fade-up">
+                <h2>Gallery</h2>
+                <div><span>Some photos from</span> <span class="description-title">Our Restaurant</span></div>
+            </div><!-- End Section Title -->
+
+            <div class="container-fluid" data-aos="fade-up" data-aos-delay="100">
+
+                <div class="row g-0">
+
+                    <div class="col-lg-3 col-md-4">
+                        <div class="gallery-item">
+                            <a href="~/assets/img/gallery/gallery-1.jpg" class="glightbox" data-gallery="images-gallery">
+                                <img src="~/assets/img/gallery/gallery-1.jpg" alt="" class="img-fluid">
+                            </a>
+                        </div>
+                    </div><!-- End Gallery Item -->
+
+                    <div class="col-lg-3 col-md-4">
+                        <div class="gallery-item">
+                            <a href="~/assets/img/gallery/gallery-2.jpg" class="glightbox" data-gallery="images-gallery">
+                                <img src="~/assets/img/gallery/gallery-2.jpg" alt="" class="img-fluid">
+                            </a>
+                        </div>
+                    </div><!-- End Gallery Item -->
+
+                    <div class="col-lg-3 col-md-4">
+                        <div class="gallery-item">
+                            <a href="~/assets/img/gallery/gallery-3.jpg" class="glightbox" data-gallery="images-gallery">
+                                <img src="~/assets/img/gallery/gallery-3.jpg" alt="" class="img-fluid">
+                            </a>
+                        </div>
+                    </div><!-- End Gallery Item -->
+
+                    <div class="col-lg-3 col-md-4">
+                        <div class="gallery-item">
+                            <a href="~/assets/img/gallery/gallery-4.jpg" class="glightbox" data-gallery="images-gallery">
+                                <img src="~/assets/img/gallery/gallery-4.jpg" alt="" class="img-fluid">
+                            </a>
+                        </div>
+                    </div><!-- End Gallery Item -->
+
+                    <div class="col-lg-3 col-md-4">
+                        <div class="gallery-item">
+                            <a href="~/assets/img/gallery/gallery-5.jpg" class="glightbox" data-gallery="images-gallery">
+                                <img src="~/assets/img/gallery/gallery-5.jpg" alt="" class="img-fluid">
+                            </a>
+                        </div>
+                    </div><!-- End Gallery Item -->
+
+                    <div class="col-lg-3 col-md-4">
+                        <div class="gallery-item">
+                            <a href="~/assets/img/gallery/gallery-6.jpg" class="glightbox" data-gallery="images-gallery">
+                                <img src="~/assets/img/gallery/gallery-6.jpg" alt="" class="img-fluid">
+                            </a>
+                        </div>
+                    </div><!-- End Gallery Item -->
+
+                    <div class="col-lg-3 col-md-4">
+                        <div class="gallery-item">
+                            <a href="~/assets/img/gallery/gallery-7.jpg" class="glightbox" data-gallery="images-gallery">
+                                <img src="~/assets/img/gallery/gallery-7.jpg" alt="" class="img-fluid">
+                            </a>
+                        </div>
+                    </div><!-- End Gallery Item -->
+
+                    <div class="col-lg-3 col-md-4">
+                        <div class="gallery-item">
+                            <a href="~/assets/img/gallery/gallery-8.jpg" class="glightbox" data-gallery="images-gallery">
+                                <img src="~/assets/img/gallery/gallery-8.jpg" alt="" class="img-fluid">
+                            </a>
+                        </div>
+                    </div><!-- End Gallery Item -->
+
+                </div>
+
+            </div>
+
+        </section><!-- /Gallery Section -->
+        <!-- Chefs Section -->
+        <section id="chefs" class="chefs section">
+
+            <!-- Section Title -->
+            <div class="container section-title" data-aos="fade-up">
+                <h2>Chefs</h2>
+                <div><span>Our Professional</span> <span class="description-title">Chefs</span></div>
+            </div><!-- End Section Title -->
+
+            <div class="container">
+
+                <div class="row gy-5">
+
+                    <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="100">
+                        <div class="member">
+                            <div class="pic"><img src="~/assets/img/chefs/chefs-1.jpg" class="img-fluid" alt=""></div>
+                            <div class="member-info">
+                                <h4>Walter White</h4>
+                                <span>Master Chef</span>
+                                <div class="social">
+                                    <a href=""><i class="bi bi-twitter-x"></i></a>
+                                    <a href=""><i class="bi bi-facebook"></i></a>
+                                    <a href=""><i class="bi bi-instagram"></i></a>
+                                    <a href=""><i class="bi bi-linkedin"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                    </div><!-- End Team Member -->
+
+                    <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="200">
+                        <div class="member">
+                            <div class="pic"><img src="~/assets/img/chefs/chefs-2.jpg" class="img-fluid" alt=""></div>
+                            <div class="member-info">
+                                <h4>Sarah Jhonson</h4>
+                                <span>Patissier</span>
+                                <div class="social">
+                                    <a href=""><i class="bi bi-twitter-x"></i></a>
+                                    <a href=""><i class="bi bi-facebook"></i></a>
+                                    <a href=""><i class="bi bi-instagram"></i></a>
+                                    <a href=""><i class="bi bi-linkedin"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                    </div><!-- End Team Member -->
+
+                    <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="300">
+                        <div class="member">
+                            <div class="pic"><img src="~/assets/img/chefs/chefs-3.jpg" class="img-fluid" alt=""></div>
+                            <div class="member-info">
+                                <h4>William Anderson</h4>
+                                <span>Cook</span>
+                                <div class="social">
+                                    <a href=""><i class="bi bi-twitter-x"></i></a>
+                                    <a href=""><i class="bi bi-facebook"></i></a>
+                                    <a href=""><i class="bi bi-instagram"></i></a>
+                                    <a href=""><i class="bi bi-linkedin"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                    </div><!-- End Team Member -->
+
+                </div>
+
+            </div>
+
+        </section><!-- /Chefs Section -->
+        <!-- Testimonials Section -->
+        <section id="testimonials" class="testimonials section dark-background">
+
+            <img src="~/assets/img/testimonials-bg.jpg" class="testimonials-bg" alt="">
+
+            <div class="container" data-aos="fade-up" data-aos-delay="100">
+
+                <div class="swiper init-swiper">
+                    <script type="application/json" class="swiper-config">
+                        {
+                          "loop": true,
+                          "speed": 600,
+                          "autoplay": {
+                            "delay": 5000
+                          },
+                          "slidesPerView": "auto",
+                          "pagination": {
+                            "el": ".swiper-pagination",
+                            "type": "bullets",
+                            "clickable": true
+                          }
+                        }
+                    </script>
+                    <div class="swiper-wrapper">
+
+                        <div class="swiper-slide">
+                            <div class="testimonial-item">
+                                <img src="~/assets/img/testimonials/testimonials-1.jpg" class="testimonial-img" alt="">
+                                <h3>Saul Goodman</h3>
+                                <h4>Ceo &amp; Founder</h4>
+                                <div class="stars">
+                                    <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
+                                </div>
+                                <p>
+                                    <i class="bi bi-quote quote-icon-left"></i>
+                                    <span>Proin iaculis purus consequat sem cure digni ssim donec porttitora entum suscipit rhoncus. Accusantium quam, ultricies eget id, aliquam eget nibh et. Maecen aliquam, risus at semper.</span>
+                                    <i class="bi bi-quote quote-icon-right"></i>
+                                </p>
+                            </div>
+                        </div><!-- End testimonial item -->
+
+                        <div class="swiper-slide">
+                            <div class="testimonial-item">
+                                <img src="~/assets/img/testimonials/testimonials-2.jpg" class="testimonial-img" alt="">
+                                <h3>Sara Wilsson</h3>
+                                <h4>Designer</h4>
+                                <div class="stars">
+                                    <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
+                                </div>
+                                <p>
+                                    <i class="bi bi-quote quote-icon-left"></i>
+                                    <span>Export tempor illum tamen malis malis eram quae irure esse labore quem cillum quid cillum eram malis quorum velit fore eram velit sunt aliqua noster fugiat irure amet legam anim culpa.</span>
+                                    <i class="bi bi-quote quote-icon-right"></i>
+                                </p>
+                            </div>
+                        </div><!-- End testimonial item -->
+
+                        <div class="swiper-slide">
+                            <div class="testimonial-item">
+                                <img src="~/assets/img/testimonials/testimonials-3.jpg" class="testimonial-img" alt="">
+                                <h3>Jena Karlis</h3>
+                                <h4>Store Owner</h4>
+                                <div class="stars">
+                                    <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
+                                </div>
+                                <p>
+                                    <i class="bi bi-quote quote-icon-left"></i>
+                                    <span>Enim nisi quem export duis labore cillum quae magna enim sint quorum nulla quem veniam duis minim tempor labore quem eram duis noster aute amet eram fore quis sint minim.</span>
+                                    <i class="bi bi-quote quote-icon-right"></i>
+                                </p>
+                            </div>
+                        </div><!-- End testimonial item -->
+
+                        <div class="swiper-slide">
+                            <div class="testimonial-item">
+                                <img src="~/assets/img/testimonials/testimonials-4.jpg" class="testimonial-img" alt="">
+                                <h3>Matt Brandon</h3>
+                                <h4>Freelancer</h4>
+                                <div class="stars">
+                                    <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
+                                </div>
+                                <p>
+                                    <i class="bi bi-quote quote-icon-left"></i>
+                                    <span>Fugiat enim eram quae cillum dolore dolor amet nulla culpa multos export minim fugiat minim velit minim dolor enim duis veniam ipsum anim magna sunt elit fore quem dolore labore illum veniam.</span>
+                                    <i class="bi bi-quote quote-icon-right"></i>
+                                </p>
+                            </div>
+                        </div><!-- End testimonial item -->
+
+                        <div class="swiper-slide">
+                            <div class="testimonial-item">
+                                <img src="~/assets/img/testimonials/testimonials-5.jpg" class="testimonial-img" alt="">
+                                <h3>John Larson</h3>
+                                <h4>Entrepreneur</h4>
+                                <div class="stars">
+                                    <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
+                                </div>
+                                <p>
+                                    <i class="bi bi-quote quote-icon-left"></i>
+                                    <span>Quis quorum aliqua sint quem legam fore sunt eram irure aliqua veniam tempor noster veniam enim culpa labore duis sunt culpa nulla illum cillum fugiat legam esse veniam culpa fore nisi cillum quid.</span>
+                                    <i class="bi bi-quote quote-icon-right"></i>
+                                </p>
+                            </div>
+                        </div><!-- End testimonial item -->
+
+                    </div>
+                    <div class="swiper-pagination"></div>
+                </div>
+
+            </div>
+
+        </section><!-- /Testimonials Section -->
+        <!-- Contact Section -->
+        <section id="contact" class="contact section">
+
+            <!-- Section Title -->
+            <div class="container section-title" data-aos="fade-up">
+                <h2>Contact</h2>
+                <div><span>Check Our</span> <span class="description-title">Contact</span></div>
+            </div><!-- End Section Title -->
+
+            <div class="mb-5">
+                <iframe style="width: 100%; height: 400px;" src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d12097.433213460943!2d-74.0062269!3d40.7101282!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0xb89d1fe6bc499443!2sDowntown+Conference+Center!5e0!3m2!1smk!2sbg!4v1539943755621" frameborder="0" allowfullscreen=""></iframe>
+            </div><!-- End Google Maps -->
+
+            <div class="container" data-aos="fade">
+
+                <div class="row gy-5 gx-lg-5">
+
+                    <div class="col-lg-4">
+
+                        <div class="info">
+                            <h3>Get in touch</h3>
+                            <p>Et id eius voluptates atque nihil voluptatem enim in tempore minima sit ad mollitia commodi minus.</p>
+
+                            <div class="info-item d-flex">
+                                <i class="bi bi-geo-alt flex-shrink-0"></i>
+                                <div>
+                                    <h4>Location:</h4>
+                                    <p>A108 Adam Street, New York, NY 535022</p>
+                                </div>
+                            </div><!-- End Info Item -->
+
+                            <div class="info-item d-flex">
+                                <i class="bi bi-envelope flex-shrink-0"></i>
+                                <div>
+                                    <h4>Email:</h4>
+                                    <p>info@example.com</p>
+                                </div>
+                            </div><!-- End Info Item -->
+
+                            <div class="info-item d-flex">
+                                <i class="bi bi-phone flex-shrink-0"></i>
+                                <div>
+                                    <h4>Call:</h4>
+                                    <p>+1 5589 55488 55</p>
+                                </div>
+                            </div><!-- End Info Item -->
+
+                        </div>
+
+                    </div>
+
+                    <div class="col-lg-8">
+                        <form action="forms/contact.php" method="post" role="form" class="php-email-form">
+                            <div class="row">
+                                <div class="col-md-6 form-group">
+                                    <input type="text" name="name" class="form-control" id="name" placeholder="Your Name" required="">
+                                </div>
+                                <div class="col-md-6 form-group mt-3 mt-md-0">
+                                    <input type="email" class="form-control" name="email" id="email" placeholder="Your Email" required="">
+                                </div>
+                            </div>
+                            <div class="form-group mt-3">
+                                <input type="text" class="form-control" name="subject" id="subject" placeholder="Subject" required="">
+                            </div>
+                            <div class="form-group mt-3">
+                                <textarea class="form-control" name="message" placeholder="Message" required=""></textarea>
+                            </div>
+                            <div class="my-3">
+                                <div class="loading">Loading</div>
+                                <div class="error-message"></div>
+                                <div class="sent-message">Your message has been sent. Thank you!</div>
+                            </div>
+                            <div class="text-center"><button type="submit">Send Message</button></div>
+                        </form>
+                    </div><!-- End Contact Form -->
+
+                </div>
+
+            </div>
+
+        </section><!-- /Contact Section -->
