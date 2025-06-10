@@ -9,7 +9,7 @@ namespace KD_Restaurant.Models
         public string ImagePath { get; set; } = null!;
         public string? Title { get; set; }
         public string? Description { get; set; }
-        public bool? IsActive { get; set; }
+        public bool IsActive { get; set; } = true;
         public int? DisplayOrder { get; set; }
         public DateTime CreatedDate { get; set; }
     }

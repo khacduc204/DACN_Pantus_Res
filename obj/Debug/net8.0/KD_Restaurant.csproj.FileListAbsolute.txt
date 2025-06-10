@@ -576,3 +576,4 @@ D:\DACN\KD_Restaurant\KD_Restaurant\obj\Debug\net8.0\refint\KD_Restaurant.dll
 D:\DACN\KD_Restaurant\KD_Restaurant\obj\Debug\net8.0\KD_Restaurant.pdb
 D:\DACN\KD_Restaurant\KD_Restaurant\obj\Debug\net8.0\KD_Restaurant.genruntimeconfig.cache
 D:\DACN\KD_Restaurant\KD_Restaurant\obj\Debug\net8.0\ref\KD_Restaurant.dll
+D:\DACN\KD_Restaurant\KD_Restaurant\obj\Debug\net8.0\KD_Restaurant.sourcelink.json

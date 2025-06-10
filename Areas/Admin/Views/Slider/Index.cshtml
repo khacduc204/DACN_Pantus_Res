@@ -1,0 +1,82 @@
+@model IEnumerable<KD_Restaurant.Models.tblSlider>
+
+@{
+    ViewData["Title"] = "Quản lý slider";
+    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+}
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="pagetitle">
+    <h2>Danh sách slider</h2>
+</div>
+
+<p>
+    <a class="btn btn-success" asp-area="Admin" asp-controller="Slider" asp-action="Create">
+        <i class="bi bi-file-earmark-text me-1"></i>Thêm slider
+    </a>
+</p>
+
+<section class="section dashboard">
+    <div class="row">
+        <div class="col-12">
+            <div class="card recent-sales overflow-auto">
+                <div class="card-body mt-4">
+                    <table class="table table-borderless datatable">
+                        <thead>
+                            <tr>
+                                <th scope="col">Mã</th>
+                                <th scope="col">Tiêu đề</th>
+                                <th scope="col">Mô tả</th>
+                                <th scope="col">Ảnh</th>
+                                <th scope="col">Thứ tự</th>
+                                <th scope="col">Ngày tạo</th>
+                                <th scope="col">Trạng thái</th>
+                                <th scope="col">Chức năng</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td class="align-middle">@item.IdSlider</td>
+                                    <td class="align-middle">@item.Title</td>
+                                    <td class="align-middle">@item.Description</td>
+                                    <td class="align-middle">
+                                        @if (!string.IsNullOrEmpty(item.ImagePath))
+                                        {
+                                            <img src="@item.ImagePath" alt="@item.Title" style="max-width:80px;max-height:40px;" />
+                                        }
+                                    </td>
+                                    <td class="align-middle">@item.DisplayOrder</td>
+                                    <td class="align-middle">@item.CreatedDate.ToString("dd/MM/yyyy")</td>
+                                    <td class="align-middle">
+                                        <div class="badge p-2 my-1 @(item.IsActive == true ? "bg-success" : "bg-warning text-dark")">
+                                            @(item.IsActive == true ? "Hiện" : "Ẩn")
+                                        </div>
+                                    </td>
+                                    <td class="align-middle" style="min-width: 160px; width: 160px;">
+                                        <a href="/Admin/Slider/IsActive/@item.IdSlider" class="btn @(item.IsActive == true ? "btn-warning" : "btn-success") mx-1 px-2 py-1" title="Đổi trạng thái">
+                                            <i class="fa-regular @(item.IsActive == true ? "fa-eye-slash" : "fa-eye") fs-6"></i>
+                                        </a>
+                                        <a href="/Admin/Slider/Edit/@item.IdSlider" class="btn btn-primary mx-1 px-2 py-1" title="Sửa">
+                                            <i class="fa-regular fa-edit fs-6"></i>
+                                        </a>
+                                        <a href="/Admin/Slider/Delete/@item.IdSlider" class="btn btn-danger mx-1 px-2 py-1" title="Xóa" onclick="return confirm('Bạn có chắc muốn xoá slider này?');">
+                                            <i class="fa-regular fa-trash-can fs-6"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
