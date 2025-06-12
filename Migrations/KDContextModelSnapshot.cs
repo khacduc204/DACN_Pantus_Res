@@ -152,14 +152,9 @@ namespace KD_Restaurant.Migrations
                     b.Property<string>("Title")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("tblMenuCategoryIdCategory")
-                        .HasColumnType("int");
-
                     b.HasKey("IdMenuItem");
 
                     b.HasIndex("IdCategory");
-
-                    b.HasIndex("tblMenuCategoryIdCategory");
 
                     b.ToTable("tblMenuItem");
                 });
@@ -199,14 +194,10 @@ namespace KD_Restaurant.Migrations
             modelBuilder.Entity("KD_Restaurant.Models.tblMenuItem", b =>
                 {
                     b.HasOne("KD_Restaurant.Models.tblMenuCategory", "Category")
-                        .WithMany()
+                        .WithMany("tblMenuItems")
                         .HasForeignKey("IdCategory")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("KD_Restaurant.Models.tblMenuCategory", null)
-                        .WithMany("tblMenuItems")
-                        .HasForeignKey("tblMenuCategoryIdCategory");
 
                     b.Navigation("Category");
                 });

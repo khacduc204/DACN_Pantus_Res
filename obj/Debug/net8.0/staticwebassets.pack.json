@@ -3509,14 +3509,6 @@
       "PackagePath": "staticwebassets\\assets\\img\\reservation.jpg"
     },
     {
-      "Id": "D:\\DACN\\KD_Restaurant\\KD_Restaurant\\wwwroot\\assets\\img\\slider\\images.jpg",
-      "PackagePath": "staticwebassets\\assets\\img\\slider\\images.jpg"
-    },
-    {
-      "Id": "D:\\DACN\\KD_Restaurant\\KD_Restaurant\\wwwroot\\assets\\img\\slider\\phong9.jpg",
-      "PackagePath": "staticwebassets\\assets\\img\\slider\\phong9.jpg"
-    },
-    {
       "Id": "D:\\DACN\\KD_Restaurant\\KD_Restaurant\\wwwroot\\assets\\img\\slider\\slider1.jpg",
       "PackagePath": "staticwebassets\\assets\\img\\slider\\slider1.jpg"
     },

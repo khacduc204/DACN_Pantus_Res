@@ -15114,8 +15114,8 @@
       <RelatedAsset></RelatedAsset>
       <AssetTraitName></AssetTraitName>
       <AssetTraitValue></AssetTraitValue>
-      <Fingerprint>5mmkpmphts</Fingerprint>
-      <Integrity>fVDhWMmnrQISTsJ2oa1Q7wwZP8p+V46VBMIQDAKTqHE=</Integrity>
+      <Fingerprint>wriy92ift3</Fingerprint>
+      <Integrity>jGRy4mvFxlkZ9E2qVAr+qXjCJdY6o6yF4W6k9mICZe4=</Integrity>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\assets\css\main.css'))</OriginalItemSpec>
@@ -15768,42 +15768,6 @@
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\assets\img\reservation.jpg'))</OriginalItemSpec>
     </StaticWebAsset>
-    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\assets\img\slider\images.jpg'))">
-      <SourceType>Package</SourceType>
-      <SourceId>KD_Restaurant</SourceId>
-      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
-      <BasePath>_content/KD_Restaurant</BasePath>
-      <RelativePath>assets/img/slider/images.jpg</RelativePath>
-      <AssetKind>All</AssetKind>
-      <AssetMode>All</AssetMode>
-      <AssetRole>Primary</AssetRole>
-      <RelatedAsset></RelatedAsset>
-      <AssetTraitName></AssetTraitName>
-      <AssetTraitValue></AssetTraitValue>
-      <Fingerprint>714w7wkqjg</Fingerprint>
-      <Integrity>a4PR/Cv7lzgfX/uiNzVvij1jo1z2b+KKzOYWzcdVQWg=</Integrity>
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\assets\img\slider\images.jpg'))</OriginalItemSpec>
-    </StaticWebAsset>
-    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\assets\img\slider\phong9.jpg'))">
-      <SourceType>Package</SourceType>
-      <SourceId>KD_Restaurant</SourceId>
-      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
-      <BasePath>_content/KD_Restaurant</BasePath>
-      <RelativePath>assets/img/slider/phong9.jpg</RelativePath>
-      <AssetKind>All</AssetKind>
-      <AssetMode>All</AssetMode>
-      <AssetRole>Primary</AssetRole>
-      <RelatedAsset></RelatedAsset>
-      <AssetTraitName></AssetTraitName>
-      <AssetTraitValue></AssetTraitValue>
-      <Fingerprint>yoe4fzhznp</Fingerprint>
-      <Integrity>njEq4yv+7yr7zxLLbczh1vQLBGVckSXoEfNCgzwk7x4=</Integrity>
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\assets\img\slider\phong9.jpg'))</OriginalItemSpec>
-    </StaticWebAsset>
     <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\assets\img\slider\slider1.jpg'))">
       <SourceType>Package</SourceType>
       <SourceId>KD_Restaurant</SourceId>
@@ -15816,8 +15780,8 @@
       <RelatedAsset></RelatedAsset>
       <AssetTraitName></AssetTraitName>
       <AssetTraitValue></AssetTraitValue>
-      <Fingerprint>jpa3rsts72</Fingerprint>
-      <Integrity>Cex8s+jKvD/woVE8nMIwdwi70w+o0Pv1fthI2KJSD98=</Integrity>
+      <Fingerprint>8wmasoyplf</Fingerprint>
+      <Integrity>mBGmqPWjfDTNBhDRs/vMBUDbTk6bkI6QIA8uPQxdEBo=</Integrity>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\assets\img\slider\slider1.jpg'))</OriginalItemSpec>

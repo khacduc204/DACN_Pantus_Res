@@ -1,5 +1,7 @@
 @model List<KD_Restaurant.Models.tblMenuCategory>
 
+
+
 @foreach (var category in Model)
 {
     <div class="row">
@@ -18,9 +20,7 @@
                         }
                         else
                         {
-                            <span style="text-decoration:line-through; color:#888;">
-                                @item.Price.ToString("N0") <text>VNĐ</text>
-                            </span>
+                            <span style="color:#ff5722; font-weight:bold;">@item.Price.ToString("N0") VNĐ</span>
                         }
                     </span>
                 </div>

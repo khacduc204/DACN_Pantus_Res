@@ -1,0 +1,267 @@
+@model List<KD_Restaurant.Models.CartItem>
+@{
+    ViewBag.Title = "Đặt bàn";
+    var total = Model.Sum(x => x.Price * x.Quantity);
+}
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success text-center">@TempData["Success"]</div>
+}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet" />
+
+<!-- Page Title -->
+<div class="page-title dark-background py-5 mb-4">
+    <div class="heading">
+        <div class="container">
+            <div class="row d-flex justify-content-center text-center">
+                <div class="col-lg-8">
+                    <h1 class="heading-title text-white mb-3">Đặt bàn</h1>
+                    <p class="mb-0 text-light fs-5">
+                        Đặt bàn tại nhà hàng chúng tôi để thưởng thức những món ăn ngon nhất.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <nav class="breadcrumbs mt-4">
+        <div class="container">
+            <ol class="breadcrumb bg-transparent justify-content-center mb-0">
+                <li class="breadcrumb-item"><a href="/">Home</a></li>
+                <li class="breadcrumb-item active">Đặt bàn</li>
+            </ol>
+        </div>
+    </nav>
+</div>
+
+
+<style>
+    .page-title.dark-background {
+        background: #2c1c13;
+        color: #fff;
+    }
+    .heading-title {
+        font-family: 'Pacifico', cursive;
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #fff;
+    }
+    .breadcrumb {
+        background: transparent;
+        padding: 0;
+        margin-bottom: 0;
+    }
+    .breadcrumb-item a {
+        color: #ffb03b;
+        text-decoration: none;
+    }
+    .breadcrumb-item.active {
+        color: #fff;
+        font-weight: 600;
+    }
+    .cart-table th, .cart-table td {
+        vertical-align: middle;
+        text-align: center;
+    }
+    .cart-table img {
+        border-radius: 6px;
+        margin-right: 8px;
+    }
+    .cart-action-btns .btn {
+        min-width: 110px;
+        margin-right: 8px;
+    }
+    .cart-summary {
+        font-size: 1.1rem;
+        margin-top: 16px;
+        margin-bottom: 24px;
+        text-align: right;
+    }
+    .cart-summary .text-danger {
+        font-weight: bold;
+    }
+    .booking-form-box {
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        padding: 24px 32px;
+        margin-top: 32px;
+    }
+    .booking-form-title {
+        color: #388e3c;
+        font-size: 1.4rem;
+        font-weight: 600;
+        margin-bottom: 24px;
+        text-align: center;
+    }
+    .form-label {
+        font-weight: 500;
+    }
+    .btn-booking {
+        background: #ffb300;
+        color: #222;
+        font-weight: 600;
+        border-radius: 24px;
+        padding: 10px 32px;
+        margin-top: 16px;
+        transition: background 0.2s;
+    }
+    .btn-booking:hover {
+        background: #ffa000;
+        color: #fff;
+    }
+</style>
+
+<div class="container my-4">
+    <h2 class="mb-4">Đặt bàn</h2>
+    <table class="table table-bordered cart-table">
+        <thead class="table-light">
+            <tr>
+                <th>STT</th>
+                <th>Món ăn</th>
+                <th>Giá bán</th>
+                <th>Số lượng</th>
+                <th>Thành tiền</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Count == 0)
+            {
+                <tr>
+                    <td colspan="6" class="text-center text-danger">Giỏ hàng của bạn đang trống.</td>
+                </tr>
+            }
+            else
+            {
+                for (int i = 0; i < Model.Count; i++)
+                {
+                    <tr>
+                        <td>@(i+1)</td>
+                        <td class="text-start">
+                            <img src="@Model[i].Image" width="48" height="48" />
+                            @Model[i].Title
+                        </td>
+                        <td>@Model[i].Price.ToString("N0") đ</td>
+                        <td>
+                            <div class="d-flex justify-content-center align-items-center">
+                                <button type="button" class="btn btn-outline-secondary btn-sm btn-qty" data-id="@Model[i].IdMenuItem" data-action="decrease">-</button>
+                                <input type="number" min="1" value="@Model[i].Quantity" class="form-control quantity mx-2" data-id="@Model[i].IdMenuItem" style="width:60px;display:inline-block;" />
+                                <button type="button" class="btn btn-outline-secondary btn-sm btn-qty" data-id="@Model[i].IdMenuItem" data-action="increase">+</button>
+                            </div>
+                        </td>
+                        
+                        <td>@(((decimal)Model[i].Price * Model[i].Quantity).ToString("N0")) đ</td>
+                        <td>
+                            <button type="button" class="btn btn-danger btn-sm btn-remove" data-id="@Model[i].IdMenuItem">
+                                <i class="fa fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+
+    <div class="d-flex justify-content-between cart-action-btns mb-3">
+        <a href="/Home/Menu" class="btn btn-outline-secondary">Tiếp tục chọn món</a>
+        <div>
+            <button type="button" class="btn btn-danger" id="btn-clear-cart">Xóa hết</button>
+            <button type="button" class="btn btn-success">Thanh toán</button>
+        </div>
+    </div>
+
+    <div class="cart-summary">
+        <div>Tạm tính: <span>@total.ToString("N0") đ</span></div>
+        <div>Khuyến mãi: <span>0 đ</span></div>
+        <div>Tổng cộng (VAT): <span class="text-danger">@total.ToString("N0") đ</span></div>
+    </div>
+
+    <div class="booking-form-box">
+        <div class="booking-form-title">Thông tin đặt bàn</div>
+        <form asp-action="PlaceOrder" method="post">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">---Chọn nhà hàng---</label>
+                        <select name="IdBranch" class="form-select" required>
+                        <option value="">---Chọn nhà hàng---</option>
+                        @foreach (var branch in (IEnumerable<KD_Restaurant.Models.tblBranch>)ViewBag.Branches)
+                        {
+                            <option value="@branch.IdBranch">@branch.BranchName</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Họ tên (*)</label>
+                    <input name="FullName" class="form-control" required />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">---Chọn ngày---</label>
+                    <input name="BookingDate" type="date" class="form-control" 
+                        min="@DateTime.Now.ToString("yyyy-MM-dd")" 
+                        max="@DateTime.Now.AddDays(30).ToString("yyyy-MM-dd")" required />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Số khách (*)</label>
+                    <input name="NumberGuests" type="number" min="1" class="form-control" max="100" required />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Số điện thoại (*)</label>
+                    <input name="PhoneNumber" class="form-control" required />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">---Khung giờ---</label>
+                        <select name="TimeSlot" class="form-select" required>
+                        <option value="">---Khung giờ---</option>
+                        <option value="Sáng 07:00 - 09:00">Sáng 07:00 - 09:00</option>
+                        <option value="Sáng 09:00 - 11:00">Sáng 09:00 - 11:00</option>
+                        <option value="Trưa 11:00 - 13:00">Trưa 11:00 - 13:00</option>
+                        <option value="Chiều 13:00 - 17:00">Chiều 13:00 - 17:00</option>
+                        <option value="Tối 17:00 - 19:00">Tối 17:00 - 19:00</option>
+                        <option value="Tối 19:00 - 21:00">Tối 19:00 - 21:00</option>
+                    </select>
+                </div>
+                <div class="col-md-12">
+                    <label class="form-label">Lời nhắn với nhà hàng</label>
+                    <textarea name="Note" class="form-control"></textarea>
+                </div>
+            </div>
+            <div class="text-center">
+                <button type="submit" class="btn btn-booking mt-3">Gửi đơn đặt bàn</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/js/all.min.js"></script>
+    <script>
+        // Xóa từng món
+        $(".btn-remove").click(function () {
+            var id = $(this).data("id");
+            $.post("/Cart/RemoveFromCart", { id: id }, function () { location.reload(); });
+        });
+        // Xóa hết
+        $("#btn-clear-cart").click(function () {
+            if (confirm("Bạn có chắc muốn xóa hết giỏ hàng?")) {
+                $.post("/Cart/ClearCart", function () { location.reload(); });
+            }
+        });
+        // Tăng/giảm số lượng
+        $(".btn-qty").click(function () {
+            var id = $(this).data("id");
+            var action = $(this).data("action");
+            var input = $(".quantity[data-id='" + id + "']");
+            var quantity = parseInt(input.val());
+            if (action === "decrease" && quantity > 1) quantity--;
+            if (action === "increase") quantity++;
+            input.val(quantity).trigger("change");
+        });
+        // Cập nhật số lượng
+        $(".quantity").change(function () {
+            var id = $(this).data("id");
+            var quantity = $(this).val();
+            $.post("/Cart/UpdateQuantity", { id: id, quantity: quantity }, function () { location.reload(); });
+        });
+    </script>
+}

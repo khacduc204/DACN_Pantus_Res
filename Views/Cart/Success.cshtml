@@ -1,0 +1,189 @@
+@{
+    ViewBag.Title = "Đặt bàn thành công";
+}
+<!-- Page Title -->
+<div class="page-title dark-background py-5 mb-4">
+    <div class="heading">
+        <div class="container">
+            <div class="row d-flex justify-content-center text-center">
+                <div class="col-lg-8">
+                    <h1 class="heading-title text-white mb-3">Thanh toán đơn đặt bàn</h1>
+                    <p class="mb-0 text-light fs-5">
+                        Xác nhận thông tin đặt bàn và thực đơn trước khi hoàn tất thanh toán. Chúc bạn có trải nghiệm tuyệt vời tại nhà hàng!
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <nav class="breadcrumbs mt-4">
+        <div class="container">
+            <ol class="breadcrumb bg-transparent justify-content-center mb-0">
+                <li class="breadcrumb-item"><a href="/">Home</a></li>
+                <li class="breadcrumb-item active">Thanh toán</li>
+            </ol>
+        </div>
+    </nav>
+</div>
+
+<style>
+    .page-title.dark-background {
+        background: #2c1c13;
+        color: #fff;
+        border-radius: 10px;
+        margin-bottom: 30px;
+    }
+    .heading-title {
+        font-family: 'Pacifico', cursive;
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #fff;
+        letter-spacing: 1px;
+    }
+    .breadcrumb {
+        background: transparent;
+        padding: 0;
+        margin-bottom: 0;
+    }
+    .breadcrumb-item a {
+        color: #ffb03b;
+        text-decoration: none;
+    }
+    .breadcrumb-item.active {
+        color: #fff;
+        font-weight: 600;
+    }
+    .card {
+        border-radius: 12px;
+        box-shadow: 0 2px 12px rgba(44,28,19,0.08);
+        margin-bottom: 24px;
+    }
+    .card-header {
+        border-radius: 12px 12px 0 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+    .table th, .table td {
+        vertical-align: middle;
+        text-align: center;
+    }
+    .btn-success {
+        background: #ffb03b;
+        border: none;
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+    .btn-success:hover {
+        background: #e09e2f;
+    }
+    .success-alert-custom {
+        background: linear-gradient(135deg, #fffbe6 0%, #ffe6e6 100%);
+        border: 2px solid #ffb03b;
+        border-radius: 18px;
+        padding: 40px 20px 60px 20px;
+        position: relative;
+        z-index: 2;
+    }
+    #fireworks-canvas {
+        position: fixed;
+        left: 0; top: 0;
+        width: 100vw; height: 100vh;
+        pointer-events: none;
+        z-index: 1;
+    }
+</style>
+<div class="alert alert-success mt-5 text-center success-alert-custom shadow-lg">
+    <h2 class="fw-bold mb-3" style="font-size:2.5rem; color:#ffb03b;">
+        <i class="bi bi-emoji-smile"></i> Đặt bàn thành công!
+    </h2>
+    <p class="fs-5 text-dark">@TempData["SuccessMessage"]</p>
+    <a href="/" class="btn btn-warning btn-lg mt-3 px-5 shadow">Về trang chủ</a>
+</div>
+<canvas id="fireworks-canvas"></canvas>
+
+
+<script>
+// Fireworks effect
+const canvas = document.getElementById('fireworks-canvas');
+const ctx = canvas.getContext('2d');
+let W = window.innerWidth, H = window.innerHeight;
+canvas.width = W; canvas.height = H;
+
+window.addEventListener('resize', () => {
+    W = window.innerWidth; H = window.innerHeight;
+    canvas.width = W; canvas.height = H;
+});
+
+function randomColor() {
+    const colors = ['#ffb03b', '#ff4e50', '#1e90ff', '#00e676', '#ffeb3b', '#e040fb'];
+    return colors[Math.floor(Math.random() * colors.length)];
+}
+
+function Firework() {
+    this.x = Math.random() * W;
+    this.y = H;
+    this.targetY = Math.random() * H * 0.5 + H * 0.1;
+    this.color = randomColor();
+    this.radius = 2 + Math.random() * 2;
+    this.speed = 6 + Math.random() * 4;
+    this.exploded = false;
+    this.particles = [];
+}
+Firework.prototype.update = function() {
+    if (!this.exploded) {
+        this.y -= this.speed;
+        if (this.y <= this.targetY) {
+            this.exploded = true;
+            for (let i = 0; i < 32; i++) {
+                this.particles.push(new Particle(this.x, this.y, this.color));
+            }
+        }
+    } else {
+        this.particles.forEach(p => p.update());
+    }
+};
+Firework.prototype.draw = function() {
+    if (!this.exploded) {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+    } else {
+        this.particles.forEach(p => p.draw());
+    }
+};
+function Particle(x, y, color) {
+    this.x = x; this.y = y;
+    this.angle = Math.random() * 2 * Math.PI;
+    this.speed = Math.random() * 4 + 2;
+    this.radius = 1 + Math.random();
+    this.life = 40 + Math.random() * 20;
+    this.color = color;
+    this.alpha = 1;
+}
+Particle.prototype.update = function() {
+    this.x += Math.cos(this.angle) * this.speed;
+    this.y += Math.sin(this.angle) * this.speed;
+    this.speed *= 0.96;
+    this.life--;
+    this.alpha = Math.max(0, this.life / 60);
+};
+Particle.prototype.draw = function() {
+    ctx.save();
+    ctx.globalAlpha = this.alpha;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
+    ctx.fillStyle = this.color;
+    ctx.fill();
+    ctx.restore();
+};
+
+let fireworks = [];
+function animate() {
+    ctx.clearRect(0, 0, W, H);
+    if (Math.random() < 0.08) fireworks.push(new Firework());
+    fireworks.forEach(fw => { fw.update(); fw.draw(); });
+    fireworks = fireworks.filter(fw => !fw.exploded || fw.particles.some(p => p.life > 0));
+    requestAnimationFrame(animate);
+}
+animate();
+</script>

@@ -53,7 +53,8 @@
                     <i class="bi bi-phone d-flex align-items-center d-none d-lg-block"><span>0978.843.662</span></i>
                     <i class="bi bi-clock ms-4 d-none d-lg-flex align-items-center"><span>Mon-Sun: 9:00 AM - 23:00 PM</span></i>
                 </div>
-                <a href="#book-a-table" class="cta-btn">Booka a table</a>
+                <a href="/Cart" class="cta-btn">Booka a table</a>
+                
             </div>
         </div><!-- End Top Bar -->
 
@@ -63,13 +64,29 @@
                 <a href="index.html" class="logo d-flex align-items-center">
                     <!-- Uncomment the line below if you also wish to use an image logo -->
                     <!-- <img src="assets/img/logo.png" alt=""> -->
-                    <h1 class="sitename">KD Restaurant</h1>
+                    <a href="/" class="logo d-flex align-items-center">
+                        <h1 class="sitename">KD Restaurant</h1>
+                    </a>
                 </a>
 
                 <nav id="navmenu" class="navmenu">
                     @await Component.InvokeAsync("MenuTop")
                     <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
                 </nav>
+
+                <div class="d-flex align-items-center gap-3"></div>
+                    <a href="/Account/Login" class="btn btn-outline-light btn-sm d-flex align-items-center">
+                        <i class="bi bi-person"></i>
+                        <span class="ms-1 d-none d-md-inline">Đăng nhập</span>
+                    </a>
+                    <a href="/Cart" class="btn btn-outline-light btn-sm d-flex align-items-center position-relative">
+                        <i class="bi bi-cart"></i>
+                        <span class="ms-1 d-none d-md-inline">Giỏ hàng</span>
+                        <span id="cart-count" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.7rem;">
+                            @(ViewBag.CartCount ?? 0)
+                        </span>
+                </a>
+            </div>
 
             </div>
 
@@ -81,7 +98,7 @@
 
     <main class="main">
 
-                                @{
+                @{
                     var action = ViewContext.RouteData.Values["action"] as string ?? "";
                     var controller = ViewContext.RouteData.Values["controller"] as string ?? "";
                 }

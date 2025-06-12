@@ -1,0 +1,149 @@
+<!-- Page Title -->
+<div class="page-title dark-background py-5 mb-4">
+    <div class="heading">
+        <div class="container">
+            <div class="row d-flex justify-content-center text-center">
+                <div class="col-lg-8">
+                    <h1 class="heading-title text-white mb-3">Thanh toán đơn đặt bàn</h1>
+                    <p class="mb-0 text-light fs-5">
+                        Xác nhận thông tin đặt bàn và thực đơn trước khi hoàn tất thanh toán. Chúc bạn có trải nghiệm tuyệt vời tại nhà hàng!
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <nav class="breadcrumbs mt-4">
+        <div class="container">
+            <ol class="breadcrumb bg-transparent justify-content-center mb-0">
+                <li class="breadcrumb-item"><a href="/">Home</a></li>
+                <li class="breadcrumb-item active">Thanh toán</li>
+            </ol>
+        </div>
+    </nav>
+</div>
+
+<style>
+    .page-title.dark-background {
+        background: #2c1c13;
+        color: #fff;
+        border-radius: 10px;
+        margin-bottom: 30px;
+    }
+    .heading-title {
+        font-family: 'Pacifico', cursive;
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #fff;
+        letter-spacing: 1px;
+    }
+    .breadcrumb {
+        background: transparent;
+        padding: 0;
+        margin-bottom: 0;
+    }
+    .breadcrumb-item a {
+        color: #ffb03b;
+        text-decoration: none;
+    }
+    .breadcrumb-item.active {
+        color: #fff;
+        font-weight: 600;
+    }
+    .card {
+        border-radius: 12px;
+        box-shadow: 0 2px 12px rgba(44,28,19,0.08);
+        margin-bottom: 24px;
+    }
+    .card-header {
+        border-radius: 12px 12px 0 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+    .table th, .table td {
+        vertical-align: middle;
+        text-align: center;
+    }
+    .btn-success {
+        background: #ffb03b;
+        border: none;
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+    .btn-success:hover {
+        background: #e09e2f;
+    }
+</style>
+
+@{
+    var order = ViewBag.Order as KD_Restaurant.Models.tblOrder;
+    var booking = order?.Booking;
+    var customer = booking?.Customer;
+    var details = ViewBag.OrderDetails as List<KD_Restaurant.Models.tblOrder_detail>;
+}
+
+<h2 class="text-success text-center mb-4">THANH TOÁN TRƯỚC CHO ĐƠN ĐẶT BÀN</h2>
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-3">
+            <div class="card-header bg-info text-white">Thông tin đơn đặt bàn</div>
+            <div class="card-body">
+                <p><b>Tên người đặt bàn:</b> @customer?.FullName</p>
+                <p><b>Điện thoại:</b> @customer?.PhoneNumber</p>
+                <p><b>Thời gian dùng bữa dự kiến:</b> @booking?.BookingDate.ToString("dd/MM/yyyy") @booking?.TimeSlot</p>
+                <p><b>Địa điểm dùng bữa:</b> @booking?.Branch?.BranchName</p>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header bg-primary text-white">Thực đơn đặt trước</div>
+            <div class="card-body p-0">
+                <table class="table mb-0">
+                    <thead>
+                        <tr>
+                            <th>STT</th>
+                            <th>Món ăn</th>
+                            <th>Giá bán</th>
+                            <th>Số lượng</th>
+                            <th>Thành tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (details != null)
+                        {
+                            int stt = 1;
+                            foreach (var item in details)
+                            {
+                                <tr>
+                                    <td>@(stt++)</td>
+                                    <td>@item.MenuItem?.Title</td>
+                                    <td>@(item.PriceSale.GetValueOrDefault().ToString("N0")) đ</td>
+                                    <td>@item.Quantity</td>
+                                    <td>@((item.PriceSale.GetValueOrDefault() * (item.Quantity ?? 0)).ToString("N0")) đ</td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-light">THANH TOÁN</div>
+            <div class="card-body">
+                <div class="mb-2">Tạm tính: <b>@((order?.TotalAmount ?? 0).ToString("N0")) đ</b></div>
+                <div class="mb-2">Khuyến mãi: <b>0 đ</b></div>
+                <div class="mb-2 text-danger">Tổng cộng (VAT): <b>@((order?.TotalAmount ?? 0).ToString("N0")) đ</b></div>
+                <div class="mb-2">Phương thức thanh toán:</div>
+                <form asp-action="ConfirmPayment" asp-controller="Cart" method="post">
+                    <input type="hidden" name="id" value="@order?.IdOrder" />
+                    <div>
+                        <input type="radio" name="paymentMethod" value="Tại nhà hàng" checked /> Thanh toán tại nhà hàng<br>
+                        <input type="radio" name="paymentMethod" value="VNPAY" /> Thanh toán qua ví VNPAY<br>
+                        <input type="radio" name="paymentMethod" value="Chuyển khoản" /> Chuyển khoản ngân hàng
+                    </div>
+                    <button type="submit" class="btn btn-success w-100 mt-3">THANH TOÁN</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

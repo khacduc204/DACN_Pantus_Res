@@ -26,5 +26,7 @@ namespace KD_Restaurant.Models
         public virtual tblMenuCategory? Category { get; set; }
         public virtual ICollection<tblMenuReview> tblMenuReview { get; set; } = new HashSet<tblMenuReview>();
         
+        [InverseProperty("MenuItem")]
+        public virtual ICollection<tblOrder_detail> tblOrder_details { get; set; } = new HashSet<tblOrder_detail>();
     }
 }
