@@ -10,6 +10,7 @@ namespace KD_Restaurant.Models
         public string? Alias { get; set; }
         public string? Description { get; set; }
         public int Price { get; set; }
+        public int PriceCost { get; set; }
         public string? Image { get; set; }
         public int IdCategory { get; set; }
         public DateTime? CreatedDate { get; set; }

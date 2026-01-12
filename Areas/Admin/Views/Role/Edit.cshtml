@@ -1,0 +1,61 @@
+@model KD_Restaurant.ViewModels.RolePermissionFormModel
+@using KD_Restaurant.Utilities
+@{
+    ViewData["Title"] = "Cập nhật quyền truy cập";
+}
+
+<section class="section dashboard">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h3 mb-1">@Model.RoleName</h1>
+      <p class="text-muted mb-0">Điều chỉnh mô tả và các module mà vai trò này có thể truy cập.</p>
+    </div>
+    <a asp-area="Admin" asp-controller="Role" asp-action="Index" class="btn btn-outline-secondary">
+      <i class="bi bi-arrow-left me-1"></i>Quay lại
+    </a>
+  </div>
+
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <form asp-area="Admin" asp-controller="Role" asp-action="Edit" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="RoleId" />
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+        <div class="row g-4">
+          <div class="col-lg-4">
+            <div class="mb-3">
+              <label asp-for="RoleName" class="form-label">Tên vai trò</label>
+              <input asp-for="RoleName" class="form-control" readonly="@(Model.IsLockedName ? "readonly" : null)" />
+              <span asp-validation-for="RoleName" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+              <label asp-for="Description" class="form-label">Mô tả</label>
+              <textarea asp-for="Description" class="form-control" rows="3" placeholder="Ví dụ: Quản lý vận hành ca tối"></textarea>
+              <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+          </div>
+          <div class="col-lg-8">
+            <div class="row g-3">
+              @foreach (var key in PermissionKeys.All)
+              {
+                  var granted = Model.GrantedPermissions.Contains(key);
+                  <div class="col-md-6">
+                    <div class="form-check border rounded p-3 h-100">
+                      <input class="form-check-input" type="checkbox" name="GrantedPermissions" value="@key" id="perm-@key" @(granted ? "checked" : null) />
+                      <label class="form-check-label fw-semibold" for="perm-@key">@PermissionKeys.DisplayNames[key]</label>
+                    </div>
+                  </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-end gap-3 mt-4">
+          <a asp-area="Admin" asp-controller="Role" asp-action="Index" class="btn btn-light border">Huỷ</a>
+          <button type="submit" class="btn btn-primary"><i class="bi bi-save me-1"></i>Lưu thay đổi</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>

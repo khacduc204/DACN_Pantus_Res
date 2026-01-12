@@ -1,0 +1,439 @@
+@using System.Linq
+@using KD_Restaurant.ViewModels
+@model CurrentOrderListViewModel
+@{
+    ViewData["Title"] = Model.Title;
+    var heading = Model.Title;
+    var description = Model.Description;
+    var highlightBookingId = Model.HighlightBookingId;
+    var highlightOrder = highlightBookingId.HasValue
+        ? Model.Orders.FirstOrDefault(o => o.BookingId == highlightBookingId.Value)
+        : null;
+    var branchOptions = Model.Branches ?? Enumerable.Empty<SelectOption>();
+    var hasBranches = branchOptions.Any();
+
+    string FormatDuration(TimeSpan span)
+    {
+        if (span < TimeSpan.Zero)
+        {
+            span = TimeSpan.Zero;
+        }
+
+        var totalHours = (int)span.TotalHours;
+        return $"{totalHours:00}:{span.Minutes:00}:{span.Seconds:00}";
+    }
+}
+
+<div class="pagetitle">
+    <h1>@heading</h1>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-area="Admin" asp-controller="Home" asp-action="Index">Dashboard</a></li>
+            <li class="breadcrumb-item active">@heading</li>
+        </ol>
+    </nav>
+</div>
+
+<section class="section">
+    <div class="card shadow-sm">
+        <div class="card-body">
+            @if (highlightOrder != null)
+            {
+                var manageUrl = Url.Action("CurrentOrder", "Bookings", new { area = "Admin", bookingId = highlightOrder.BookingId });
+                <div class="alert alert-primary d-flex flex-wrap justify-content-between align-items-center gap-3 highlight-alert" role="alert">
+                    <div>
+                        <strong>@highlightOrder.CustomerName</strong> vừa được check-in. Bạn có thể bắt đầu ghi nhận món và tính thời gian phục vụ.
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a class="btn btn-light btn-sm" href="@Url.Action("Index", "Bookings", new { area = "Admin" })">
+                            <i class="bi bi-arrow-left"></i> Quay về lịch đặt bàn
+                        </a>
+                        <a class="btn btn-dark btn-sm" href="@manageUrl">
+                            <i class="bi bi-pencil-square"></i> Mở đơn
+                        </a>
+                    </div>
+                </div>
+            }
+            <div class="d-flex justify-content-between flex-wrap align-items-center mb-4">
+                <div>
+                    <h5 class="mb-1">@heading</h5>
+                    <div class="text-muted">@description</div>
+                </div>
+                @if (!Model.IsHistory)
+                {
+                    <div class="d-flex gap-2 flex-wrap">
+                        <button type="button" class="btn btn-dark" data-action="create-walkin" @(hasBranches ? string.Empty : "disabled")>
+                            <i class="bi bi-person-walking me-1"></i>Tạo hoá đơn trực tiếp
+                        </button>
+                        <a class="btn btn-primary" asp-area="Admin" asp-controller="Bookings" asp-action="Index">
+                            <i class="bi bi-plus-circle me-1"></i>Quản lý lịch đặt bàn
+                        </a>
+                    </div>
+                }
+            </div>
+
+            @if (Model.Orders.Any())
+            {
+                <div class="row g-3">
+                    @foreach (var order in Model.Orders)
+                    {
+                        var isHighlight = highlightBookingId.HasValue && highlightBookingId.Value == order.BookingId;
+                        <div class="col-xl-4 col-md-6">
+                            <div class="order-card h-100 @(isHighlight ? "order-card--focus" : string.Empty)" data-booking-card data-booking-id="@order.BookingId">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <div>
+                                        <div class="text-muted small">Khách hàng</div>
+                                        <h5 class="mb-0">@order.CustomerName</h5>
+                                        <div class="text-muted">@order.CustomerPhone</div>
+                                    </div>
+                                    <span class="badge @order.StatusBadgeClass">@order.StatusName</span>
+                                </div>
+                                <div class="order-meta mb-3">
+                                    <div><strong>Bàn:</strong> @(order.TableName ?? "Chưa xếp")</div>
+                                    <div><strong>Ngày:</strong> @order.BookingDate.ToString("dd/MM/yyyy")</div>
+                                    <div><strong>Giờ:</strong> @order.TimeSlot</div>
+                                    <div><strong>Khách:</strong> @(order.Guests ?? 0)</div>
+                                </div>
+                                @if (order.TimeIn.HasValue)
+                                {
+                                    var timerId = $"timer-{order.BookingId}";
+                                    <div class="order-timer mb-3">
+                                        <div class="text-muted small">Thời gian phục vụ</div>
+                                        @if (!order.TimeOut.HasValue && !Model.IsHistory)
+                                        {
+                                            <div class="fw-semibold text-danger live-timer"
+                                                 data-start="@order.TimeIn.Value.ToString("o")"
+                                                 id="@timerId">Đang tính...</div>
+                                        }
+                                        else if (order.TimeOut.HasValue)
+                                        {
+                                            var duration = order.TimeOut.Value - order.TimeIn.Value;
+                                            <div class="fw-semibold">@FormatDuration(duration)</div>
+                                            <div class="text-muted small">Hoàn tất @order.TimeOut.Value.ToString("HH:mm dd/MM")</div>
+                                        }
+                                    </div>
+                                }
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <span class="text-muted">Tạm tính</span>
+                                    <strong class="text-primary">@order.TotalAmount.ToString("N0") ₫</strong>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <a class="btn btn-outline-primary w-50"
+                                       asp-area="Admin"
+                                       asp-controller="Bookings"
+                                       asp-action="CurrentOrder"
+                                       asp-route-bookingId="@order.BookingId">
+                                        <i class="bi bi-eye"></i>
+                                        @(Model.IsHistory ? "Xem đơn" : "Quản lý")
+                                    </a>
+                                    @if (Model.IsHistory)
+                                    {
+                                        <a class="btn btn-success w-50"
+                                           asp-area="Admin"
+                                           asp-controller="Bookings"
+                                           asp-action="Invoice"
+                                           asp-route-bookingId="@order.BookingId">
+                                            <i class="bi bi-printer"></i>
+                                            Hoá đơn
+                                        </a>
+                                    }
+                                    else if (order.CanCheckout)
+                                    {
+                                        <a class="btn btn-success w-50"
+                                           asp-area="Admin"
+                                           asp-controller="Bookings"
+                                           asp-action="CurrentOrder"
+                                           asp-route-bookingId="@order.BookingId">
+                                            <i class="bi bi-cash-coin"></i>
+                                            Thanh toán
+                                        </a>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5 text-muted">
+                    @if (Model.IsHistory)
+                    {
+                        <div>Chưa có hoá đơn nào được ghi nhận.</div>
+                    }
+                    else
+                    {
+                        <div>Không có đơn nào đang phục vụ.</div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+@if (!Model.IsHistory)
+{
+    <div class="modal fade" id="walkInModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Tạo hoá đơn trực tiếp</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                </div>
+                <form asp-area="Admin" asp-controller="Book" asp-action="CreateWalkIn" method="post" id="walkInForm">
+                    @Html.AntiForgeryToken()
+                    <div class="modal-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Tên khách (tuỳ chọn)</label>
+                                <input class="form-control" name="CustomerName" placeholder="Ví dụ: Nguyễn Văn A" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Số điện thoại</label>
+                                <input class="form-control" name="CustomerPhone" placeholder="0978 xxx xxx" />
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Số khách</label>
+                                <input class="form-control" type="number" name="Guests" value="2" min="1" max="50" data-walkin-guests />
+                            </div>
+                            <div class="col-md-8">
+                                <label class="form-label">Chi nhánh phục vụ</label>
+                                <select class="form-select" name="BranchId" data-walkin-branch @(hasBranches ? "required" : "disabled")>
+                                    <option value="">-- Chọn chi nhánh --</option>
+                                    @foreach (var branch in branchOptions)
+                                    {
+                                        <option value="@branch.Id">@branch.Name</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Chọn bàn</label>
+                                <select class="form-select" name="TableId" data-walkin-table @(hasBranches ? string.Empty : "disabled")>
+                                    <option value="">@(hasBranches ? "Chọn chi nhánh để hiển thị bàn trống" : "Chưa có chi nhánh hoạt động")</option>
+                                </select>
+                                <small class="text-muted">Hệ thống sẽ tự lọc bàn trống phù hợp số khách.</small>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Ghi chú</label>
+                                <textarea class="form-control" name="Note" rows="2" placeholder="Ví dụ: khách đi lẻ, ưu tiên món nhanh..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Huỷ</button>
+                        <button type="submit" class="btn btn-primary" @(hasBranches ? string.Empty : "disabled")>
+                            <i class="bi bi-arrow-right-circle me-1"></i>Bắt đầu ghi nhận
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+    .order-card {
+        border: 1px solid #e5e7eb;
+        border-radius: 18px;
+        padding: 20px;
+        background: #fff;
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+    }
+
+    .order-card--focus {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.3), 0 30px 60px rgba(37, 99, 235, 0.25);
+        animation: cardPulse 1.8s ease-in-out 2;
+    }
+
+    @@keyframes cardPulse {
+        0% {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.01);
+        }
+
+        100% {
+            transform: scale(1);
+        }
+    }
+
+    .order-meta div {
+        font-size: 0.9rem;
+        color: #4b5563;
+    }
+
+    .order-card .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+    }
+
+    .order-timer {
+        padding: 12px;
+        border-radius: 12px;
+        background: #f9fafb;
+    }
+
+    .order-timer .live-timer {
+        font-size: 1.1rem;
+        letter-spacing: 0.5px;
+    }
+
+    .highlight-alert {
+        border-radius: 16px;
+        border: 1px solid #bfdbfe;
+        background: linear-gradient(135deg, #eff6ff, #dbeafe);
+    }
+</style>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const timerEls = document.querySelectorAll('.live-timer');
+            const walkInTrigger = document.querySelector('[data-action="create-walkin"]');
+            const walkInModal = document.getElementById('walkInModal');
+            const walkInForm = document.getElementById('walkInForm');
+            const branchSelect = walkInForm?.querySelector('[data-walkin-branch]');
+            const tableSelect = walkInForm?.querySelector('[data-walkin-table]');
+            const guestsInput = walkInForm?.querySelector('[data-walkin-guests]');
+            const tablesApi = '@Url.Action("AvailableTables", "Bookings", new { area = "Admin" })';
+            const formatDuration = (totalSeconds) => {
+                const hours = Math.floor(totalSeconds / 3600);
+                const minutes = Math.floor((totalSeconds % 3600) / 60);
+                const seconds = Math.floor(totalSeconds % 60);
+                return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            };
+
+            const setTableLoadingState = (message, disabled = true) => {
+                if (!tableSelect) {
+                    return;
+                }
+                tableSelect.innerHTML = `<option value="">${message}</option>`;
+                tableSelect.disabled = disabled;
+            };
+
+            const currentTimeSlot = () => {
+                const now = new Date();
+                const hours = now.getHours().toString().padStart(2, '0');
+                const minutes = now.getMinutes().toString().padStart(2, '0');
+                return `${hours}:${minutes}`;
+            };
+
+            const loadWalkInTables = async () => {
+                if (!branchSelect || !tableSelect) {
+                    return;
+                }
+                const branchId = branchSelect.value;
+                if (!branchId) {
+                    setTableLoadingState('Chọn chi nhánh để hiển thị bàn trống');
+                    return;
+                }
+                const date = new Date().toISOString().slice(0, 10);
+                const params = new URLSearchParams({
+                    date,
+                    timeSlot: currentTimeSlot(),
+                    branchId,
+                    minSeats: guestsInput?.value || ''
+                });
+                tableSelect.disabled = true;
+                tableSelect.innerHTML = '<option value="">Đang tải danh sách...</option>';
+                try {
+                    const response = await fetch(`${tablesApi}?${params.toString()}`);
+                    const tables = await response.json();
+                    if (!Array.isArray(tables) || tables.length === 0) {
+                        setTableLoadingState('Không còn bàn trống phù hợp', true);
+                        return;
+                    }
+                    tableSelect.innerHTML = '<option value="">-- Chọn bàn --</option>';
+                    tables.forEach(table => {
+                        const option = document.createElement('option');
+                        option.value = table.id;
+                        const areaLabel = table.area ? ` • ${table.area}` : '';
+                        const seatLabel = table.seats ? ` • ${table.seats} ghế` : '';
+                        option.textContent = `${table.name}${areaLabel}${seatLabel}`;
+                        tableSelect.appendChild(option);
+                    });
+                    tableSelect.disabled = false;
+                } catch (error) {
+                    console.error(error);
+                    setTableLoadingState('Không thể tải danh sách bàn', true);
+                }
+            };
+
+            if (timerEls.length) {
+                const tick = () => {
+                    const now = Date.now();
+                    timerEls.forEach((el) => {
+                        const start = Date.parse(el.dataset.start);
+                        if (Number.isNaN(start)) {
+                            return;
+                        }
+                        const elapsedSeconds = Math.max(0, (now - start) / 1000);
+                        el.textContent = formatDuration(elapsedSeconds);
+                    });
+                };
+
+                tick();
+                setInterval(tick, 1000);
+            }
+
+            const highlightId = '@(highlightBookingId?.ToString() ?? string.Empty)';
+            if (highlightId) {
+                const highlightCard = document.querySelector(`[data-booking-card][data-booking-id="${highlightId}"]`);
+                if (highlightCard) {
+                    highlightCard.classList.add('order-card--focus');
+                    highlightCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    highlightCard.dataset.highlighted = 'true';
+                }
+            }
+
+            if (walkInForm && walkInModal) {
+                branchSelect?.addEventListener('change', loadWalkInTables);
+                guestsInput?.addEventListener('change', () => {
+                    if (tableSelect && !tableSelect.disabled) {
+                        loadWalkInTables();
+                    }
+                });
+
+                walkInTrigger?.addEventListener('click', () => {
+                    const modal = bootstrap.Modal.getOrCreateInstance(walkInModal);
+                    modal.show();
+                    if (branchSelect?.value) {
+                        loadWalkInTables();
+                    } else {
+                        setTableLoadingState('Chọn chi nhánh để hiển thị bàn trống');
+                    }
+                });
+
+                walkInForm.addEventListener('submit', async (evt) => {
+                    evt.preventDefault();
+                    const formData = new FormData(walkInForm);
+                    try {
+                        const response = await fetch(walkInForm.action, {
+                            method: 'POST',
+                            body: formData
+                        });
+                        const result = await response.json();
+                        if (!result.success) {
+                            alert(result.message ?? 'Không thể tạo hoá đơn.');
+                            return;
+                        }
+                        bootstrap.Modal.getInstance(walkInModal)?.hide();
+                        if (result.redirectUrl) {
+                            window.location.href = result.redirectUrl;
+                        } else {
+                            window.location.reload();
+                        }
+                    } catch (error) {
+                        console.error(error);
+                        alert('Không thể tạo hoá đơn.');
+                    }
+                });
+            }
+        });
+    </script>
+}

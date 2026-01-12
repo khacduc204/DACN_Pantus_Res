@@ -1,0 +1,400 @@
+@model KD_Restaurant.ViewModels.MenuPageViewModel
+@using KD_Restaurant.Models
+
+@{
+    var paginationModel = Model ?? new KD_Restaurant.ViewModels.MenuPageViewModel();
+    var categories = ViewBag.Categories as List<tblMenuCategory>;
+    var pagedItems = paginationModel.Items ?? new List<tblMenuItem>();
+}
+
+<!-- Page Title -->
+<div class="page-title dark-background py-5 mb-4">
+    <div class="heading">
+        <div class="container">
+            <div class="row d-flex justify-content-center text-center">
+                <div class="col-lg-8">
+                    <h1 class="heading-title text-white mb-3">Thực Đơn</h1>
+                    <p class="mb-0 text-light fs-5">
+                        Khám phá các món ăn đặc sắc của nhà hàng chúng tôi. Đa dạng, tươi ngon, phục vụ tận tâm!
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <nav class="breadcrumbs mt-4">
+        <div class="container">
+            <ol class="breadcrumb bg-transparent justify-content-center mb-0">
+                <li class="breadcrumb-item"><a href="/">Home</a></li>
+                <li class="breadcrumb-item active">Thực Đơn</li>
+            </ol>
+        </div>
+    </nav>
+</div>
+
+<style>
+.page-title.dark-background {
+    background: #2c1c13;
+    color: #fff;
+}
+.heading-title {
+    font-family: 'Pacifico', cursive;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #fff;
+}
+.breadcrumb {
+    background: transparent;
+    padding: 0;
+    margin-bottom: 0;
+}
+.breadcrumb-item a {
+    color: #ffb03b;
+    text-decoration: none;
+}
+.breadcrumb-item.active {
+    color: #fff;
+    font-weight: 600;
+}
+
+.menu-pagination {
+    margin-top: 2.5rem;
+}
+
+.menu-pagination .page-link {
+    color: #2c1c13;
+    border-radius: 50px;
+    margin: 0 4px;
+    min-width: 40px;
+    text-align: center;
+    border: 1px solid rgba(44, 28, 19, 0.2);
+}
+
+.menu-pagination .page-item.active .page-link {
+    background: #ffb03b;
+    border-color: #ffb03b;
+    color: #fff;
+}
+
+.menu-pagination .page-item.disabled .page-link {
+    color: #aaa;
+    border-color: rgba(0, 0, 0, 0.1);
+}
+</style>
+
+<section id="menu" class="menu section">
+  <div class="container section-title" data-aos="fade-up">
+    <h2>Thực Đơn</h2>
+    <div><span>Tất cả món ăn</span> <span class="description-title">đang phục vụ</span></div>
+    <p class="mt-2 text-muted">Chọn món yêu thích và nhấn "Đặt món" để đưa vào giỏ đặt bàn. Bạn có thể xem chi tiết từng món trước khi xác nhận.</p>
+  </div>
+
+  <div class="container" data-aos="fade-up" data-aos-delay="150">
+    <div id="menu-toast" class="alert d-none" role="alert"></div>
+
+    <style>
+        .menu-filters-inline {
+            display: flex;
+            gap: 0.75rem;
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .menu-filters-inline button {
+            border: 1px solid rgba(44, 28, 19, 0.2);
+            background: #fff;
+            color: #2c1c13;
+            padding: 0.45rem 1.25rem;
+            border-radius: 999px;
+            font-weight: 600;
+            transition: all .2s ease;
+        }
+
+        .menu-filters-inline button.active,
+        .menu-filters-inline button:hover {
+            background: #2c1c13;
+            color: #fff;
+            border-color: #2c1c13;
+        }
+
+        .featured-menu-grid {
+            margin-top: 1rem;
+            margin-bottom: 3rem;
+        }
+
+        .featured-menu-grid > [class*='col-'] {
+            margin-bottom: 2rem;
+        }
+
+        .featured-dish-card {
+            border: 1px solid rgba(0,0,0,0.08);
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(15,23,42,0.1);
+            transition: transform .3s ease, box-shadow .3s ease;
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+            min-height: 520px;
+            height: 100%;
+        }
+
+        .featured-dish-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 16px 48px rgba(15,23,42,0.2);
+        }
+
+        .dish-thumb img {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+        }
+
+        .dish-price {
+            position: absolute;
+            bottom: 16px;
+            right: 16px;
+            background: rgba(0,0,0,0.75);
+            color: #fff;
+            padding: 6px 16px;
+            border-radius: 999px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 2px;
+            font-weight: 600;
+        }
+
+        .dish-price .old-price {
+            font-size: 0.85rem;
+            text-decoration: line-through;
+            opacity: 0.7;
+        }
+
+        .dish-body {
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .dish-category {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #a27b5c;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .dish-title {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: #2c1c13;
+            margin-bottom: 0.75rem;
+            line-height: 1.3;
+            min-height: 2.6rem;
+        }
+
+        .dish-desc {
+            color: #5c4c43;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 1.25rem;
+            min-height: 4.8rem;
+        }
+
+        .dish-actions {
+            margin-top: auto;
+            padding-top: 1rem;
+        }
+
+        .dish-actions .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            transition: all .25s ease;
+            width: 100%;
+            margin-bottom: 0.5rem;
+        }
+
+        .dish-actions .btn:last-child {
+            margin-bottom: 0;
+        }
+
+        .dish-actions .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+    </style>
+
+    @if (categories != null && categories.Any())
+    {
+        <div class="menu-filters-inline">
+            <button type="button" class="active" data-filter="*">Tất cả</button>
+            @foreach (var category in categories)
+            {
+                <button type="button" data-filter=".filter-@category.Alias">@category.Title</button>
+            }
+        </div>
+    }
+
+    <div class="row g-4 featured-menu-grid" id="menuGrid">
+        @if (pagedItems.Any())
+        {
+            foreach (var item in pagedItems)
+            {
+                var alias = item.Category?.Alias ?? "misc";
+                var detailUrl = $"/menu/{item.Alias}-{item.IdMenuItem}.html";
+                var description = string.IsNullOrWhiteSpace(item.Description)
+                    ? "Món ăn đặc biệt do bếp trưởng đề xuất cho thực khách sành vị."
+                    : item.Description!;
+                var preview = description.Length > 140 ? description.Substring(0, 137) + "..." : description;
+                var hasSale = item.PriceSale.HasValue && item.PriceSale.Value > 0 && item.PriceSale.Value < item.Price;
+
+                <div class="col-xl-4 col-md-6 col-sm-12 filter-@alias menu-card-item">
+                    <article class="featured-dish-card">
+                        <div class="dish-thumb position-relative">
+                            <img src="@Url.Content(item.Image ?? "~/assets/img/menu/default.jpg")" alt="@item.Title" class="img-fluid rounded-top" />
+                            <div class="dish-price">
+                                <span class="current-price">@(hasSale ? item.PriceSale!.Value.ToString("N0") : item.Price.ToString("N0")) VNĐ</span>
+                                @if (hasSale)
+                                {
+                                    <span class="old-price">@item.Price.ToString("N0") VNĐ</span>
+                                }
+                            </div>
+                        </div>
+                        <div class="dish-body">
+                            <p class="dish-category">@item.Category?.Title ?? "Món đặc biệt"</p>
+                            <h4 class="dish-title">@item.Title</h4>
+                            <p class="dish-desc">@preview</p>
+                            <div class="dish-actions d-grid gap-2">
+                                <a class="btn btn-outline-dark rounded-pill" href="@detailUrl">
+                                    <i class="bi bi-eye"></i>
+                                    <span>Xem chi tiết</span>
+                                </a>
+                                <button type="button"
+                                        class="btn btn-warning rounded-pill fw-semibold btn-add-to-cart"
+                                        data-item-id="@item.IdMenuItem"
+                                        data-item-name="@item.Title">
+                                    <i class="bi bi-bag-plus"></i>
+                                    <span>Đặt món</span>
+                                </button>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12 text-center py-5">
+                <p class="text-muted mb-0">Hiện chưa có món ăn nào trong danh sách.</p>
+            </div>
+        }
+    </div>
+
+    @if (paginationModel.TotalPages > 1)
+    {
+        <nav class="menu-pagination" aria-label="Phân trang thực đơn">
+            <ul class="pagination justify-content-center flex-wrap">
+                <li class="page-item @(paginationModel.HasPreviousPage ? string.Empty : "disabled")">
+                    <a class="page-link" asp-action="Index" asp-route-page="@(paginationModel.HasPreviousPage ? paginationModel.CurrentPage - 1 : 1)" aria-label="Trang trước">&laquo;</a>
+                </li>
+                @for (var i = 1; i <= paginationModel.TotalPages; i++)
+                {
+                    <li class="page-item @(i == paginationModel.CurrentPage ? "active" : string.Empty)">
+                        <a class="page-link" asp-action="Index" asp-route-page="@i">@i</a>
+                    </li>
+                }
+                <li class="page-item @(paginationModel.HasNextPage ? string.Empty : "disabled")">
+                    <a class="page-link" asp-action="Index" asp-route-page="@(paginationModel.HasNextPage ? paginationModel.CurrentPage + 1 : paginationModel.TotalPages)" aria-label="Trang tiếp theo">&raquo;</a>
+                </li>
+            </ul>
+        </nav>
+    }
+  </div>
+</section>
+
+@section Scripts {
+    <script>
+        (() => {
+            const initMenuPage = () => {
+                const toastEl = document.getElementById('menu-toast');
+                const filterButtons = document.querySelectorAll('.menu-filters-inline button');
+                const cards = document.querySelectorAll('.menu-card-item');
+
+                const updateCartBadge = (count) => {
+                    const badge = document.getElementById('cart-count');
+                    if (badge) {
+                        badge.textContent = count;
+                        badge.style.display = count > 0 ? 'inline-block' : 'none';
+                    }
+                };
+
+                const showToast = (message, isSuccess) => {
+                    if (!toastEl) return;
+                    toastEl.textContent = message;
+                    toastEl.classList.remove('d-none', 'alert-success', 'alert-danger');
+                    toastEl.classList.add(isSuccess ? 'alert-success' : 'alert-danger');
+                    setTimeout(() => toastEl.classList.add('d-none'), 3000);
+                };
+
+                document.querySelectorAll('.btn-add-to-cart').forEach(btn => {
+                    btn.addEventListener('click', async () => {
+                        const id = btn.dataset.itemId;
+                        const originalContent = btn.innerHTML;
+                        btn.disabled = true;
+                        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span><span>Đang thêm...</span>';
+                        try {
+                            const response = await fetch('/Cart/AddToCart', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+                                credentials: 'same-origin',
+                                body: new URLSearchParams({ id, quantity: 1 })
+                            });
+                            const data = await response.json();
+                            showToast(data.message || 'Đã cập nhật giỏ món.', data.success);
+                            if (data.success) {
+                                const currentCount = parseInt(document.getElementById('cart-count')?.textContent || '0');
+                                updateCartBadge(currentCount + 1);
+                            }
+                        } catch (err) {
+                            console.error(err);
+                            showToast('Không thể thêm món, vui lòng thử lại.', false);
+                        } finally {
+                            btn.disabled = false;
+                            btn.innerHTML = originalContent;
+                        }
+                    });
+                });
+
+                filterButtons.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const filter = btn.dataset.filter;
+                        filterButtons.forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+
+                        cards.forEach(card => {
+                            if (filter === '*' || card.classList.contains(filter.replace('.', ''))) {
+                                card.classList.remove('d-none');
+                            } else {
+                                card.classList.add('d-none');
+                            }
+                        });
+                    });
+                });
+            };
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initMenuPage);
+            }
+            else {
+                initMenuPage();
+            }
+        })();
+    </script>
+}

@@ -1,0 +1,104 @@
+@model KD_Restaurant.ViewModels.BranchFormModel
+@{
+    ViewData["Title"] = "Chỉnh sửa cơ sở";
+    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+}
+
+<div class="pagetitle">
+    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+        <div>
+            <p class="text-muted text-uppercase small mb-1">Branch Setup</p>
+            <h1 class="mb-1">Cập nhật thông tin cơ sở</h1>
+            <p class="text-muted mb-0">Giữ thông tin liên hệ chính xác để khách hàng dễ dàng kết nối.</p>
+        </div>
+        <div class="d-flex gap-2 align-items-center">
+            <span class="badge text-bg-light text-secondary fw-semibold">ID #@Model.Id</span>
+            <a asp-area="Admin" asp-controller="Branch" asp-action="Index" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i>Quay về danh sách
+            </a>
+        </div>
+    </div>
+</div>
+
+<form asp-area="Admin" asp-controller="Branch" asp-action="Edit" method="post" class="needs-validation" novalidate>
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-header bg-white border-0 pb-0">
+                    <h5 class="mb-1">Thông tin chung</h5>
+                    <p class="text-muted small mb-0">Tên cơ sở, địa chỉ và mô tả.</p>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label asp-for="BranchName" class="form-label"></label>
+                        <input asp-for="BranchName" class="form-control form-control-lg" />
+                        <span asp-validation-for="BranchName" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Address" class="form-label"></label>
+                        <textarea asp-for="Address" class="form-control" rows="3"></textarea>
+                        <span asp-validation-for="Address" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Description" class="form-label"></label>
+                        <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-header bg-white border-0 pb-0">
+                    <h5 class="mb-1">Liên hệ & Trạng thái</h5>
+                    <p class="text-muted small mb-0">Trạng thái ảnh hưởng đến việc hiển thị trên trang đặt bàn.</p>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label asp-for="PhoneNumber" class="form-label"></label>
+                        <input asp-for="PhoneNumber" class="form-control" />
+                        <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label"></label>
+                        <input asp-for="Email" class="form-control" />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+                    <div class="form-check form-switch form-switch-lg">
+                        <input asp-for="IsActive" class="form-check-input" type="checkbox" role="switch" />
+                        <label asp-for="IsActive" class="form-check-label">Cho phép nhận đặt bàn</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 mt-4">
+        <div class="card-body d-flex flex-column flex-md-row justify-content-between gap-2 align-items-md-center">
+            <div class="text-muted small">Mọi thay đổi sẽ cập nhật ngay trên phần đặt bàn của khách.</div>
+            <div class="d-flex gap-2">
+                <a asp-area="Admin" asp-controller="Branch" asp-action="Index" class="btn btn-light">Huỷ</a>
+                <button type="submit" class="btn btn-primary px-4">
+                    <i class="bi bi-save me-1"></i>Lưu thay đổi
+                </button>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Styles {
+    <style>
+        .form-switch.form-switch-lg .form-check-input {
+            width: 3.5rem;
+            height: 1.5rem;
+        }
+    </style>
+}
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

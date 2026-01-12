@@ -1,0 +1,777 @@
+@model KD_Restaurant.Models.tblRestaurantInfo?
+@{
+    ViewData["Title"] = "Giới thiệu";
+
+    string ResolveMedia(string? path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return Url.Content("~/assets/img/about.jpg");
+        }
+
+        return path.StartsWith("http", System.StringComparison.OrdinalIgnoreCase)
+            ? path
+            : Url.Content(path);
+    }
+
+    string FormatTime(System.TimeSpan? time, string fallback)
+    {
+        return time.HasValue ? time.Value.ToString(@"hh\:mm") : fallback;
+    }
+
+    var heroImage = ResolveMedia(Model?.Logo);
+    var introHeading = Model?.ResName ?? "KD Restaurant";
+    var introSubheading = Model?.SortDescription ?? "Chúng tôi tự hào mang đến trải nghiệm ẩm thực tinh tế và chu đáo.";
+    var introContent = Model?.LogDescription ?? "<p>Đến với chúng tôi, bạn sẽ tận hưởng những khoảnh khắc tuyệt vời bên gia đình và bạn bè, đồng thời trải nghiệm những món ăn tinh tế, đậm đà hương vị.</p>";
+    var hotline1 = Model?.Hotline1 ?? "0989 888 777";
+    var hotline2 = Model?.Hotline2;
+
+    string NormalizePhone(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return "0989888777";
+        }
+
+        var builder = new System.Text.StringBuilder();
+
+        foreach (var character in value)
+        {
+            if (char.IsDigit(character))
+            {
+                builder.Append(character);
+            }
+        }
+
+        return builder.Length > 0 ? builder.ToString() : value.Replace(" ", string.Empty);
+    }
+
+    var hotlineLink = NormalizePhone(hotline1);
+    var email = Model?.Email ?? "hello@kdrestaurant.vn";
+    var openingDay = Model?.OpeningDay ?? "Thứ 2 - Chủ nhật";
+    var openTime = FormatTime(Model?.OpenTime, "09:00");
+    var closeTime = FormatTime(Model?.CloseTime, "22:00");
+}
+
+<div class="about-page">
+    <section class="about-hero" style="background-image: linear-gradient(135deg, rgba(23, 24, 37, 0.85), rgba(23, 24, 37, 0.45)), url('@heroImage');">
+        <div class="container">
+            <div class="row align-items-center gy-5">
+                <div class="col-lg-6">
+                    <div class="about-hero__content" data-aos="fade-up">
+                        <p class="about-hero__eyebrow">Về KD RESTAURANT</p>
+                        <h1>@introHeading</h1>
+                        <p class="lead mb-4">@introSubheading</p>
+                        <div class="about-hero__actions">
+                            <a asp-controller="Home" asp-action="Index" asp-fragment="menu" class="btn btn-light btn-lg px-4">Khám phá thực đơn</a>
+                            <a href="tel:@hotlineLink" class="btn btn-outline-light btn-lg px-4">Gọi tư vấn</a>
+                        </div>
+                        <div class="about-hero__meta">
+                            <div>
+                                <span>Giờ hoạt động</span>
+                                <strong>@openTime - @closeTime</strong>
+                            </div>
+                            <div>
+                                <span>Hotline chính</span>
+                                <strong>@hotline1</strong>
+                            </div>
+                            <div>
+                                <span>Ngày mở cửa</span>
+                                <strong>@openingDay</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6" data-aos="fade-left">
+                    <div class="about-hero__media">
+                        <img src="@heroImage" alt="@introHeading" class="hero-frame">
+                        <div class="hero-card hero-card--main">
+                            <div>
+                                <small>Trải nghiệm nổi bật</small>
+                                <h4>Ẩm thực tinh tế &amp; cá nhân hóa</h4>
+                            </div>
+                            <div class="hero-card__badge">
+                                <span class="badge-label">Tư vấn nhanh</span>
+                                <strong>@hotline1</strong>
+                            </div>
+                        </div>
+                        <div class="hero-card hero-card--schedule">
+                            <span>Giờ mở cửa</span>
+                            <p class="mb-1">@openingDay</p>
+                            <strong>@openTime - @closeTime</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="about-overview section py-5">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-9" data-aos="fade-up">
+                    <div class="section-eyebrow">Giữ câu chuyện thương hiệu sống động ở phần giới thiệu</div>
+                    <h2 class="display-5 mb-3">Không gian ẩm thực dành cho trải nghiệm trọn vẹn</h2>
+                    <div class="about-rich-text mb-4">
+                        @Html.Raw(introContent)
+                    </div>
+                    <div class="about-overview__divider"></div>
+                    <p class="about-overview__note">Từ câu chuyện thương hiệu đến trải nghiệm thực tế, mọi thông tin liên hệ đều được chuẩn bị để bạn dễ dàng kết nối.</p>
+                </div>
+            </div>
+            <div class="row justify-content-center g-4 mt-1">
+                <div class="col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="100">
+                    <div class="about-contact-card">
+                        <small>Hotline</small>
+                        <h5>@hotline1</h5>
+                        @if (!string.IsNullOrWhiteSpace(hotline2))
+                        {
+                            <p class="mb-2 text-muted">@hotline2</p>
+                        }
+                        <a class="about-contact-card__action" href="tel:@hotlineLink">Gọi ngay</a>
+                    </div>
+                </div>
+                <div class="col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="200">
+                    <div class="about-contact-card">
+                        <small>Hộp thư</small>
+                        <h5>@email</h5>
+                        <p class="mb-2 text-muted">Phản hồi trong 24h</p>
+                        <a class="about-contact-card__action" href="mailto:@email">Gửi yêu cầu</a>
+                    </div>
+                </div>
+                <div class="col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="300">
+                    <div class="about-contact-card">
+                        <small>Lịch hoạt động</small>
+                        <p class="mb-1 fw-semibold">@openingDay</p>
+                        <span class="about-contact-card__highlight">@openTime - @closeTime</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="about-values section py-5">
+        <div class="container">
+            <div class="row justify-content-center text-center mb-5">
+                <div class="col-lg-8" data-aos="fade-up">
+                    <p class="section-eyebrow text-white-50">Giá trị cốt lõi</p>
+                    <h2 class="text-white">Điểm chạm tinh tế trong từng khoảnh khắc</h2>
+                    <p class="text-white-50">Từ nguyên liệu, không gian đến cách phục vụ, mọi chi tiết đều được thiết kế để đem lại cảm xúc và sự tinh tế.</p>
+                </div>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+                    <div class="about-value-card">
+                        <span>01</span>
+                        <h5>Nguyên liệu tuyển chọn</h5>
+                        <p>Sử dụng nguồn thực phẩm theo mùa, được kiểm định mỗi ngày để giữ trọn hương vị.</p>
+                    </div>
+                </div>
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+                    <div class="about-value-card">
+                        <span>02</span>
+                        <h5>Không gian giàu cảm hứng</h5>
+                        <p>Bố cục linh hoạt cho tiệc thân mật, hẹn hò hay sự kiện doanh nghiệp.</p>
+                    </div>
+                </div>
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
+                    <div class="about-value-card">
+                        <span>03</span>
+                        <h5>Dịch vụ đồng hành</h5>
+                        <p>Đội ngũ tư vấn và phục vụ luôn sẵn sàng giúp bạn cá nhân hóa từng trải nghiệm.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+@section Styles {
+    <style>
+        @@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap');
+
+        .about-page {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            color: #1a1d2e;
+            line-height: 1.7;
+        }
+
+        .about-page h1,
+        .about-page h2,
+        .about-page h5,
+        .about-page h4 {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-weight: 700;
+            line-height: 1.2;
+            letter-spacing: -0.02em;
+        }
+
+        /* Hero Section */
+        .about-hero {
+            position: relative;
+            border-radius: 0 0 48px 48px;
+            margin: 0 0 4rem;
+            padding: clamp(4rem, 8vw, 6rem) 0;
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: #fff;
+            overflow: hidden;
+        }
+
+        .about-hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.92) 0%, rgba(30, 41, 59, 0.85) 50%, rgba(51, 65, 85, 0.75) 100%);
+            z-index: 1;
+        }
+
+        .about-hero .container {
+            position: relative;
+            z-index: 2;
+        }
+
+        .about-hero__eyebrow {
+            display: inline-block;
+            text-transform: uppercase;
+            letter-spacing: 0.25em;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #fbbf24;
+            margin-bottom: 1rem;
+            padding: 0.5rem 1rem;
+            background: rgba(251, 191, 36, 0.1);
+            border-radius: 999px;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+        }
+
+        .about-hero h1 {
+            font-size: clamp(2.5rem, 7vw, 4.5rem);
+            margin-bottom: 1.5rem;
+            font-weight: 800;
+            text-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .about-hero .lead {
+            font-size: clamp(1.1rem, 2vw, 1.35rem);
+            font-weight: 300;
+            color: rgba(255, 255, 255, 0.9);
+            max-width: 540px;
+            line-height: 1.65;
+        }
+
+        .about-hero__actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .about-hero__actions .btn {
+            border-radius: 999px;
+            font-weight: 600;
+            padding: 0.85rem 2rem;
+            font-size: 1rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+        }
+
+        .about-hero__actions .btn-light {
+            background: #fff;
+            border: 2px solid #fff;
+            color: #0f172a;
+        }
+
+        .about-hero__actions .btn-light:hover {
+            background: transparent;
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+        }
+
+        .about-hero__actions .btn-outline-light {
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+        }
+
+        .about-hero__actions .btn-outline-light:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .about-hero__meta {
+            margin-top: 3rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1.5rem;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .about-hero__meta > div {
+            text-align: center;
+        }
+
+        .about-hero__meta span {
+            display: block;
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            letter-spacing: 0.15em;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .about-hero__meta strong {
+            font-size: 1.15rem;
+            font-weight: 700;
+            display: block;
+        }
+
+        /* Hero Media */
+        .about-hero__media {
+            position: relative;
+            padding: 2rem 1rem;
+            height: 100%;
+            min-height: 450px;
+        }
+
+        .hero-frame {
+            border-radius: 24px;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .hero-card {
+            position: absolute;
+            border-radius: 20px;
+            padding: 1.5rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .hero-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .hero-card--main {
+            bottom: 0;
+            left: 0;
+            right: 10%;
+            background: rgba(15, 23, 42, 0.95);
+            color: #fff;
+        }
+
+        .hero-card--main small {
+            display: block;
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            letter-spacing: 0.15em;
+            color: #fbbf24;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .hero-card--main h4 {
+            font-size: 1.35rem;
+            margin: 0;
+            line-height: 1.3;
+        }
+
+        .hero-card__badge {
+            text-align: right;
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+            padding-left: 1rem;
+        }
+
+        .hero-card__badge .badge-label {
+            display: block;
+            padding: 0.35rem 0.75rem;
+            border-radius: 999px;
+            background: rgba(251, 191, 36, 0.15);
+            font-size: 0.7rem;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.5rem;
+            color: #fbbf24;
+            font-weight: 600;
+        }
+
+        .hero-card__badge strong {
+            font-size: 1.1rem;
+        }
+
+        .hero-card--schedule {
+            top: 5%;
+            right: -2%;
+            background: linear-gradient(135deg, #fff 0%, #f8fafc 100%);
+            color: #0f172a;
+            min-width: 200px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .hero-card--schedule span {
+            display: block;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            font-size: 0.65rem;
+            color: #64748b;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        .hero-card--schedule p {
+            color: #475569;
+            font-size: 0.95rem;
+        }
+
+        .hero-card--schedule strong {
+            font-size: 1.25rem;
+            color: #0f172a;
+        }
+
+        /* Overview Section */
+        .about-overview {
+            padding: clamp(3rem, 6vw, 5rem) 0;
+        }
+
+        .section-eyebrow {
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            font-size: 0.75rem;
+            margin-bottom: 1rem;
+            color: #f59e0b;
+            font-weight: 700;
+        }
+
+        .about-overview h2 {
+            color: #0f172a;
+            margin-bottom: 2rem;
+        }
+
+        .about-rich-text {
+            font-size: 1.05rem;
+            line-height: 1.8;
+            color: #475569;
+        }
+
+        .about-rich-text p {
+            margin-bottom: 1.25rem;
+        }
+
+        .about-rich-text p:last-child {
+            margin-bottom: 0;
+        }
+
+        .about-overview__divider {
+            width: 90px;
+            height: 3px;
+            background: linear-gradient(90deg, #f59e0b 0%, #fbbf24 100%);
+            margin: 2rem auto 1.5rem;
+            border-radius: 999px;
+        }
+
+        .about-overview__note {
+            font-size: 0.95rem;
+            color: #64748b;
+            max-width: 520px;
+            margin: 0 auto;
+        }
+
+        .about-contact-card {
+            position: relative;
+            border-radius: 24px;
+            padding: 2.25rem 2rem;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 20px 45px -25px rgba(15, 23, 42, 0.5);
+            text-align: center;
+            min-height: 100%;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+        }
+
+        .about-contact-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 35px 60px -30px rgba(15, 23, 42, 0.35);
+            border-color: rgba(251, 191, 36, 0.4);
+        }
+
+        .about-contact-card small {
+            display: inline-block;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #94a3b8;
+            margin-bottom: 0.75rem;
+        }
+
+        .about-contact-card h5 {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 1.4rem;
+            margin-bottom: 0.5rem;
+            color: #0f172a;
+        }
+
+        .about-contact-card p {
+            margin: 0;
+            color: #475569;
+        }
+
+        .about-contact-card__highlight {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem 1.5rem;
+            border-radius: 999px;
+            background: rgba(15, 23, 42, 0.05);
+            font-weight: 600;
+            color: #0f172a;
+            font-size: 1rem;
+        }
+
+        .about-contact-card__action {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.35rem;
+            margin-top: 0.75rem;
+            font-weight: 600;
+            color: #0f172a;
+            text-decoration: none;
+            padding: 0.65rem 1.5rem;
+            border-radius: 999px;
+            border: 1px solid rgba(15, 23, 42, 0.12);
+            background: #fff;
+            transition: all 0.2s ease;
+        }
+
+        .about-contact-card__action:hover {
+            background: #0f172a;
+            color: #fff;
+            border-color: #0f172a;
+        }
+
+        /* Contact Panel */
+        .about-contact-panel {
+            border-radius: 32px;
+            padding: 2.5rem;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #fff;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            position: sticky;
+            top: 2rem;
+        }
+
+        .contact-panel__item {
+            padding: 1.5rem 0;
+        }
+
+        .contact-panel__item:first-child {
+            padding-top: 0;
+        }
+
+        .contact-panel__item + .contact-panel__item {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .contact-panel__item small {
+            display: block;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: #94a3b8;
+            margin-bottom: 0.75rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .contact-panel__item .h2 {
+            color: #fbbf24;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        .contact-panel__item a {
+            color: #60a5fa;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .contact-panel__item a:hover {
+            color: #93c5fd;
+        }
+
+        .contact-panel__item .text-muted {
+            color: #94a3b8 !important;
+        }
+
+        /* Values Section */
+        .about-values {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            color: #fff;
+            border-radius: 0;
+            margin: 4rem 0 0;
+            padding: clamp(4rem, 8vw, 6rem) 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .about-values::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(251, 191, 36, 0.3), transparent);
+        }
+
+        .about-values .section-eyebrow {
+            color: rgba(251, 191, 36, 0.8);
+        }
+
+        .about-values h2 {
+            font-size: clamp(2rem, 4vw, 3rem);
+            margin-bottom: 1rem;
+        }
+
+        .about-value-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 24px;
+            padding: 2.5rem;
+            height: 100%;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .about-value-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            border-color: rgba(251, 191, 36, 0.3);
+        }
+
+        .about-value-card span {
+            display: inline-flex;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(245, 158, 11, 0.2));
+            margin-bottom: 1.5rem;
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: #fbbf24;
+            border: 2px solid rgba(251, 191, 36, 0.3);
+        }
+
+        .about-value-card h5 {
+            margin-bottom: 1rem;
+            font-size: 1.35rem;
+            color: #fff;
+        }
+
+        .about-value-card p {
+            color: #cbd5e1;
+            line-height: 1.7;
+            margin: 0;
+        }
+
+        /* Responsive Design */
+        @@media (max-width: 991.98px) {
+            .about-hero {
+                border-radius: 0 0 32px 32px;
+                padding: 3rem 0;
+                background-attachment: scroll;
+            }
+
+            .about-hero h1 {
+                font-size: 2.25rem;
+            }
+
+            .about-hero__media {
+                min-height: 350px;
+                padding: 1rem;
+                margin-top: 2rem;
+            }
+
+            .hero-card {
+                position: static;
+                margin-top: 1rem;
+            }
+
+            .hero-card--main {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .hero-card__badge {
+                border-left: none;
+                border-top: 1px solid rgba(255, 255, 255, 0.1);
+                padding-left: 0;
+                padding-top: 1rem;
+                margin-top: 1rem;
+                text-align: center;
+            }
+
+            .hero-card--schedule {
+                width: 100%;
+            }
+
+            .about-hero__actions .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .about-hero__meta {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+                padding: 1.5rem;
+            }
+
+            .about-contact-panel {
+                position: static;
+                margin-top: 2rem;
+            }
+
+            .about-overview h2 {
+                font-size: 2rem;
+            }
+
+            .about-contact-card {
+                padding: 1.75rem;
+            }
+        }
+
+        @@media (max-width: 575.98px) {
+            .about-hero {
+                padding: 2rem 0;
+            }
+
+            .about-hero__actions {
+                flex-direction: column;
+            }
+
+            .about-value-card {
+                padding: 2rem 1.5rem;
+            }
+
+            .about-overview__note {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+}

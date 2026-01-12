@@ -2,61 +2,213 @@
 @{
     ViewData["Title"] = "Thêm menu";
     Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+    var parents = ViewBag.MenuParents as IEnumerable<KD_Restaurant.Models.tblMenu> ?? Enumerable.Empty<KD_Restaurant.Models.tblMenu>();
 }
 
-<h3>Thêm menu mới</h3>
-<div class="row">
-    <div class="col-md-8 col-lg-6">
-        <form asp-area="Admin" asp-controller="Menu" asp-action="Create" method="post">
-            <div class="mb-3">
-                <label class="form-label">Tên menu</label>
-                <input asp-for="Title" class="form-control" required />
-                <span asp-validation-for="Title" class="text-danger"></span>
+<div class="pagetitle mb-4 admin-page-title">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h1 class="mb-1">Tạo menu điều hướng</h1>
+            <p class="text-muted mb-0">Sắp xếp các mục hiển thị ở header/footer của website.</p>
+        </div>
+        <a asp-area="Admin" asp-controller="Menu" asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Quay về danh sách
+        </a>
+    </div>
+</div>
+
+<div class="row g-4 admin-module-grid">
+    <div class="col-lg-8">
+        <div class="card shadow-sm admin-form-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Thông tin menu</h5>
+                <span class="badge bg-light text-dark">Bắt buộc nhập các trường dấu *</span>
             </div>
-            <div class="mb-3">
-                <label class="form-label">Alias</label>
-                <input asp-for="Alias" class="form-control" />
-                <span asp-validation-for="Alias" class="text-danger"></span>
+            <div class="card-body">
+                <form asp-area="Admin" asp-controller="Menu" asp-action="Create" method="post" class="row g-3">
+                    <div class="col-md-12">
+                        <label class="form-label">Tên menu *</label>
+                        <input asp-for="Title" class="form-control form-control-lg" placeholder="Ví dụ: Ưu đãi đặc biệt" required />
+                        <span asp-validation-for="Title" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Alias</label>
+                        <div class="input-group">
+                            <span class="input-group-text">/</span>
+                            <input asp-for="Alias" class="form-control" placeholder="uu-dai" />
+                        </div>
+                        <span asp-validation-for="Alias" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Đường dẫn (UrlPath)</label>
+                        <input asp-for="UrlPath" class="form-control" placeholder="/uu-dai" />
+                        <span asp-validation-for="UrlPath" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Cấp (Levels)</label>
+                        <input asp-for="Levels" class="form-control" type="number" min="1" value="1" />
+                        <small class="text-muted">1 = menu chính, 2 = menu con…</small>
+                        <span asp-validation-for="Levels" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Menu cha</label>
+                        <select asp-for="ParentId" class="form-select">
+                            <option value="">Không chọn (menu gốc)</option>
+                            @foreach (var parent in parents)
+                            {
+                                <option value="@parent.IdMenu">@parent.Title</option>
+                            }
+                        </select>
+                        <span asp-validation-for="ParentId" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Thứ tự hiển thị</label>
+                        <input asp-for="Position" class="form-control" type="number" min="1" value="1" />
+                        <small class="text-muted">Số nhỏ hiển thị trước.</small>
+                        <span asp-validation-for="Position" class="text-danger"></span>
+                    </div>
+                    <div class="col-12">
+                        <div class="form-check form-switch">
+                            <input asp-for="IsActive" class="form-check-input" type="checkbox" checked />
+                            <label class="form-check-label" asp-for="IsActive">Hiển thị menu ngay sau khi tạo</label>
+                        </div>
+                    </div>
+                    <div class="col-12 d-flex gap-2 justify-content-end">
+                        <button type="submit" class="btn btn-primary px-4">
+                            <i class="bi bi-save me-1"></i>Lưu menu
+                        </button>
+                        <a asp-area="Admin" asp-controller="Menu" asp-action="Index" class="btn btn-outline-secondary px-4">Huỷ</a>
+                    </div>
+                </form>
             </div>
-            <div class="mb-3">
-                <label class="form-label">Đường dẫn (UrlPath)</label>
-                <input asp-for="UrlPath" class="form-control" />
-                <span asp-validation-for="UrlPath" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card shadow-sm mb-4 admin-tip-card">
+            <div class="card-body">
+                <h6 class="text-uppercase text-muted fw-semibold mb-3">Ghi chú nhanh</h6>
+                <ul class="list-unstyled mb-0 small">
+                    <li class="d-flex align-items-start gap-2 mb-2">
+                        <i class="bi bi-check-circle text-success"></i>
+                        <span>Alias nên viết không dấu, chữ thường và thay khoảng trắng bằng dấu gạch ngang.</span>
+                    </li>
+                    <li class="d-flex align-items-start gap-2 mb-2">
+                        <i class="bi bi-check-circle text-success"></i>
+                        <span>UrlPath hỗ trợ cả liên kết nội bộ (ví dụ /menu) hoặc đường dẫn ngoài.</span>
+                    </li>
+                    <li class="d-flex align-items-start gap-2 mb-2">
+                        <i class="bi bi-check-circle text-success"></i>
+                        <span>Luôn kiểm tra thứ tự hiển thị để tránh menu bị lặp hoặc nhảy vị trí.</span>
+                    </li>
+                </ul>
             </div>
-            <div class="mb-3">
-                <label class="form-label">Cấp (Levels)</label>
-                <input asp-for="Levels" class="form-control" type="number" min="1" />
-                <span asp-validation-for="Levels" class="text-danger"></span>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Menu cha</label>
-                <select asp-for="ParentId" class="form-select">
-                    <option value="">-- Không có --</option>
-                    @if (ViewBag.MenuParents != null)
-                    {
-                        foreach (var parent in (IEnumerable<KD_Restaurant.Models.tblMenu>)ViewBag.MenuParents)
+        </div>
+        <div class="card shadow-sm admin-tip-card">
+            <div class="card-body">
+                <h6 class="text-uppercase text-muted fw-semibold mb-3">Menu cha hiện có</h6>
+                @if (!parents.Any())
+                {
+                    <p class="text-muted mb-0">Chưa có menu gốc nào. Menu này sẽ trở thành menu gốc đầu tiên.</p>
+                }
+                else
+                {
+                    <div class="d-flex flex-wrap gap-2">
+                        @foreach (var parent in parents)
                         {
-                            <option value="@parent.IdMenu">@parent.Title</option>
+                            <span class="badge bg-light text-dark border">@parent.Title</span>
                         }
-                    }
-                </select>
-                <span asp-validation-for="ParentId" class="text-danger"></span>
+                    </div>
+                }
             </div>
-            <div class="mb-3">
-                <label class="form-label">Thứ tự (Position)</label>
-                <input asp-for="Position" class="form-control" type="number" min="1" />
-                <span asp-validation-for="Position" class="text-danger"></span>
-            </div>
-            <div class="mb-3 form-check">
-                <input asp-for="IsActive" class="form-check-input" type="checkbox" />
-                <label class="form-check-label" asp-for="IsActive">Hiển thị</label>
-            </div>
-            <button type="submit" class="btn btn-success">Lưu</button>
-            <a asp-area="Admin" asp-controller="Menu" asp-action="Index" class="btn btn-secondary ms-2">Quay lại</a>
-        </form>
+        </div>
     </div>
 </div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+}
+
+@section Styles {
+    <style>
+        .admin-page-title h1 {
+            font-weight: 700;
+        }
+
+        .admin-module-grid {
+            position: relative;
+        }
+
+        .admin-module-grid::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(67,97,238,.09), rgba(99,125,255,.05));
+            border-radius: 20px;
+            z-index: -1;
+        }
+
+        .admin-form-card,
+        .admin-tip-card {
+            border: none;
+            border-radius: 18px;
+            box-shadow: 0 15px 35px rgba(15,23,42,.08);
+        }
+
+        .admin-form-card .card-header {
+            border-bottom: none;
+            background: transparent;
+            padding-bottom: 0;
+        }
+
+        .admin-form-card .form-label {
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        .admin-form-card .form-control,
+        .admin-form-card .form-select {
+            border-radius: 12px;
+            border: 1px solid #dbe4ff;
+            padding: 0.75rem 1rem;
+            transition: border-color .2s ease, box-shadow .2s ease;
+        }
+
+        .admin-form-card .form-control:focus,
+        .admin-form-card .form-select:focus {
+            border-color: #636dff;
+            box-shadow: 0 0 0 0.2rem rgba(99,109,255,.15);
+        }
+
+        .admin-form-card .input-group-text {
+            border-radius: 12px 0 0 12px;
+            background: #f4f6ff;
+            border-color: #dbe4ff;
+            font-weight: 600;
+        }
+
+        .admin-tip-card h6 {
+            letter-spacing: .08em;
+        }
+
+        .admin-tip-card .badge {
+            border-radius: 999px;
+            padding: .45rem .95rem;
+        }
+
+        .admin-form-card button.btn-primary {
+            background: linear-gradient(120deg, #4f46e5, #7c3aed);
+            border: none;
+            box-shadow: 0 10px 25px rgba(79,70,229,.25);
+        }
+
+        .admin-form-card button.btn-primary:hover {
+            filter: brightness(1.05);
+        }
+
+        @@media (max-width: 991.98px) {
+            .admin-module-grid::before {
+                border-radius: 12px;
+            }
+        }
+    </style>
 }

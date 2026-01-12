@@ -1,0 +1,1244 @@
+@model TableManagementViewModel
+@{
+    ViewData["Title"] = "Quản lý sơ đồ bàn";
+    var totalTables = Model.Tables.Count;
+    var summaryStatuses = Model.Statuses ?? new List<TableStatusOption>();
+    var statusCounters = Model.StatusCounters ?? new Dictionary<int, int>();
+    var branchGroups = Model.Branches ?? new List<BranchGroupViewModel>();
+    var createOptions = Model.CreateOptions ?? new TableCreateFormOptions();
+    var branchOptions = createOptions.Branches ?? new List<SelectOption>();
+    var areaOptions = createOptions.Areas ?? new List<AreaOption>();
+    var typeOptions = createOptions.Types ?? new List<TableTypeOption>();
+    var statusOptions = createOptions.Statuses ?? summaryStatuses;
+    var canCreateTable = areaOptions.Count > 0;
+    var canCreateArea = branchOptions.Count > 0;
+    var unassignedBranchKey = "-1";
+    var selectedBranchFilterValue = Model.SelectedBranchId?.ToString() ?? string.Empty;
+    var currentBranchPrefill = Model.SelectedBranchId.HasValue && Model.SelectedBranchId.Value > 0
+        ? Model.SelectedBranchId.Value.ToString()
+        : string.Empty;
+    var hasUnassignedBranch = branchGroups.Find(bg => !bg.BranchId.HasValue) != null;
+    // Derive the three core statuses (Bàn trống, Đã đặt trước, Đang phục vụ) directly from DB data for consistent widgets/filters.
+    var prioritizedStatusOrder = new[] { "Bàn trống", "Đã đặt trước", "Đang phục vụ" };
+    var normalizedStatusLookup = summaryStatuses
+        .Where(status => !string.IsNullOrWhiteSpace(status.Name))
+        .GroupBy(status => (status.Name ?? string.Empty).Trim(), StringComparer.OrdinalIgnoreCase)
+        .ToDictionary(group => group.Key, group => group.First(), StringComparer.OrdinalIgnoreCase);
+    var dashboardStatuses = prioritizedStatusOrder
+        .Select(name => normalizedStatusLookup.TryGetValue(name, out var status) ? status : null)
+        .Where(status => status != null)
+        .Select(status => status!)
+        .ToList();
+}
+
+<div class="pagetitle">
+    <h1>@ViewData["Title"]</h1>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-area="Admin" asp-controller="Home" asp-action="Index">Dashboard</a></li>
+            <li class="breadcrumb-item active">Sơ đồ bàn</li>
+        </ol>
+    </nav>
+</div>
+
+<section class="section table-layout-section">
+    <div class="row g-3 mb-3">
+        <div class="col-xxl-3 col-sm-6">
+            <div class="status-widget gradient-primary">
+                <div class="status-label">Tổng số bàn</div>
+                <div class="status-value" data-status-counter="all">@totalTables</div>
+                <p class="status-note">Bao gồm tất cả khu vực và trạng thái</p>
+            </div>
+        </div>
+        @foreach (var status in dashboardStatuses)
+        {
+            var count = statusCounters.TryGetValue(status.Id, out var value) ? value : 0;
+            <div class="col-xxl-3 col-sm-6">
+                <div class="status-widget gradient-muted">
+                    <div class="status-label">@status.Name</div>
+                    <div class="status-value" data-status-counter="@status.Id">@count</div>
+                    <div class="badge @(status.BadgeClass ?? string.Empty)">@status.Name</div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="row g-4">
+        <div class="col-xxl-9">
+            <div class="card table-layout-card">
+                <div class="card-body">
+                    <div class="table-toolbar d-flex flex-wrap gap-3 align-items-center justify-content-between">
+                <div class="filter-group">
+                    <button class="btn filter-btn active" type="button" data-filter="all">Tất cả</button>
+                    @foreach (var status in dashboardStatuses)
+                    {
+                        <button class="btn filter-btn" type="button" data-filter="@status.Id">
+                            <span class="dot @(status.BadgeClass ?? string.Empty)"></span>
+                            @status.Name
+                        </button>
+                    }
+                </div>
+                <div class="toolbar-actions d-flex flex-column flex-lg-row align-items-lg-center gap-3">
+                    <div class="branch-filter">
+                        <label class="form-label mb-1">Chọn cơ sở quản lý</label>
+                        <select class="form-select form-select-sm" id="branchFilter" data-selected="@selectedBranchFilterValue" data-unassigned-key="@unassignedBranchKey">
+                            <option value="">Tất cả cơ sở</option>
+                            @foreach (var branch in branchOptions)
+                            {
+                                var isSelected = selectedBranchFilterValue == branch.Id.ToString();
+                                <option value="@branch.Id" selected="@(isSelected ? "selected" : null)">@branch.Name</option>
+                            }
+                            @if (hasUnassignedBranch)
+                            {
+                                var isSelectedOrphan = selectedBranchFilterValue == unassignedBranchKey;
+                                <option value="@unassignedBranchKey" selected="@(isSelectedOrphan ? "selected" : null)">Bàn chưa gán khu vực</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="text-muted small">Lần cập nhật gần nhất: <span id="table-last-sync">—</span></div>
+                    <div class="toolbar-buttons d-flex flex-column flex-sm-row gap-2">
+                        <button class="btn btn-outline-secondary js-open-area-modal" type="button"
+                                data-branch-id="@currentBranchPrefill" @(canCreateArea ? string.Empty : "disabled")>
+                            <i class="bi bi-grid-3x3-gap me-1"></i>Thêm khu vực
+                        </button>
+                        <button class="btn btn-primary js-open-create" type="button"
+                                data-branch-id="@currentBranchPrefill" @(canCreateTable ? string.Empty : "disabled")>
+                            <i class="bi bi-plus-circle me-1"></i>Thêm bàn
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+                    <div class="modal fade" id="tableEditModal" tabindex="-1" aria-labelledby="tableEditModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered modal-lg">
+                            <div class="modal-content">
+                                <form id="tableEditForm" method="post" asp-area="Admin" asp-controller="Tables" asp-action="Edit">
+                                    @Html.AntiForgeryToken()
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="tableEditModalLabel">Chỉnh sửa thông tin bàn</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <input type="hidden" id="editTableId" name="Id" />
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label">Cơ sở</label>
+                                                <select class="form-select" id="editBranchSelect" @(branchOptions.Count > 0 ? string.Empty : "disabled")>
+                                                    <option value="">-- Chọn cơ sở --</option>
+                                                    @foreach (var branch in branchOptions)
+                                                    {
+                                                        <option value="@branch.Id">@branch.Name</option>
+                                                    }
+                                                </select>
+                                                <div class="form-text">Chỉ dùng để lọc khu vực thuộc cơ sở tương ứng.</div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Khu vực <span class="text-danger">*</span></label>
+                                                <select class="form-select" id="editAreaSelect" name="AreaId" required @(canCreateTable ? string.Empty : "disabled")>
+                                                    <option value="">-- Chọn khu vực --</option>
+                                                    @foreach (var area in areaOptions)
+                                                    {
+                                                        <option value="@area.Id" data-branch-id="@(area.BranchId?.ToString() ?? string.Empty)">@area.Name</option>
+                                                    }
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Tên bàn <span class="text-danger">*</span></label>
+                                                <input type="text" class="form-control" id="editTableName" name="TableName" maxlength="50" required @(canCreateTable ? string.Empty : "disabled") />
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Loại bàn</label>
+                                                <select class="form-select" id="editTypeSelect" name="TypeId" @(typeOptions.Count > 0 ? string.Empty : "disabled")>
+                                                    <option value="">-- Chọn loại bàn --</option>
+                                                    @foreach (var type in typeOptions)
+                                                    {
+                                                        var seats = type.MaxSeats.HasValue ? $" ({type.MaxSeats} ghế)" : string.Empty;
+                                                        <option value="@type.Id">@type.Name@seats</option>
+                                                    }
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Trạng thái hiện tại</label>
+                                                <select class="form-select" id="editStatusSelect" name="StatusId">
+                                                    <option value="">-- Chọn trạng thái --</option>
+                                                    @foreach (var status in statusOptions)
+                                                    {
+                                                        <option value="@status.Id">@status.Name</option>
+                                                    }
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Ghi chú</label>
+                                                <textarea class="form-control" id="editDescription" name="Description" rows="2" maxlength="255"></textarea>
+                                            </div>
+                                            <div class="col-12">
+                                                <input type="hidden" name="IsActive" value="false" />
+                                                <div class="form-check form-switch">
+                                                    <input class="form-check-input" type="checkbox" id="editIsActive" name="IsActive" value="true" />
+                                                    <label class="form-check-label" for="editIsActive">Bàn đang hoạt động</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Huỷ</button>
+                                        <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="branch-grid mt-4" id="table-grid">
+                @if (branchGroups.Count == 0)
+                {
+                    <div class="empty-state text-center p-5">
+                        <h4 class="mb-2">Chưa có bàn nào được cấu hình</h4>
+                        <p class="mb-0 text-muted">Hãy tạo khu vực và thêm bàn để bắt đầu quản lý sơ đồ.</p>
+                    </div>
+                }
+                else
+                {
+                    foreach (var branch in branchGroups)
+                    {
+                        var branchKey = branch.BranchId?.ToString() ?? unassignedBranchKey;
+                        var branchIdValue = branch.BranchId?.ToString() ?? string.Empty;
+                        <div class="branch-block" data-branch-block data-branch-id="@branchKey">
+                            <div class="branch-block__header">
+                                <div>
+                                    <div class="eyebrow-label">Cơ sở</div>
+                                    <h3 class="branch-title">@branch.BranchName</h3>
+                                </div>
+                                <div class="branch-header-actions">
+                                    <button class="btn btn-outline-secondary btn-sm js-open-area-modal" type="button"
+                                            data-branch-id="@branchIdValue" @(branch.BranchId.HasValue && canCreateArea ? string.Empty : "disabled")>
+                                        <i class="bi bi-grid-3x3-gap me-1"></i>Khu vực mới
+                                    </button>
+                                    <button class="btn btn-outline-primary btn-sm js-open-create" type="button"
+                                            data-branch-id="@branchIdValue" @(canCreateTable ? string.Empty : "disabled")>
+                                        <i class="bi bi-plus"></i>
+                                        <span class="ms-1">Thêm bàn</span>
+                                    </button>
+                                </div>
+                            </div>
+                            @if (branch.Areas.Count == 0)
+                            {
+                                <div class="empty-state text-center p-4">
+                                    <p class="mb-0 text-muted">Chưa có khu vực nào hoạt động tại cơ sở này.</p>
+                                </div>
+                            }
+                            else
+                            {
+                                foreach (var area in branch.Areas)
+                                {
+                                    var areaTables = area.Tables ?? new List<TableCardViewModel>();
+                                    <div class="area-panel">
+                                        <div class="area-panel__head">
+                                            <div>
+                                                <div class="eyebrow-label">Khu vực</div>
+                                                <h4 class="area-title">@area.AreaName</h4>
+                                                @if (!string.IsNullOrWhiteSpace(area.AreaDescription))
+                                                {
+                                                    <p class="area-description">@area.AreaDescription</p>
+                                                }
+                                            </div>
+                                            <div class="area-head-actions">
+                                                <span class="badge rounded-pill bg-light text-dark">@areaTables.Count bàn</span>
+                                                <button class="btn btn-link btn-sm js-open-create" type="button"
+                                                        data-branch-id="@(branch.BranchId?.ToString() ?? string.Empty)"
+                                                        data-area-id="@(area.AreaId?.ToString() ?? string.Empty)" @(canCreateTable ? string.Empty : "disabled")>
+                                                    Thêm bàn tại khu này
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xxl-4 g-3 mt-1">
+                                            @if (areaTables.Count == 0)
+                                            {
+                                                <div class="col">
+                                                    <div class="area-empty">Chưa có bàn nào trong khu vực này</div>
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                foreach (var table in areaTables)
+                                                {
+                                                    var statusKey = table.StatusId ?? -1;
+                                                    <div class="col table-card-wrapper" data-status="@statusKey">
+                                                        <div class="table-card" data-table-id="@table.Id">
+                                                            <div class="table-card__head">
+                                                                <div>
+                                                                    <div class="table-name">@table.TableName</div>
+                                                                    <div class="table-meta">
+                                                                        <span>@(string.IsNullOrWhiteSpace(table.AreaLabel) ? "Chưa gán khu vực" : table.AreaLabel)</span>
+                                                                        @if (!string.IsNullOrWhiteSpace(table.BranchLabel))
+                                                                        {
+                                                                            <span class="meta-divider">•</span>
+                                                                            <span>@table.BranchLabel</span>
+                                                                        }
+                                                                    </div>
+                                                                </div>
+                                                                <span class="badge table-status-badge @table.StatusBadgeClass">@table.StatusName</span>
+                                                            </div>
+                                                            <div class="table-card__body">
+                                                                <div class="table-info">
+                                                                    <div>
+                                                                        <div class="info-label">Loại bàn</div>
+                                                                        <div class="info-value">@(!string.IsNullOrWhiteSpace(table.TypeName) ? table.TypeName : "Chưa gán")</div>
+                                                                    </div>
+                                                                    <div>
+                                                                        <div class="info-label">Số ghế</div>
+                                                                        <div class="info-value">@(table.MaxSeats?.ToString() ?? "—")</div>
+                                                                    </div>
+                                                                </div>
+                                                                @if (table.HasActiveBooking)
+                                                                {
+                                                                    <div class="booking-pill">
+                                                                        <div class="pill-title">Đang phục vụ</div>
+                                                                        <div class="pill-detail">@table.CustomerName</div>
+                                                                        <div class="pill-detail">@table.BookingTimeFrame</div>
+                                                                        @if (!string.IsNullOrWhiteSpace(table.BookingNote))
+                                                                        {
+                                                                            <div class="pill-note">@table.BookingNote</div>
+                                                                        }
+                                                                    </div>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <div class="booking-placeholder">Chưa có khách đặt</div>
+                                                                }
+                                                                @if (!string.IsNullOrWhiteSpace(table.Description))
+                                                                {
+                                                                    <div class="table-note">@table.Description</div>
+                                                                }
+                                                            </div>
+                                                            <div class="table-card__actions">
+                                                                <button class="btn btn-sm btn-outline-secondary js-edit-table" type="button"
+                                                                        data-table-id="@table.Id"
+                                                                        data-table-name="@table.TableName"
+                                                                        data-branch-id="@(table.BranchId?.ToString() ?? string.Empty)"
+                                                                        data-area-id="@(table.AreaId?.ToString() ?? string.Empty)"
+                                                                        data-type-id="@(table.TypeId?.ToString() ?? string.Empty)"
+                                                                        data-status-id="@(table.StatusId?.ToString() ?? string.Empty)"
+                                                                        data-description="@(table.Description ?? string.Empty)"
+                                                                        data-active="@(table.IsActive ? "true" : "false")">
+                                                                    Chỉnh sửa
+                                                                </button>
+                                                                <button class="btn btn-sm btn-outline-primary js-update-status" type="button"
+                                                                        data-table-id="@table.Id" data-table-name="@table.TableName" data-current-status="@statusKey">
+                                                                    Cập nhật trạng thái
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                }
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            }
+                        </div>
+                    }
+                }
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xxl-3">
+            <div class="card table-info-card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <div class="eyebrow-label">Loại bàn</div>
+                            <h5 class="mb-0">Thông tin cấu hình</h5>
+                        </div>
+                        <span class="badge bg-light text-dark">@typeOptions.Count loại</span>
+                    </div>
+                    @if (typeOptions.Count == 0)
+                    {
+                        <div class="empty-state text-center p-3">
+                            <p class="mb-0 text-muted">Chưa có loại bàn nào trong hệ thống.</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="type-list">
+                            @foreach (var type in typeOptions)
+                            {
+                                <div class="type-chip">
+                                    <div class="type-chip__header">
+                                        <span class="type-chip__name">@type.Name</span>
+                                        @if (type.MaxSeats.HasValue)
+                                        {
+                                            <span class="type-chip__seats">@type.MaxSeats ghế</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="type-chip__seats text-muted">Số ghế chưa rõ</span>
+                                        }
+                                    </div>
+                                    @if (!string.IsNullOrWhiteSpace(type.Description))
+                                    {
+                                        <p class="type-chip__description">@type.Description</p>
+                                    }
+                                    else
+                                    {
+                                        <p class="type-chip__description text-muted">Chưa có mô tả</p>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="modal fade" id="tableStatusModal" tabindex="-1" aria-labelledby="tableStatusModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form id="tableStatusForm" method="post" asp-area="Admin" asp-controller="Tables" asp-action="UpdateStatus">
+                @Html.AntiForgeryToken()
+                <div class="modal-header">
+                    <h5 class="modal-title" id="tableStatusModalLabel">Cập nhật trạng thái bàn</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="tableId" id="tableIdField" />
+                    <div class="mb-3">
+                        <label class="form-label">Bàn</label>
+                        <input type="text" class="form-control" id="tableNameField" readonly />
+                    </div>
+                    <div class="mb-3">
+                        <label for="statusIdField" class="form-label">Chọn trạng thái</label>
+                        <select class="form-select" name="statusId" id="statusIdField">
+                            @foreach (var status in summaryStatuses)
+                            {
+                                <option value="@status.Id">@status.Name</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Huỷ</button>
+                    <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="areaCreateModal" tabindex="-1" aria-labelledby="areaCreateModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form id="areaCreateForm" method="post" asp-area="Admin" asp-controller="Tables" asp-action="CreateArea">
+                @Html.AntiForgeryToken()
+                <div class="modal-header">
+                    <h5 class="modal-title" id="areaCreateModalLabel">Thêm khu vực mới</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    @if (!canCreateArea)
+                    {
+                        <div class="alert alert-warning mb-3">Chưa có cơ sở nào hoạt động. Vui lòng tạo cơ sở trước khi thêm khu vực.</div>
+                    }
+                    <div class="mb-3">
+                        <label class="form-label">Cơ sở <span class="text-danger">*</span></label>
+                        <select class="form-select" id="areaBranchSelect" name="BranchId" required @(canCreateArea ? string.Empty : "disabled")>
+                            <option value="">-- Chọn cơ sở --</option>
+                            @foreach (var branch in branchOptions)
+                            {
+                                <option value="@branch.Id">@branch.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Tên khu vực <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="areaNameInput" name="AreaName" maxlength="100" required @(canCreateArea ? string.Empty : "disabled") />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Mô tả</label>
+                        <textarea class="form-control" id="areaDescriptionInput" name="Description" rows="2" maxlength="255" @(canCreateArea ? string.Empty : "disabled")></textarea>
+                    </div>
+                    <input type="hidden" name="IsActive" value="false" />
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="areaIsActive" name="IsActive" value="true" checked @(canCreateArea ? string.Empty : "disabled") />
+                        <label class="form-check-label" for="areaIsActive">Kích hoạt ngay sau khi tạo</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Huỷ</button>
+                    <button type="submit" class="btn btn-secondary" @(canCreateArea ? string.Empty : "disabled")>Thêm khu vực</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="tableCreateModal" tabindex="-1" aria-labelledby="tableCreateModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <form id="tableCreateForm" method="post" asp-area="Admin" asp-controller="Tables" asp-action="Create">
+                @Html.AntiForgeryToken()
+                <div class="modal-header">
+                    <h5 class="modal-title" id="tableCreateModalLabel">Thêm bàn mới</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    @if (!canCreateTable)
+                    {
+                        <div class="alert alert-warning">Chưa có khu vực hoạt động. Vui lòng cấu hình khu vực trước khi thêm bàn.</div>
+                    }
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Cơ sở</label>
+                            <select class="form-select" id="createBranchSelect" @(branchOptions.Count > 0 ? string.Empty : "disabled")>
+                                <option value="">-- Chọn cơ sở --</option>
+                                @foreach (var branch in branchOptions)
+                                {
+                                    <option value="@branch.Id">@branch.Name</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Khu vực <span class="text-danger">*</span></label>
+                            <select class="form-select" id="createAreaSelect" name="AreaId" required @(canCreateTable ? string.Empty : "disabled")>
+                                <option value="">-- Chọn khu vực --</option>
+                                @foreach (var area in areaOptions)
+                                {
+                                    <option value="@area.Id" data-branch-id="@(area.BranchId?.ToString() ?? string.Empty)">@area.Name</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Tên bàn <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="createTableName" name="TableName" maxlength="50" required @(canCreateTable ? string.Empty : "disabled") />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Loại bàn</label>
+                            <select class="form-select" id="createTypeSelect" name="TypeId" @(typeOptions.Count > 0 ? string.Empty : "disabled")>
+                                <option value="">-- Chọn loại bàn --</option>
+                                @foreach (var type in typeOptions)
+                                {
+                                    var seats = type.MaxSeats.HasValue ? $" ({type.MaxSeats} ghế)" : string.Empty;
+                                    <option value="@type.Id">@type.Name@seats</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Trạng thái khởi tạo</label>
+                            <select class="form-select" id="createStatusSelect" name="StatusId">
+                                <option value="">-- Chọn trạng thái --</option>
+                                @foreach (var status in statusOptions)
+                                {
+                                    <option value="@status.Id">@status.Name</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Ghi chú</label>
+                            <textarea class="form-control" id="createDescription" name="Description" rows="2" maxlength="255"></textarea>
+                        </div>
+                        <div class="col-12">
+                            <input type="hidden" name="IsActive" value="false" />
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="createIsActive" name="IsActive" value="true" checked />
+                                <label class="form-check-label" for="createIsActive">Bật trạng thái hoạt động ngay</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Huỷ</button>
+                    <button type="submit" class="btn btn-primary" @(canCreateTable ? string.Empty : "disabled")>Thêm bàn</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (() => {
+            const tableGrid = document.getElementById('table-grid');
+            const counters = document.querySelectorAll('[data-status-counter]');
+            const statusModalEl = document.getElementById('tableStatusModal');
+            const statusModal = statusModalEl ? new bootstrap.Modal(statusModalEl) : null;
+            const statusForm = document.getElementById('tableStatusForm');
+            const statusSelect = document.getElementById('statusIdField');
+            const tableIdField = document.getElementById('tableIdField');
+            const tableNameField = document.getElementById('tableNameField');
+            const lastSyncTarget = document.getElementById('table-last-sync');
+            const branchFilter = document.getElementById('branchFilter');
+            const branchBlocks = document.querySelectorAll('[data-branch-block]');
+
+            const createModalEl = document.getElementById('tableCreateModal');
+            const createModal = createModalEl ? new bootstrap.Modal(createModalEl) : null;
+            const createForm = document.getElementById('tableCreateForm');
+            const branchSelect = document.getElementById('createBranchSelect');
+            const areaSelect = document.getElementById('createAreaSelect');
+            const areaOptionsElements = areaSelect ? Array.from(areaSelect.options) : [];
+            const areaModalEl = document.getElementById('areaCreateModal');
+            const areaModal = areaModalEl ? new bootstrap.Modal(areaModalEl) : null;
+            const areaForm = document.getElementById('areaCreateForm');
+            const areaBranchSelect = document.getElementById('areaBranchSelect');
+            const areaTriggers = document.querySelectorAll('.js-open-area-modal');
+            const editModalEl = document.getElementById('tableEditModal');
+            const editModal = editModalEl ? new bootstrap.Modal(editModalEl) : null;
+            const editForm = document.getElementById('tableEditForm');
+            const editBranchSelect = document.getElementById('editBranchSelect');
+            const editAreaSelect = document.getElementById('editAreaSelect');
+            const editAreaOptions = editAreaSelect ? Array.from(editAreaSelect.options) : [];
+            const editNameInput = document.getElementById('editTableName');
+            const editDescriptionInput = document.getElementById('editDescription');
+            const editTypeSelect = document.getElementById('editTypeSelect');
+            const editStatusSelect = document.getElementById('editStatusSelect');
+            const editIsActiveInput = document.getElementById('editIsActive');
+            const editIdField = document.getElementById('editTableId');
+            const branchFilterSelected = branchFilter?.getAttribute('data-selected') || '';
+
+            const setLastSync = () => {
+                if (!lastSyncTarget) return;
+                const now = new Date();
+                lastSyncTarget.textContent = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+            };
+            setLastSync();
+
+            const applyBranchFilter = value => {
+                if (!branchBlocks.length) return;
+                branchBlocks.forEach(block => {
+                    if (!value) {
+                        block.classList.remove('d-none');
+                        return;
+                    }
+                    const blockBranchId = block.getAttribute('data-branch-id') || '';
+                    block.classList.toggle('d-none', blockBranchId !== value);
+                });
+            };
+
+            if (branchFilter) {
+                if (branchFilterSelected) {
+                    branchFilter.value = branchFilterSelected;
+                }
+                applyBranchFilter(branchFilter.value);
+                branchFilter.addEventListener('change', () => {
+                    const value = branchFilter.value;
+                    applyBranchFilter(value);
+                    const url = new URL(window.location.href);
+                    if (!value) {
+                        url.searchParams.delete('branchId');
+                    } else {
+                        url.searchParams.set('branchId', value);
+                    }
+                    window.history.replaceState({}, '', url);
+                });
+            }
+
+            const recomputeCounters = () => {
+                if (!tableGrid) return;
+                counters.forEach(counter => {
+                    const key = counter.getAttribute('data-status-counter');
+                    if (!key) return;
+                    if (key === 'all') {
+                        counter.textContent = tableGrid.querySelectorAll('.table-card-wrapper').length;
+                        return;
+                    }
+                    const count = tableGrid.querySelectorAll(`.table-card-wrapper[data-status="${key}"]`).length;
+                    counter.textContent = count;
+                });
+            };
+
+            const filterAreaOptions = (selectEl, optionList, branchId, preferredAreaId) => {
+                if (!selectEl || !optionList.length) return;
+                let firstVisible = null;
+                optionList.forEach(option => {
+                    if (!option.value) {
+                        option.hidden = false;
+                        return;
+                    }
+                    const optionBranch = option.getAttribute('data-branch-id') || '';
+                    const visible = !branchId || !optionBranch || optionBranch === branchId;
+                    option.hidden = !visible;
+                    if (visible && !firstVisible) {
+                        firstVisible = option;
+                    }
+                });
+                if (preferredAreaId) {
+                    selectEl.value = preferredAreaId;
+                } else if (firstVisible) {
+                    selectEl.value = firstVisible.value;
+                } else {
+                    selectEl.value = '';
+                }
+            };
+
+            document.querySelectorAll('.js-open-create').forEach(trigger => {
+                trigger.addEventListener('click', () => {
+                    if (!createModal || !createForm) return;
+                    createForm.reset();
+                    const branchId = trigger.getAttribute('data-branch-id') || branchFilter?.value || '';
+                    const areaId = trigger.getAttribute('data-area-id') || '';
+                    if (branchSelect) {
+                        branchSelect.value = branchId;
+                    }
+                    filterAreaOptions(areaSelect, areaOptionsElements, branchId, areaId);
+                    createModal.show();
+                });
+            });
+
+            branchSelect?.addEventListener('change', () => {
+                filterAreaOptions(areaSelect, areaOptionsElements, branchSelect.value);
+            });
+            filterAreaOptions(areaSelect, areaOptionsElements, branchSelect?.value || '', areaSelect?.value || '');
+
+            editBranchSelect?.addEventListener('change', () => {
+                filterAreaOptions(editAreaSelect, editAreaOptions, editBranchSelect.value);
+            });
+            filterAreaOptions(editAreaSelect, editAreaOptions, editBranchSelect?.value || '', editAreaSelect?.value || '');
+
+            areaTriggers.forEach(trigger => {
+                trigger.addEventListener('click', () => {
+                    if (!areaModal || !areaForm) return;
+                    areaForm.reset();
+                    const branchId = trigger.getAttribute('data-branch-id') || branchFilter?.value || branchSelect?.value || '';
+                    if (branchId && areaBranchSelect) {
+                        areaBranchSelect.value = branchId;
+                    }
+                    areaModal.show();
+                });
+            });
+
+            tableGrid?.addEventListener('click', event => {
+                const statusTrigger = event.target.closest('.js-update-status');
+                if (statusTrigger && statusModal) {
+                    tableIdField.value = statusTrigger.getAttribute('data-table-id');
+                    tableNameField.value = statusTrigger.getAttribute('data-table-name');
+                    const currentStatus = statusTrigger.getAttribute('data-current-status');
+                    if (currentStatus) {
+                        statusSelect.value = currentStatus;
+                    }
+                    statusModal.show();
+                    return;
+                }
+
+                const editTrigger = event.target.closest('.js-edit-table');
+                if (!editTrigger || !editModal || !editForm) return;
+
+                editForm.reset();
+                const tableId = editTrigger.getAttribute('data-table-id') || '';
+                const tableName = editTrigger.getAttribute('data-table-name') || '';
+                const branchId = editTrigger.getAttribute('data-branch-id') || branchFilter?.value || '';
+                const areaId = editTrigger.getAttribute('data-area-id') || '';
+                const typeId = editTrigger.getAttribute('data-type-id') || '';
+                const statusId = editTrigger.getAttribute('data-status-id') || '';
+                const description = editTrigger.getAttribute('data-description') || '';
+                const isActive = editTrigger.getAttribute('data-active') !== 'false';
+
+                if (editIdField) {
+                    editIdField.value = tableId;
+                }
+                if (editNameInput) {
+                    editNameInput.value = tableName;
+                }
+                if (editBranchSelect) {
+                    editBranchSelect.value = branchId;
+                }
+                filterAreaOptions(editAreaSelect, editAreaOptions, branchId, areaId);
+                if (editTypeSelect) {
+                    editTypeSelect.value = typeId;
+                }
+                if (editStatusSelect) {
+                    editStatusSelect.value = statusId;
+                }
+                if (editDescriptionInput) {
+                    editDescriptionInput.value = description;
+                }
+                if (editIsActiveInput) {
+                    editIsActiveInput.checked = isActive;
+                }
+
+                editModal.show();
+            });
+
+            const filters = document.querySelectorAll('.filter-btn');
+            filters.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    filters.forEach(item => item.classList.remove('active'));
+                    btn.classList.add('active');
+                    const target = btn.getAttribute('data-filter');
+                    document.querySelectorAll('.table-card-wrapper').forEach(card => {
+                        const status = card.getAttribute('data-status');
+                        card.classList.toggle('d-none', target !== 'all' && status !== target);
+                    });
+                });
+            });
+
+            statusForm?.addEventListener('submit', async event => {
+                event.preventDefault();
+                const formData = new FormData(statusForm);
+                const response = await fetch(statusForm.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                const result = await response.json();
+                if (!result.success) {
+                    alert(result.message ?? 'Không thể cập nhật trạng thái.');
+                    return;
+                }
+
+                const tableId = formData.get('tableId');
+                const newStatus = formData.get('statusId');
+                const card = document.querySelector(`.table-card[data-table-id="${tableId}"]`);
+                const wrapper = card?.closest('.table-card-wrapper');
+                if (card && wrapper) {
+                    wrapper.setAttribute('data-status', newStatus);
+                    const badge = card.querySelector('.table-status-badge');
+                    if (badge) {
+                        badge.textContent = result.statusName;
+                        badge.className = `badge table-status-badge ${result.badgeClass}`;
+                    }
+                    const trigger = card.querySelector('.js-update-status');
+                    trigger?.setAttribute('data-current-status', newStatus);
+                }
+
+                recomputeCounters();
+                statusModal?.hide();
+                setLastSync();
+            });
+
+            createForm?.addEventListener('submit', async event => {
+                event.preventDefault();
+                const formData = new FormData(createForm);
+                const response = await fetch(createForm.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                const result = await response.json();
+                if (!result.success) {
+                    alert(result.message ?? 'Không thể tạo bàn mới.');
+                    return;
+                }
+
+                const redirectUrl = result.redirectUrl ?? window.location.href;
+                window.location.href = redirectUrl;
+            });
+
+            editForm?.addEventListener('submit', async event => {
+                event.preventDefault();
+                const formData = new FormData(editForm);
+                const response = await fetch(editForm.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                const result = await response.json();
+                if (!result.success) {
+                    alert(result.message ?? 'Không thể cập nhật bàn.');
+                    return;
+                }
+
+                const redirectUrl = result.redirectUrl ?? window.location.href;
+                window.location.href = redirectUrl;
+            });
+
+            areaForm?.addEventListener('submit', async event => {
+                event.preventDefault();
+                const formData = new FormData(areaForm);
+                const response = await fetch(areaForm.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                const result = await response.json();
+                if (!result.success) {
+                    alert(result.message ?? 'Không thể tạo khu vực mới.');
+                    return;
+                }
+
+                const redirectUrl = result.redirectUrl ?? window.location.href;
+                window.location.href = redirectUrl;
+            });
+        })();
+    </script>
+}
+
+<style>
+    @@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+    .table-layout-section {
+        font-family: 'Space Grotesk', 'Segoe UI', sans-serif;
+    }
+
+    .status-widget {
+        border-radius: 20px;
+        padding: 20px;
+        color: #fff;
+        min-height: 150px;
+        box-shadow: 0 20px 45px rgba(15, 36, 67, 0.15);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .gradient-primary {
+        background: radial-gradient(circle at top left, #f7b733, #fc4a1a);
+    }
+
+    .gradient-muted {
+        background: linear-gradient(135deg, #2c3e50, #4b6584);
+    }
+
+    .status-label {
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-size: 0.8rem;
+        opacity: 0.8;
+    }
+
+    .status-value {
+        font-size: 2.4rem;
+        font-weight: 700;
+        margin-top: 10px;
+    }
+
+    .status-note {
+        margin-top: 12px;
+        font-size: 0.85rem;
+        opacity: 0.8;
+    }
+
+    .table-layout-card {
+        border: none;
+        border-radius: 24px;
+        box-shadow: 0 25px 50px rgba(10, 10, 10, 0.08);
+    }
+
+    .table-info-card {
+        border: none;
+        border-radius: 24px;
+        box-shadow: 0 25px 50px rgba(10, 10, 10, 0.05);
+    }
+
+    .table-toolbar {
+        border-bottom: 1px solid rgba(15, 36, 67, 0.08);
+        padding-bottom: 12px;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .filter-btn {
+        background: #f4f4f4;
+        border: none;
+        border-radius: 999px;
+        padding: 8px 18px;
+        font-weight: 600;
+        color: #2d3436;
+        transition: all 0.2s ease;
+    }
+
+    .filter-btn .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 8px;
+        position: relative;
+        top: -1px;
+    }
+
+    .filter-btn.active,
+    .filter-btn:hover {
+        background: #1e272e;
+        color: #fff;
+    }
+
+    .branch-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .branch-block {
+        border: 1px solid rgba(15, 36, 67, 0.08);
+        border-radius: 24px;
+        padding: 24px;
+        background: #fff;
+    }
+
+    .branch-filter {
+        min-width: 220px;
+    }
+
+    .branch-filter .form-select {
+        border-radius: 12px;
+        border: 1px solid rgba(15, 36, 67, 0.2);
+    }
+
+    .toolbar-buttons .btn {
+        white-space: nowrap;
+    }
+
+    .branch-block__header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+    }
+
+    .branch-header-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .branch-title {
+        margin: 0;
+        font-size: 1.4rem;
+        font-weight: 700;
+    }
+
+    .eyebrow-label {
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-size: 0.75rem;
+        color: #95a5a6;
+    }
+
+    .area-panel {
+        border: 1px dashed rgba(15, 36, 67, 0.15);
+        border-radius: 20px;
+        padding: 20px 20px 28px;
+        margin-top: 18px;
+        background: #fafbff;
+    }
+
+    .area-panel__head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    .area-title {
+        margin: 0;
+        font-weight: 700;
+        font-size: 1.15rem;
+    }
+
+    .area-description {
+        margin: 4px 0 0;
+        font-size: 0.9rem;
+        color: #7f8c8d;
+    }
+
+    .area-head-actions {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .area-empty {
+        border: 1px dashed rgba(149, 165, 166, 0.5);
+        border-radius: 16px;
+        padding: 20px;
+        text-align: center;
+        color: #95a5a6;
+        font-style: italic;
+        background: #fff;
+    }
+
+    .table-card-wrapper {
+        transition: transform 0.2s ease;
+    }
+
+    .table-card-wrapper:hover {
+        transform: translateY(-6px);
+    }
+
+    .table-card {
+        background: #ffffff;
+        border-radius: 22px;
+        padding: 20px;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        border: 1px solid rgba(43, 59, 74, 0.08);
+    }
+
+    .table-card__head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    .table-name {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #1f2d3d;
+    }
+
+    .table-meta {
+        font-size: 0.9rem;
+        color: #7f8c8d;
+    }
+
+    .table-meta .meta-divider {
+        margin: 0 6px;
+        color: rgba(127, 140, 141, 0.7);
+    }
+
+    .table-status-badge {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+    }
+
+    .table-card__body {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .table-info {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    .info-label {
+        font-size: 0.78rem;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: #95a5a6;
+    }
+
+    .info-value {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #2c3e50;
+    }
+
+    .booking-pill {
+        background: #f8f9fb;
+        border-radius: 16px;
+        padding: 12px 14px;
+        border: 1px dashed rgba(45, 52, 54, 0.25);
+    }
+
+    .pill-title {
+        font-weight: 700;
+        color: #d35400;
+    }
+
+    .pill-detail {
+        font-size: 0.95rem;
+        color: #2d3436;
+    }
+
+    .pill-note {
+        font-size: 0.85rem;
+        color: #6c5ce7;
+    }
+
+    .booking-placeholder {
+        font-size: 0.9rem;
+        color: #95a5a6;
+        font-style: italic;
+        border: 1px dashed rgba(149, 165, 166, 0.4);
+        border-radius: 12px;
+        padding: 10px;
+        text-align: center;
+    }
+
+    .table-note {
+        font-size: 0.85rem;
+        color: #636e72;
+    }
+
+    .table-card__actions {
+        display: flex;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .table-card__actions .btn,
+    .js-update-status {
+        border-radius: 999px;
+        font-weight: 600;
+    }
+
+    .empty-state {
+        border: 1px dashed rgba(15, 36, 67, 0.2);
+        border-radius: 20px;
+        background: #fff;
+    }
+
+    .type-list {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .type-chip {
+        border: 1px solid rgba(15, 36, 67, 0.12);
+        border-radius: 18px;
+        padding: 14px;
+        background: #fdfdfd;
+    }
+
+    .type-chip__header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 6px;
+    }
+
+    .type-chip__name {
+        font-weight: 600;
+        color: #0b1736;
+    }
+
+    .type-chip__seats {
+        font-size: 0.85rem;
+        color: #0984e3;
+        font-weight: 600;
+    }
+
+    .type-chip__description {
+        margin: 0;
+        font-size: 0.85rem;
+        color: #636e72;
+    }
+
+    @@media (max-width: 575.98px) {
+        .table-info {
+            grid-template-columns: 1fr;
+        }
+        .branch-block__header,
+        .area-panel__head {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+</style>
+
+
+

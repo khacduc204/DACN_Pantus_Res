@@ -1,6 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using KD_Restaurant.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Identity;
+using KD_Restaurant.Data;
+using KD_Restaurant.Options;
+using KD_Restaurant.Services;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,12 +13,18 @@ builder.Services.AddDbContext<KDContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
-builder.Services.AddAuthentication("AdminCookieAuthentication")
-    .AddCookie("AdminCookieAuthentication", options =>
+builder.Services.AddScoped<IPasswordHasher<tblUser>, PasswordHasher<tblUser>>();
+builder.Services.Configure<MomoOptions>(builder.Configuration.GetSection("MomoPayment"));
+builder.Services.AddHttpClient<IMomoPaymentService, MomoPaymentService>();
+
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
     {
-        options.LoginPath = "/Admin/Account/Login"; // Đường dẫn tới trang đăng nhập admin
-        options.AccessDeniedPath = "/Admin/Account/AccessDenied"; // Đường dẫn khi bị từ chối truy cập
-        // Có thể cấu hình thêm các options khác nếu cần
+        options.Cookie.Name = "KD.Auth";
+        options.LoginPath = "/Account/Login";
+        options.AccessDeniedPath = "/Account/AccessDenied";
+        options.LogoutPath = "/Account/Logout";
+        options.SlidingExpiration = true;
     });
 // Add services to the container.
 builder.Services.AddControllersWithViews().AddRazorRuntimeCompilation();
@@ -65,5 +76,7 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 // Thêm vào phần cấu hình services
+
+await DbSeeder.SeedAsync(app.Services);
 
 app.Run();

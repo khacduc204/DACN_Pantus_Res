@@ -1,33 +1,54 @@
-@model List<KD_Restaurant.Models.tblMenuCategory>
+@model List<KD_Restaurant.Models.tblMenuItem>
 
-
-
-@foreach (var category in Model)
+@if (Model == null || !Model.Any())
 {
-    <div class="row">
-        @foreach (var item in category.tblMenuItems)
-        {
-            string sUrl = $"/menu/{item.Alias}-{item.IdMenuItem}.html";
-            <div class="col-lg-6 menu-item isotope-item filter-@category.Alias">
-                <img src="@Url.Content(item.Image)" class="menu-img" alt="@item.Title">
-                <div class="menu-content">
-                    <a href="@sUrl">@item.Title</a>
-                    <span>
-                        @if (item.PriceSale.HasValue && item.PriceSale.Value > 0 && item.PriceSale.Value < item.Price)
-                        {
-                            <span style="text-decoration:line-through; color:#888;">@item.Price.ToString("N0") VNĐ</span>
-                            <span style="color:#ff5722; font-weight:bold; margin-left:8px;">@item.PriceSale.Value.ToString("N0") VNĐ</span>
-                        }
-                        else
-                        {
-                            <span style="color:#ff5722; font-weight:bold;">@item.Price.ToString("N0") VNĐ</span>
-                        }
-                    </span>
-                </div>
-                <div class="menu-ingredients">
-                    @item.Description
-                </div>
-            </div>
-        }
+    <div class="col-12 text-center py-5">
+        <p class="text-muted mb-0">Hiện chưa có món ăn nổi bật nào để hiển thị.</p>
     </div>
+}
+else
+{
+    foreach (var item in Model)
+    {
+        var alias = item.Category?.Alias ?? "misc";
+        var detailUrl = $"/menu/{item.Alias}-{item.IdMenuItem}.html";
+        var description = string.IsNullOrWhiteSpace(item.Description)
+            ? "Món ăn đặc biệt do bếp trưởng đề xuất cho thực khách sành vị."
+            : item.Description!;
+        var preview = description.Length > 120 ? description.Substring(0, 117) + "..." : description;
+        var hasSale = item.PriceSale.HasValue && item.PriceSale.Value > 0 && item.PriceSale.Value < item.Price;
+
+        <div class="col-xl-4 col-md-6 col-sm-12 isotope-item filter-@alias">
+            <article class="featured-dish-card h-100">
+                <div class="dish-thumb position-relative">
+                    <img src="@Url.Content(item.Image ?? "~/assets/img/menu/default.jpg")" alt="@item.Title" class="img-fluid rounded-top" />
+                    <div class="dish-price">
+                        <span class="current-price">@(hasSale ? item.PriceSale!.Value.ToString("N0") : item.Price.ToString("N0")) VNĐ</span>
+                        @if (hasSale)
+                        {
+                            <span class="old-price">@item.Price.ToString("N0") VNĐ</span>
+                        }
+                    </div>
+                </div>
+                <div class="dish-body">
+                    <p class="dish-category">@item.Category?.Title </p>
+                    <h4 class="dish-title">@item.Title</h4>
+                    <p class="dish-desc">@preview</p>
+                    <div class="dish-actions">
+                        <a class="btn btn-outline-dark rounded-pill" href="@detailUrl">
+                            <i class="bi bi-eye"></i>
+                            <span>Xem chi tiết</span>
+                        </a>
+                        <button type="button"
+                                class="btn btn-warning rounded-pill fw-semibold btn-add-to-cart"
+                                data-item-id="@item.IdMenuItem"
+                                data-item-name="@item.Title">
+                            <i class="bi bi-bag-plus"></i>
+                            <span>Đặt món</span>
+                        </button>
+                    </div>
+                </div>
+            </article>
+        </div>
+    }
 }

@@ -1,0 +1,199 @@
+@model KD_Restaurant.ViewModels.CustomerManagementViewModel
+@{
+    ViewData["Title"] = "Quản lý khách hàng";
+    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+}
+@removeTagHelper Microsoft.AspNetCore.Mvc.TagHelpers.OptionTagHelper, Microsoft.AspNetCore.Mvc.TagHelpers
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show shadow-sm border-0" role="alert">
+        <i class="bi bi-check-circle me-2"></i>@TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="pagetitle d-flex flex-wrap justify-content-between align-items-center gap-3 admin-page-title">
+    <div>
+        <h1 class="mb-1">Quản lý khách hàng</h1>
+        <p class="text-muted mb-0">Theo dõi hành trình khách, lịch sử đặt bàn và trạng thái kích hoạt.</p>
+    </div>
+    <a asp-area="Admin" asp-controller="Customer" asp-action="Create" class="btn btn-success">
+        <i class="bi bi-plus-circle me-1"></i>Khách hàng mới
+    </a>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card info-card customer-card h-100">
+            <div class="card-body">
+                <p class="text-muted mb-1">Tổng khách hàng</p>
+                <div class="d-flex align-items-baseline gap-2">
+                    <span class="display-6 fw-bold">@Model.TotalCustomers</span>
+                    <small class="text-muted">tài khoản</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card info-card customer-card h-100">
+            <div class="card-body">
+                <p class="text-muted mb-1">Đang hoạt động</p>
+                <div class="d-flex align-items-baseline gap-2">
+                    <span class="display-6 fw-bold text-success">@Model.ActiveCustomers</span>
+                    <small class="text-muted">kích hoạt</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card info-card customer-card h-100">
+            <div class="card-body">
+                <p class="text-muted mb-1">Hoạt động tuần này</p>
+                <div class="d-flex align-items-baseline gap-2">
+                    <span class="display-6 fw-bold text-primary">@Model.NewCustomersThisWeek</span>
+                    <small class="text-muted">đăng nhập</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<form asp-area="Admin" asp-controller="Customer" asp-action="Index" method="get" class="card shadow-sm p-3 mb-4">
+    <div class="row g-3 align-items-end">
+        <div class="col-md-6">
+            <label class="form-label">Từ khoá</label>
+            <input type="text" name="search" value="@Model.SearchTerm" class="form-control" placeholder="Họ tên, số điện thoại, địa chỉ..." />
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Trạng thái</label>
+            <select class="form-select" name="status">
+                <option value="all" @if (Model.StatusFilter == "all") { <text>selected</text>; }>Tất cả</option>
+                <option value="active" @if (Model.StatusFilter == "active") { <text>selected</text>; }>Đang hoạt động</option>
+                <option value="inactive" @if (Model.StatusFilter == "inactive") { <text>selected</text>; }>Tạm khoá</option>
+            </select>
+        </div>
+        <div class="col-md-2 d-flex gap-2">
+            <button type="submit" class="btn btn-primary flex-fill">
+                <i class="bi bi-search me-1"></i>Lọc
+            </button>
+            <a asp-area="Admin" asp-controller="Customer" asp-action="Index" class="btn btn-outline-secondary flex-fill">Xoá lọc</a>
+        </div>
+    </div>
+</form>
+
+<div class="card shadow-sm">
+    <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div>
+            <h5 class="mb-1">Danh sách khách hàng (@Model.Customers.Count)</h5>
+            <small class="text-muted">Sắp xếp theo thời gian hoạt động gần nhất.</small>
+        </div>
+        <a asp-area="Admin" asp-controller="Customer" asp-action="Create" class="btn btn-primary">
+            <i class="bi bi-person-plus me-1"></i>Thêm khách
+        </a>
+    </div>
+    <div class="table-responsive">
+        @if (Model.Customers == null || Model.Customers.Count == 0)
+        {
+            <div class="p-5 text-center text-muted">
+                <i class="bi bi-people fs-1 d-block mb-3"></i>
+                Chưa có khách hàng phù hợp với bộ lọc hiện tại.
+            </div>
+        }
+        else
+        {
+            <table class="table align-middle mb-0 customer-table">
+                <thead class="text-uppercase small text-muted">
+                    <tr>
+                        <th>Khách hàng</th>
+                        <th class="text-center">Lượt đặt bàn</th>
+                        <th>Số điện thoại</th>
+                        <th>Địa chỉ</th>
+                        <th>Đăng nhập cuối</th>
+                        <th class="text-center">Trạng thái</th>
+                        <th class="text-end">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var customer in Model.Customers)
+                    {
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="customer-avatar">
+                                        @((!string.IsNullOrWhiteSpace(customer.DisplayName) ? customer.DisplayName.Substring(0, 1).ToUpper() : "K"))
+                                    </div>
+                                    <div>
+                                        <div class="fw-semibold">@customer.DisplayName</div>
+                                        <small class="text-muted">Mã #@customer.Id</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="text-center fw-semibold">@customer.BookingCount</td>
+                            <td>@(string.IsNullOrWhiteSpace(customer.PhoneNumber) ? "Chưa cập nhật" : customer.PhoneNumber)</td>
+                            <td>@(string.IsNullOrWhiteSpace(customer.Address) ? "--" : customer.Address)</td>
+                            <td>
+                                @(customer.LastLogin.HasValue
+                                    ? customer.LastLogin.Value.ToString("dd/MM/yyyy HH:mm")
+                                    : "Chưa từng đăng nhập")
+                            </td>
+                            <td class="text-center">
+                                <span class="badge @(customer.IsActive ? "bg-success" : "bg-secondary")">
+                                    @(customer.IsActive ? "Đang hoạt động" : "Tạm khoá")
+                                </span>
+                            </td>
+                            <td class="text-end">
+                                <div class="btn-group">
+                                    <a asp-area="Admin" asp-controller="Customer" asp-action="Details" asp-route-id="@customer.Id" class="btn btn-outline-secondary btn-sm" title="Chi tiết">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a asp-area="Admin" asp-controller="Customer" asp-action="Edit" asp-route-id="@customer.Id" class="btn btn-outline-primary btn-sm" title="Chỉnh sửa">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <form asp-area="Admin" asp-controller="Customer" asp-action="ToggleStatus" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@customer.Id" />
+                                        <button type="submit" class="btn btn-outline-danger btn-sm" title="Đổi trạng thái" onclick="return confirm('Bạn có chắc muốn thay đổi trạng thái khách hàng này?');">
+                                            <i class="bi @(customer.IsActive ? "bi-slash-circle" : "bi-check-circle")"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .customer-card {
+            border: none;
+            border-radius: 18px;
+            box-shadow: 0 15px 35px rgba(15, 23, 42, .08);
+        }
+
+        .customer-table td,
+        .customer-table th {
+            vertical-align: middle;
+        }
+
+        .customer-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #7c3aed, #4f46e5);
+            color: #fff;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .admin-page-title h1 {
+            font-weight: 700;
+        }
+    </style>
+}

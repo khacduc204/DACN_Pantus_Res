@@ -1,0 +1,732 @@
+@using KD_Restaurant.ViewModels
+@model BookingInProgressViewModel
+@{
+    ViewData["Title"] = "Đơn hiện tại";
+    var booking = Model.Booking ?? new BookingCardViewModel();
+    var orderItems = booking.OrderItems ?? new List<BookingOrderItemViewModel>();
+    var orderTotal = orderItems.Sum(item => (item.Price ?? 0) * item.Quantity);
+    var guests = booking.Guests ?? 0;
+    var hasOrderItems = orderItems.Any();
+    string? backUrl = Model.ReturnUrl ?? Url.Action("Index", "Bookings", new { area = "Admin", date = booking.BookingDate.ToString("yyyy-MM-dd"), branchId = booking.BranchId });
+    string FormatCurrency(int value) => string.Format("{0:N0} ₫", value);
+    var paymentTitle = $"Thanh toán - {booking.TableName ?? "Chưa xếp"} - {(booking.BranchName ?? "Không rõ khu")}";
+}
+
+<div class="pagetitle">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h1>@ViewData["Title"]</h1>
+            <nav>
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-area="Admin" asp-controller="Home" asp-action="Index">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a asp-area="Admin" asp-controller="Bookings" asp-action="Index">Lịch đặt bàn</a></li>
+                    <li class="breadcrumb-item active">Đơn hiện tại</li>
+                </ol>
+            </nav>
+        </div>
+        @if (!string.IsNullOrWhiteSpace(backUrl))
+        {
+            <a href="@backUrl" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Quay lại danh sách</a>
+        }
+    </div>
+</div>
+
+<section class="section order-progress-section">
+    <div class="row g-4">
+        <div class="col-xl-8">
+            <div class="card order-header-card mb-4">
+                <div class="card-body">
+                    <div class="d-flex flex-wrap justify-content-between gap-3 align-items-start">
+                        <div>
+                            <div class="eyebrow-label">Khách hàng</div>
+                            <h3 class="mb-1">@booking.CustomerName</h3>
+                            <div class="text-muted">@booking.CustomerPhone</div>
+                            <div class="text-muted small mt-2">
+                                Ngày @booking.BookingDate.ToString("dd/MM/yyyy") · Khung giờ @booking.TimeSlot
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <div class="badge @booking.StatusBadgeClass">@booking.StatusName</div>
+                            <div class="badge bg-light text-dark mt-2">Bàn: <span data-table-name>@(booking.TableName ?? "Chưa xếp")</span></div>
+                        </div>
+                    </div>
+                    <div class="order-header-actions d-flex flex-wrap gap-2 mt-4">
+                        <button type="button" class="btn btn-outline-secondary" data-action="assign-table">
+                            <i class="bi bi-arrow-left-right me-1"></i>Chuyển bàn
+                        </button>
+                        <button type="button" class="btn btn-outline-primary" data-action="add-menu">
+                            <i class="bi bi-plus-circle me-1"></i>Thêm món mới
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card order-items-card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Chi tiết món đã gọi</h5>
+                    <span class="badge bg-primary-subtle text-primary">@orderItems.Count món</span>
+                </div>
+                <div class="card-body">
+                    <div data-order-table-wrapper class="@(hasOrderItems ? string.Empty : "d-none")">
+                        <div class="table-responsive">
+                            <table class="table align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Món</th>
+                                        <th class="text-end">Đơn giá</th>
+                                        <th class="text-center" style="width: 180px;">Số lượng</th>
+                                        <th class="text-end">Thành tiền</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody data-order-items>
+                                    @foreach (var item in orderItems)
+                                    {
+                                        var price = item.Price ?? 0;
+                                        var lineTotal = price * item.Quantity;
+                                        <tr data-order-row="true" data-detail-id="@item.Id" data-unit-price="@price">
+                                            <td>
+                                                <div class="fw-semibold">@item.ItemName</div>
+                                            </td>
+                                            <td class="text-end">@FormatCurrency(price)</td>
+                                            <td>
+                                                <div class="quantity-control">
+                                                    <button type="button" class="btn btn-light btn-sm" data-action="qty-minus"><i class="bi bi-dash"></i></button>
+                                                    <input type="number" class="form-control form-control-sm" value="@item.Quantity" min="0" data-qty-input />
+                                                    <button type="button" class="btn btn-light btn-sm" data-action="qty-plus"><i class="bi bi-plus"></i></button>
+                                                </div>
+                                            </td>
+                                            <td class="text-end"><span data-line-total>@FormatCurrency(lineTotal)</span></td>
+                                            <td class="text-end">
+                                                <div class="btn-group btn-group-sm" role="group">
+                                                    <button type="button" class="btn btn-outline-primary" data-action="save-item">Lưu</button>
+                                                    <button type="button" class="btn btn-outline-danger" data-action="remove-item">Xoá</button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="empty-state text-center @(hasOrderItems ? "d-none" : string.Empty)" data-empty-state>
+                        <div class="empty-icon mb-3"><i class="bi bi-clipboard-x"></i></div>
+                        <p class="mb-2">Chưa có món nào được thêm cho đơn này.</p>
+                        <button type="button" class="btn btn-primary" data-action="add-menu"><i class="bi bi-plus-circle me-1"></i>Thêm món ngay</button>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mt-4">
+                        <span class="text-muted">Tổng tạm tính</span>
+                        <strong class="fs-4" data-order-total-target>@FormatCurrency(orderTotal)</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-4">
+            <div class="card payment-card h-100">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="mb-3">Thông tin phục vụ</h5>
+                    <div class="info-stack mb-4">
+                        <div>
+                            <div class="info-label">Chi nhánh</div>
+                            <div class="info-value">@(!string.IsNullOrWhiteSpace(booking.BranchName) ? booking.BranchName : "Không xác định")</div>
+                        </div>
+                        <div>
+                            <div class="info-label">Số khách</div>
+                            <div class="info-value">@guests người</div>
+                        </div>
+                        <div>
+                            <div class="info-label">Ghi chú</div>
+                            <div class="info-value">@(string.IsNullOrWhiteSpace(booking.Note) ? "Không có" : booking.Note)</div>
+                        </div>
+                        <div>
+                            <div class="info-label">Liên hệ</div>
+                            <div class="info-value">@booking.CustomerPhone</div>
+                        </div>
+                    </div>
+
+                    <div class="payment-total mb-3">
+                        <span>Tổng thanh toán</span>
+                        <strong data-order-total-target>@FormatCurrency(orderTotal)</strong>
+                    </div>
+                    <p class="small text-muted">Kiểm tra thông tin trước khi xác nhận thanh toán cho khách.</p>
+                    <div class="mt-auto">
+                        <button type="button" class="btn btn-lg btn-dark w-100" id="completeOrderBtn" @(hasOrderItems ? string.Empty : "disabled")>
+                            <i class="bi bi-credit-card me-2"></i>Thanh toán & In hoá đơn
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Assign Table Modal -->
+<div class="modal fade" id="assignTableModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Chọn bàn phục vụ</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <form asp-area="Admin" asp-controller="Bookings" asp-action="AssignTable" method="post" id="assignTableForm">
+                <div class="modal-body">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="BookingId" value="@booking.Id" />
+                    <div class="mb-3">
+                        <label for="assignTableSelect" class="form-label">Danh sách bàn phù hợp</label>
+                        <select class="form-select" id="assignTableSelect" name="TableId" required>
+                            <option value="">Đang tải...</option>
+                        </select>
+                    </div>
+                    <div class="alert alert-light small mb-0">
+                        Hệ thống sẽ lọc các bàn trống cùng chi nhánh, đáp ứng số khách và khung giờ hiện tại.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-link text-muted" data-bs-dismiss="modal">Huỷ</button>
+                    <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Add Menu Modal -->
+<div class="modal fade" id="bookingMenuModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Thêm món vào đơn</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <form asp-area="Admin" asp-controller="Bookings" asp-action="AddMenuItem" method="post" id="bookingMenuForm">
+                <div class="modal-body">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="BookingId" value="@booking.Id" />
+                    <div class="mb-3">
+                        <label class="form-label" for="menuItemSelect">Chọn món</label>
+                        <select class="form-select" id="menuItemSelect" name="MenuItemId" required>
+                            <option value="">-- Chọn món --</option>
+                            @foreach (var item in Model.MenuItems)
+                            {
+                                <option value="@item.Id">@item.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="menuQuantity">Số lượng</label>
+                        <input type="number" class="form-control" id="menuQuantity" name="Quantity" value="1" min="1" required />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-link text-muted" data-bs-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-primary">Thêm món</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Payment Modal -->
+<div class="modal fade" id="paymentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content payment-modal">
+            <div class="modal-header border-0">
+                <h5 class="modal-title">@paymentTitle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <form asp-area="Admin" asp-controller="Bookings" asp-action="CompleteOrder" method="post" id="paymentForm">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="BookingId" value="@booking.Id" />
+                <input type="hidden" name="PaymentMethod" value="Tiền mặt" />
+                <input type="hidden" name="PrintReceipt" value="true" />
+                <div class="modal-body payment-modal-body">
+                    <div class="payment-summary-card">
+                        <div class="payment-row">
+                            <span>Cần thanh toán</span>
+                            <strong data-order-total-target>@FormatCurrency(orderTotal)</strong>
+                        </div>
+                        <div class="payment-row flex-column align-items-stretch">
+                            <label class="form-label text-muted mb-2">Khách trả</label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text">₫</span>
+                                <input type="number" class="form-control text-end" name="AmountGiven" data-customer-paid value="@orderTotal" min="@orderTotal" step="1000" required />
+                            </div>
+                            <small class="text-muted mt-2">Nhập số tiền khách đưa để hệ thống tính tiền thừa.</small>
+                        </div>
+                        <div class="payment-row">
+                            <span>Tiền thừa</span>
+                            <strong data-change-amount>@FormatCurrency(0)</strong>
+                        </div>
+                    </div>
+                    <div class="text-center text-muted small">Phương thức: Tiền mặt</div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Huỷ</button>
+                    <button type="submit" class="btn btn-primary">Xác nhận thanh toán</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (() => {
+            const tablesApi = '@Url.Action("AvailableTables", "Bookings", new { area = "Admin" })';
+            const updateItemUrl = '@Url.Action("UpdateOrderItem", "Bookings", new { area = "Admin" })';
+            const assignModal = document.getElementById('assignTableModal');
+            const assignForm = document.getElementById('assignTableForm');
+            const assignTableSelect = document.getElementById('assignTableSelect');
+            const menuModal = document.getElementById('bookingMenuModal');
+            const menuForm = document.getElementById('bookingMenuForm');
+            const paymentModal = document.getElementById('paymentModal');
+            const paymentForm = document.getElementById('paymentForm');
+            const assignTrigger = document.querySelector('[data-action="assign-table"]');
+            const menuTrigger = document.querySelector('[data-action="add-menu"]');
+            const completeBtn = document.getElementById('completeOrderBtn');
+            const bookingId = '@booking.Id';
+            const bookingDate = '@booking.BookingDate.ToString("yyyy-MM-dd")';
+            const timeSlot = '@booking.TimeSlot';
+            const branchId = '@(booking.BranchId?.ToString() ?? string.Empty)';
+            const minSeats = '@(booking.Guests ?? 0)';
+            const orderTableWrapper = document.querySelector('[data-order-table-wrapper]');
+            const orderTableBody = document.querySelector('[data-order-items]');
+            const emptyState = document.querySelector('[data-empty-state]');
+            const orderTotalTargets = document.querySelectorAll('[data-order-total-target]');
+            const tableNameTargets = document.querySelectorAll('[data-table-name]');
+            const antiForgerySelector = '#assignTableForm input[name="__RequestVerificationToken"], #bookingMenuForm input[name="__RequestVerificationToken"], #paymentForm input[name="__RequestVerificationToken"]';
+            const currencyFormatter = new Intl.NumberFormat('vi-VN');
+            const formatCurrency = value => `${currencyFormatter.format(Number(value) || 0)} ₫`;
+            const amountGivenInput = paymentModal?.querySelector('[data-customer-paid]');
+            const changeAmountDisplay = paymentModal?.querySelector('[data-change-amount]');
+            let currentOrderTotal = Number('@orderTotal');
+
+            const getAntiForgeryToken = () => document.querySelector(antiForgerySelector)?.value ?? '';
+
+            const updateChangeDisplay = () => {
+                if (!changeAmountDisplay) {
+                    return;
+                }
+                const paid = Math.max(0, Number(amountGivenInput?.value) || 0);
+                const change = Math.max(0, paid - (currentOrderTotal || 0));
+                changeAmountDisplay.textContent = formatCurrency(change);
+            };
+
+            const syncPaymentDefaults = () => {
+                if (!amountGivenInput) {
+                    return;
+                }
+                amountGivenInput.min = currentOrderTotal || 0;
+                if (!amountGivenInput.value || Number(amountGivenInput.value) < (currentOrderTotal || 0)) {
+                    amountGivenInput.value = currentOrderTotal || 0;
+                }
+                updateChangeDisplay();
+            };
+
+            amountGivenInput?.addEventListener('input', updateChangeDisplay);
+            syncPaymentDefaults();
+
+            const buildTableOptions = data => {
+                if (!assignTableSelect) return;
+                assignTableSelect.innerHTML = '';
+                if (!data || !data.length) {
+                    assignTableSelect.innerHTML = '<option value="">Không còn bàn trống</option>';
+                    return;
+                }
+                assignTableSelect.innerHTML = '<option value="">-- Chọn bàn --</option>';
+                data.forEach(item => {
+                    const option = document.createElement('option');
+                    option.value = item.id;
+                    option.textContent = `${item.name} • ${item.area || 'Khu vực ?'} • ${item.seats || '?'} ghế`;
+                    assignTableSelect.appendChild(option);
+                });
+            };
+
+            const loadTables = async () => {
+                if (!assignTableSelect) return;
+                assignTableSelect.innerHTML = '<option value="">Đang tải...</option>';
+                const query = new URLSearchParams({
+                    date: bookingDate,
+                    timeSlot,
+                    branchId,
+                    bookingId,
+                    minSeats
+                });
+                try {
+                    const response = await fetch(`${tablesApi}?${query.toString()}`);
+                    const data = await response.json();
+                    buildTableOptions(data);
+                } catch (error) {
+                    console.error(error);
+                    assignTableSelect.innerHTML = '<option value="">Không tải được danh sách</option>';
+                }
+            };
+
+            const updateTotalsDisplay = amount => {
+                orderTotalTargets.forEach(el => {
+                    el.textContent = formatCurrency(amount ?? 0);
+                });
+                currentOrderTotal = amount ?? 0;
+                syncPaymentDefaults();
+                if (completeBtn) {
+                    completeBtn.toggleAttribute('disabled', !orderTableBody || !orderTableBody.querySelector('[data-order-row]'));
+                }
+            };
+
+            const toggleOrderState = () => {
+                if (!orderTableWrapper || !orderTableBody || !emptyState) {
+                    return;
+                }
+                const hasRows = orderTableBody.querySelectorAll('[data-order-row]').length > 0;
+                orderTableWrapper.classList.toggle('d-none', !hasRows);
+                emptyState.classList.toggle('d-none', hasRows);
+            };
+
+            const updateTableName = table => {
+                const displayName = table?.name ?? table?.Name ?? 'Chưa xếp';
+                tableNameTargets.forEach(el => {
+                    el.textContent = displayName;
+                });
+            };
+
+            const submitQuantity = async (row, forcedQty = null) => {
+                if (!row) return;
+                const detailId = row.getAttribute('data-detail-id');
+                if (!detailId) return;
+                const qtyInput = row.querySelector('[data-qty-input]');
+                const quantity = forcedQty ?? Math.max(0, parseInt(qtyInput?.value ?? '0', 10));
+                const token = getAntiForgeryToken();
+                const formData = new FormData();
+                formData.append('DetailId', detailId);
+                formData.append('Quantity', quantity);
+                if (token) {
+                    formData.append('__RequestVerificationToken', token);
+                }
+                try {
+                    const response = await fetch(updateItemUrl, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const result = await response.json();
+                    if (!result.success) {
+                        alert(result.message ?? 'Không thể cập nhật món.');
+                        return;
+                    }
+                    if (result.removed) {
+                        row.remove();
+                    } else if (result.item) {
+                        if (qtyInput) {
+                            qtyInput.value = result.item.quantity;
+                        }
+                        const lineTotalEl = row.querySelector('[data-line-total]');
+                        if (lineTotalEl) {
+                            lineTotalEl.textContent = formatCurrency(result.item.lineTotal ?? 0);
+                        }
+                    }
+                    if (result.totals) {
+                        updateTotalsDisplay(result.totals.orderTotal ?? 0);
+                    }
+                    toggleOrderState();
+                } catch (error) {
+                    console.error(error);
+                    alert('Không thể cập nhật món.');
+                }
+            };
+
+            const attachRowEvents = row => {
+                if (!row) return;
+                const qtyInput = row.querySelector('[data-qty-input]');
+                row.querySelector('[data-action="qty-minus"]')?.addEventListener('click', () => {
+                    if (!qtyInput) return;
+                    const current = Math.max(0, (parseInt(qtyInput.value, 10) || 0) - 1);
+                    qtyInput.value = current;
+                });
+                row.querySelector('[data-action="qty-plus"]')?.addEventListener('click', () => {
+                    if (!qtyInput) return;
+                    const current = Math.max(0, (parseInt(qtyInput.value, 10) || 0) + 1);
+                    qtyInput.value = current;
+                });
+                row.querySelector('[data-action="save-item"]')?.addEventListener('click', () => submitQuantity(row));
+                row.querySelector('[data-action="remove-item"]')?.addEventListener('click', () => submitQuantity(row, 0));
+            };
+
+            const buildRowElement = item => {
+                if (!item) return null;
+                const row = document.createElement('tr');
+                row.setAttribute('data-order-row', 'true');
+                row.setAttribute('data-detail-id', item.id);
+                row.setAttribute('data-unit-price', item.unitPrice ?? 0);
+                row.innerHTML = `
+                    <td>
+                        <div class="fw-semibold">${item.name}</div>
+                    </td>
+                    <td class="text-end">${formatCurrency(item.unitPrice ?? 0)}</td>
+                    <td>
+                        <div class="quantity-control">
+                            <button type="button" class="btn btn-light btn-sm" data-action="qty-minus"><i class="bi bi-dash"></i></button>
+                            <input type="number" class="form-control form-control-sm" value="${item.quantity}" min="0" data-qty-input />
+                            <button type="button" class="btn btn-light btn-sm" data-action="qty-plus"><i class="bi bi-plus"></i></button>
+                        </div>
+                    </td>
+                    <td class="text-end"><span data-line-total>${formatCurrency(item.lineTotal ?? 0)}</span></td>
+                    <td class="text-end">
+                        <div class="btn-group btn-group-sm" role="group">
+                            <button type="button" class="btn btn-outline-primary" data-action="save-item">Lưu</button>
+                            <button type="button" class="btn btn-outline-danger" data-action="remove-item">Xoá</button>
+                        </div>
+                    </td>`;
+                attachRowEvents(row);
+                return row;
+            };
+
+            const upsertOrderRow = item => {
+                if (!orderTableBody || !item) return;
+                const existing = orderTableBody.querySelector(`[data-order-row][data-detail-id="${item.id}"]`);
+                if (existing) {
+                    existing.setAttribute('data-unit-price', item.unitPrice ?? existing.getAttribute('data-unit-price') ?? 0);
+                    const qtyInput = existing.querySelector('[data-qty-input]');
+                    if (qtyInput) {
+                        qtyInput.value = item.quantity;
+                    }
+                    const lineTotalEl = existing.querySelector('[data-line-total]');
+                    if (lineTotalEl) {
+                        lineTotalEl.textContent = formatCurrency(item.lineTotal ?? 0);
+                    }
+                    return;
+                }
+                const row = buildRowElement(item);
+                if (row) {
+                    orderTableBody.appendChild(row);
+                }
+            };
+
+            const submitAjaxForm = (form, options = {}) => {
+                if (!form) return;
+                const { onSuccess, onBeforeSubmit } = options;
+                form.addEventListener('submit', async evt => {
+                    evt.preventDefault();
+                    if (onBeforeSubmit && onBeforeSubmit(form) === false) {
+                        return;
+                    }
+                    const formData = new FormData(form);
+                    try {
+                        const response = await fetch(form.action, {
+                            method: form.method || 'POST',
+                            body: formData
+                        });
+                        const result = await response.json();
+                        if (!result.success) {
+                            alert(result.message ?? 'Có lỗi xảy ra.');
+                            return;
+                        }
+                        if (onSuccess) {
+                            onSuccess(result, form);
+                            return;
+                        }
+                        if (result.redirectUrl) {
+                            window.location.href = result.redirectUrl;
+                        } else {
+                            window.location.reload();
+                        }
+                    } catch (error) {
+                        console.error(error);
+                        alert('Không thể thực hiện thao tác.');
+                    }
+                });
+            };
+
+            submitAjaxForm(assignForm, result => {
+                if (result.table) {
+                    updateTableName(result.table);
+                }
+                bootstrap.Modal.getInstance(assignModal)?.hide();
+            });
+
+            submitAjaxForm(menuForm, result => {
+                if (result.item) {
+                    upsertOrderRow(result.item);
+                }
+                if (result.totals) {
+                    updateTotalsDisplay(result.totals.orderTotal ?? 0);
+                }
+                toggleOrderState();
+                bootstrap.Modal.getInstance(menuModal)?.hide();
+                menuForm.reset();
+                const qtyInput = menuForm.querySelector('input[name="Quantity"]');
+                if (qtyInput) {
+                    qtyInput.value = 1;
+                }
+            });
+
+            submitAjaxForm(paymentForm, {
+                onBeforeSubmit: () => {
+                    if (!amountGivenInput) {
+                        return true;
+                    }
+                    const paid = Number(amountGivenInput.value) || 0;
+                    if (paid < (currentOrderTotal || 0)) {
+                        alert('Số tiền khách trả chưa đủ.');
+                        return false;
+                    }
+                    return true;
+                },
+                onSuccess: result => {
+                    bootstrap.Modal.getInstance(paymentModal)?.hide();
+                    if (result.receiptUrl) {
+                        window.location.href = result.receiptUrl;
+                        return;
+                    }
+                    if (result.redirectUrl) {
+                        window.location.href = result.redirectUrl;
+                    } else {
+                        window.location.reload();
+                    }
+                }
+            });
+
+            assignTrigger?.addEventListener('click', () => {
+                loadTables();
+                bootstrap.Modal.getOrCreateInstance(assignModal).show();
+            });
+
+            document.querySelectorAll('[data-action="add-menu"]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    bootstrap.Modal.getOrCreateInstance(menuModal).show();
+                });
+            });
+
+            completeBtn?.addEventListener('click', () => {
+                syncPaymentDefaults();
+                bootstrap.Modal.getOrCreateInstance(paymentModal).show();
+            });
+
+            orderTableBody?.querySelectorAll('[data-order-row]').forEach(row => attachRowEvents(row));
+            toggleOrderState();
+        })();
+    </script>
+}
+
+<style>
+    .order-progress-section {
+        background: linear-gradient(180deg, #f7f8fb 0%, #ffffff 40%);
+        border-radius: 24px;
+        padding: 24px;
+    }
+
+    .order-header-card {
+        border-radius: 22px;
+        border: none;
+        box-shadow: 0 25px 60px rgba(15, 36, 67, 0.08);
+    }
+
+    .order-header-actions .btn {
+        border-radius: 999px;
+    }
+
+    .order-items-card {
+        border-radius: 22px;
+        border: none;
+        box-shadow: 0 20px 45px rgba(15, 23, 42, 0.06);
+    }
+
+    .payment-card {
+        border-radius: 22px;
+        border: none;
+        box-shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
+        background: radial-gradient(circle at top, #fef3c7, #fde68a);
+    }
+
+    .info-stack {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+    }
+
+    .info-label {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #6b7280;
+    }
+
+    .info-value {
+        font-weight: 600;
+        color: #111827;
+    }
+
+    .payment-total {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        font-size: 1.1rem;
+    }
+
+    .quantity-control {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .quantity-control input {
+        width: 72px;
+        text-align: center;
+    }
+
+    .quantity-control .btn {
+        border-radius: 999px;
+    }
+
+    .empty-icon {
+        font-size: 3rem;
+        color: #d1d5db;
+    }
+
+    .payment-modal {
+        border-radius: 24px;
+        border: none;
+    }
+
+    .payment-modal-body {
+        padding-top: 0;
+    }
+
+    .payment-summary-card {
+        background: linear-gradient(180deg, #ffffff 0%, #f4f7ff 100%);
+        border-radius: 18px;
+        padding: 24px;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .payment-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .payment-row strong {
+        font-size: 1.5rem;
+        color: #0f172a;
+    }
+
+    .payment-modal .input-group-text {
+        font-weight: 600;
+    }
+
+    @@media (max-width: 767px) {
+        .order-progress-section {
+            padding: 12px;
+        }
+
+        .info-stack {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>

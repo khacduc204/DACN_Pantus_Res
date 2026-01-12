@@ -1,0 +1,164 @@
+@model KD_Restaurant.ViewModels.CustomerFormModel
+@{
+    ViewData["Title"] = "Cập nhật khách hàng";
+    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+}
+
+<div class="pagetitle mb-4 admin-page-title">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h1 class="mb-1">Chỉnh sửa thông tin khách hàng</h1>
+            <p class="text-muted mb-0">Cập nhật chi tiết liên hệ và trạng thái truy cập.</p>
+        </div>
+        <a asp-area="Admin" asp-controller="Customer" asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Quay về danh sách
+        </a>
+    </div>
+</div>
+
+<div class="row g-4 admin-module-grid">
+    <div class="col-xl-8">
+        <div class="card shadow-sm admin-form-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="mb-0">Biểu mẫu chỉnh sửa</h5>
+                    <small class="text-muted">Các thay đổi sẽ áp dụng ngay sau khi lưu.</small>
+                </div>
+            </div>
+            <div class="card-body">
+                <form asp-area="Admin" asp-controller="Customer" asp-action="Edit" method="post" class="row g-3">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="Id" />
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <div class="col-md-12">
+                        <label class="form-label">Họ tên *</label>
+                        <input asp-for="FullName" class="form-control form-control-lg" />
+                        <span asp-validation-for="FullName" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Tên đăng nhập</label>
+                        <input asp-for="UserName" class="form-control" />
+                        <span asp-validation-for="UserName" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Đặt lại mật khẩu</label>
+                        <input asp-for="Password" class="form-control" placeholder="Để trống nếu không đổi" />
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Số điện thoại</label>
+                        <input asp-for="PhoneNumber" class="form-control" />
+                        <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Avatar (URL)</label>
+                        <input asp-for="Avatar" class="form-control" />
+                        <span asp-validation-for="Avatar" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label">Địa chỉ</label>
+                        <textarea asp-for="Address" class="form-control" rows="3"></textarea>
+                        <span asp-validation-for="Address" class="text-danger"></span>
+                    </div>
+                    <div class="col-12">
+                        <div class="form-check form-switch">
+                            <input asp-for="IsActive" class="form-check-input" type="checkbox" />
+                            <label class="form-check-label" asp-for="IsActive">Cho phép khách hàng sử dụng dịch vụ</label>
+                        </div>
+                    </div>
+                    <div class="col-12 d-flex justify-content-end gap-2">
+                        <button type="submit" class="btn btn-primary px-4">
+                            <i class="bi bi-save me-1"></i>Lưu thay đổi
+                        </button>
+                        <a asp-area="Admin" asp-controller="Customer" asp-action="Index" class="btn btn-outline-secondary px-4">Huỷ</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-4">
+        <div class="card shadow-sm admin-tip-card">
+            <div class="card-body">
+                <h6 class="text-uppercase text-muted fw-semibold mb-3">Lưu ý cập nhật</h6>
+                <ul class="list-unstyled small mb-0">
+                    <li class="mb-2 d-flex gap-2">
+                        <i class="bi bi-info-circle text-primary"></i>
+                        <span>Mật khẩu chỉ thay đổi khi nhập giá trị mới.</span>
+                    </li>
+                    <li class="mb-2 d-flex gap-2">
+                        <i class="bi bi-info-circle text-primary"></i>
+                        <span>Tạm khoá tài khoản nếu khách ngưng sử dụng dịch vụ dài hạn.</span>
+                    </li>
+                    <li class="d-flex gap-2">
+                        <i class="bi bi-info-circle text-primary"></i>
+                        <span>Cập nhật địa chỉ giúp đề xuất chi nhánh phù hợp.</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+
+@section Styles {
+    <style>
+        .admin-page-title h1 {
+            font-weight: 700;
+        }
+
+        .admin-module-grid {
+            position: relative;
+        }
+
+        .admin-module-grid::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(67, 97, 238, .07), rgba(99, 125, 255, .04));
+            border-radius: 20px;
+            z-index: -1;
+        }
+
+        .admin-form-card,
+        .admin-tip-card {
+            border: none;
+            border-radius: 18px;
+            box-shadow: 0 18px 40px rgba(15, 23, 42, .08);
+        }
+
+        .admin-form-card .form-label {
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        .admin-form-card .form-control,
+        .admin-form-card .form-select,
+        .admin-form-card textarea {
+            border-radius: 12px;
+            border: 1px solid #dbe4ff;
+            padding: 0.75rem 1rem;
+            transition: border-color .2s ease, box-shadow .2s ease;
+        }
+
+        .admin-form-card .form-control:focus,
+        .admin-form-card textarea:focus {
+            border-color: #6c63ff;
+            box-shadow: 0 0 0 0.2rem rgba(108, 99, 255, .15);
+        }
+
+        .admin-form-card button.btn-primary {
+            background: linear-gradient(120deg, #4f46e5, #7c3aed);
+            border: none;
+            box-shadow: 0 12px 30px rgba(79, 70, 229, .25);
+        }
+
+        @@media (max-width: 991.98px) {
+            .admin-module-grid::before {
+                border-radius: 12px;
+            }
+        }
+    </style>
+}

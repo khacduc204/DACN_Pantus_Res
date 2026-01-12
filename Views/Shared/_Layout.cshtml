@@ -1,4 +1,7 @@
-﻿<!DOCTYPE html>
+﻿@using System.Linq
+@using Microsoft.EntityFrameworkCore
+@inject KD_Restaurant.Models.KDContext DbContext
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -8,11 +11,8 @@
     <meta name="description" content="">
     <meta name="keywords" content="">
 
-    
     <!-- Thêm vào phần <head> -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;700&family=Playfair+Display:wght@500;700&display=swap" rel="stylesheet">
-
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Favicons -->
     <link href="~/assets/img/favicon.png" rel="icon">
@@ -33,6 +33,8 @@
    <!-- Main CSS File -->
     <link href="~/assets/css/main.css" rel="stylesheet">
 
+        @RenderSection("Styles", required: false)
+
 
     <!-- =======================================================
     * Template Name: Delicious
@@ -48,13 +50,19 @@
     <header id="header" class="header fixed-top">
 
         <div class="topbar d-flex align-items-center">
-            <div class="container d-flex justify-content-end justify-content-md-between">
-                <div class="contact-info d-flex align-items-center">
-                    <i class="bi bi-phone d-flex align-items-center d-none d-lg-block"><span>0978.843.662</span></i>
-                    <i class="bi bi-clock ms-4 d-none d-lg-flex align-items-center"><span>Mon-Sun: 9:00 AM - 23:00 PM</span></i>
+            <div class="container d-flex flex-wrap justify-content-end justify-content-md-between gap-3">
+                <div class="contact-info d-flex align-items-center text-uppercase small fw-semibold">
+                    <i class="bi bi-phone d-flex align-items-center d-none d-lg-block"><span class="ms-2">0978.843.662</span></i>
+                    <i class="bi bi-clock ms-4 d-none d-lg-flex align-items-center"><span class="ms-2">Mon - Sun: 9:00 - 23:00</span></i>
                 </div>
-                <a href="/Cart" class="cta-btn">Booka a table</a>
-                
+                <div class="topbar-cta d-flex gap-2">
+                    <a href="tel:0978843662" class="btn btn-sm btn-glow">
+                        <i class="bi bi-headset me-1"></i> Tổng đài hỗ trợ
+                    </a>
+                    <a href="/Cart" class="btn btn-sm btn-outline-light ms-auto">
+                        <i class="bi bi-calendar2-check me-1"></i> ĐẶT BÀN NGAY
+                    </a>
+                </div>
             </div>
         </div><!-- End Top Bar -->
 
@@ -74,18 +82,92 @@
                     <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
                 </nav>
 
-                <div class="d-flex align-items-center gap-3"></div>
-                    <a href="/Account/Login" class="btn btn-outline-light btn-sm d-flex align-items-center">
-                        <i class="bi bi-person"></i>
-                        <span class="ms-1 d-none d-md-inline">Đăng nhập</span>
-                    </a>
+                <div class="d-flex align-items-center gap-3 user-hub">
+                    @if (User.Identity?.IsAuthenticated ?? false)
+                    {
+                        string? displayName = User.Identity?.Name;
+                        string? avatarUrl = null;
+                        var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                        if (int.TryParse(userIdClaim, out var currentUserId))
+                        {
+                            var currentUser = DbContext.tblUser
+                                .AsNoTracking()
+                                .FirstOrDefault(u => u.IdUser == currentUserId);
+                            if (currentUser != null)
+                            {
+                                var composedName = string.Join(" ", new[] { currentUser.LastName, currentUser.FirstName }
+                                    .Where(x => !string.IsNullOrWhiteSpace(x)));
+                                displayName = string.IsNullOrWhiteSpace(composedName) ? currentUser.UserName : composedName;
+                                avatarUrl = currentUser.Avatar;
+                            }
+                        }
+
+                        var safeDisplayName = !string.IsNullOrWhiteSpace(displayName) ? displayName : User.Identity?.Name ?? string.Empty;
+                        var userInitial = safeDisplayName.Length > 0
+                            ? safeDisplayName.Substring(0, 1).ToUpper()
+                            : "?";
+                        <div class="dropdown">
+                            <button class="btn btn-user shadow-sm" type="button" aria-expanded="false" data-user-dropdown-toggle>
+                                <div class="d-flex align-items-center gap-2">
+                                    @if (!string.IsNullOrWhiteSpace(avatarUrl))
+                                    {
+                                        <img src="@avatarUrl" class="user-avatar-img" alt="@safeDisplayName" />
+                                    }
+                                    else
+                                    {
+                                        <span class="user-avatar">@userInitial</span>
+                                    }
+                                    <div class="text-start">
+                                        <span class="fw-semibold">@safeDisplayName</span>
+                                    </div>
+                                    <i class="bi bi-chevron-down small"></i>
+                                </div>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-4" data-user-dropdown-menu>
+                                <li>
+                                    <a class="dropdown-item py-2" asp-controller="Account" asp-action="Profile">
+                                        <i class="bi bi-person-lines-fill me-2"></i>Thông tin cá nhân
+                                    </a>
+                                </li>
+                                @if (User.IsInRole("Admin"))
+                                {
+                                    <li>
+                                        <a class="dropdown-item py-2" asp-area="Admin" asp-controller="Home" asp-action="Index">
+                                            <i class="bi bi-speedometer2 me-2"></i>Trang quản trị
+                                        </a>
+                                    </li>
+                                }
+                                <li><hr class="dropdown-divider" /></li>
+                                <li>
+                                    <form asp-controller="Account" asp-action="Logout" method="post" class="px-3">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-link p-0 w-100 text-danger fw-semibold">
+                                            <i class="bi bi-box-arrow-right me-2"></i>Đăng xuất
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    }
+                    else
+                    {
+                        <a href="/Account/Login" class="btn btn-outline-light btn-sm d-flex align-items-center">
+                            <i class="bi bi-box-arrow-in-right"></i>
+                            <span class="ms-1 d-none d-md-inline">Đăng nhập</span>
+                        </a>
+                        <a href="/Account/Register" class="btn btn-warning btn-sm d-none d-md-flex">
+                            <i class="bi bi-person-plus"></i>
+                            <span class="ms-1">Đăng ký</span>
+                        </a>
+                    }
                     <a href="/Cart" class="btn btn-outline-light btn-sm d-flex align-items-center position-relative">
                         <i class="bi bi-cart"></i>
                         <span class="ms-1 d-none d-md-inline">Giỏ hàng</span>
                         <span id="cart-count" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.7rem;">
                             @(ViewBag.CartCount ?? 0)
                         </span>
-                </a>
+                    </a>
+                </div>
             </div>
 
             </div>
@@ -149,7 +231,22 @@
                 </div>
 
                 <div class="col-lg-3 col-md-6">
-                    <h4>Follow Us</h4>
+                    <h4>Khám phá</h4>
+                    <ul class="footer-links list-unstyled">
+                        <li>
+                            <a asp-controller="About" asp-action="Index">Giới thiệu</a>
+                        </li>
+                        <li>
+                            <a asp-controller="Home" asp-action="Index" asp-fragment="menu">Thực đơn</a>
+                        </li>
+                        <li>
+                            <a asp-controller="Cart" asp-action="Index">Đặt bàn &amp; Giỏ hàng</a>
+                        </li>
+                        <li>
+                            <a asp-controller="Account" asp-action="Login">Tài khoản của bạn</a>
+                        </li>
+                    </ul>
+                    <h5 class="follow-heading">Kết nối</h5>
                     <div class="social-links d-flex">
                         <a href="#" class="twitter"><i class="bi bi-twitter-x"></i></a>
                         <a href="https://www.facebook.com/khacduc204" class="facebook"><i class="bi bi-facebook"></i></a>
@@ -174,6 +271,89 @@
 
     </footer>
 
+    <style>
+        .topbar {
+            background: linear-gradient(120deg, rgba(255,255,255,0.08), rgba(255,255,255,0));
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(6px);
+        }
+
+        .topbar .btn-glow {
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.35);
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .header .branding {
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .user-hub .btn-user {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 0.45rem 0.75rem;
+            border-radius: 999px;
+            color: #fff;
+        }
+
+        .user-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #fceabb, #f8b500);
+            color: #4a2c00;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+
+        .user-avatar-img {
+            width: 40px;
+            height: 40px;
+            border-radius: 999px;
+            object-fit: cover;
+            border: 2px solid rgba(255, 255, 255, 0.35);
+        }
+
+        .dropdown-menu {
+            min-width: 220px;
+        }
+
+        .footer-links li + li {
+            margin-top: 0.35rem;
+        }
+
+        .footer-links li a {
+            color: rgba(255, 255, 255, 0.75);
+            text-decoration: none;
+            transition: color 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .footer-links li a::before {
+            content: "⟶";
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.45);
+        }
+
+        .footer-links li a:hover {
+            color: #fff;
+        }
+
+        .footer .follow-heading {
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+            font-size: 1rem;
+        }
+    </style>
+
     <!-- Scroll Top -->
     <a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
 
@@ -192,9 +372,41 @@
     <!-- Main JS File -->
     <script src="~/assets/js/main.js"></script>
 
-    <!-- Bootstrap JS -->
-  
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Handle account dropdown manually to ensure it works even if Bootstrap JS fails to auto-init
+        document.addEventListener('DOMContentLoaded', function () {
+            const dropdownWrapper = document.querySelector('.user-hub .dropdown');
+            const dropdownToggle = document.querySelector('[data-user-dropdown-toggle]');
+            const dropdownMenu = document.querySelector('[data-user-dropdown-menu]');
+
+            if (!dropdownWrapper || !dropdownToggle || !dropdownMenu) {
+                return;
+            }
+
+            const closeMenu = () => {
+                dropdownMenu.classList.remove('show');
+                dropdownToggle.setAttribute('aria-expanded', 'false');
+            };
+
+            dropdownToggle.addEventListener('click', function (event) {
+                event.preventDefault();
+                const isOpen = dropdownMenu.classList.toggle('show');
+                dropdownToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+            });
+
+            document.addEventListener('click', function (event) {
+                if (!dropdownWrapper.contains(event.target)) {
+                    closeMenu();
+                }
+            });
+
+            document.addEventListener('keydown', function (event) {
+                if (event.key === 'Escape') {
+                    closeMenu();
+                }
+            });
+        });
+    </script>
 
     @RenderSection("Scripts", required: false)
 </body>

@@ -1,0 +1,186 @@
+@model KD_Restaurant.ViewModels.EmployeeManagementViewModel
+@{
+    ViewData["Title"] = "Quản lý nhân viên";
+    var roleFilter = Model.RoleFilter ?? "all";
+    var statusFilter = Model.StatusFilter ?? "all";
+}
+
+<section class="section dashboard">
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div>
+      <h1 class="h3 mb-1">Quản lý nhân viên</h1>
+      <p class="text-muted mb-0">Theo dõi tài khoản nội bộ, phân quyền và trạng thái hoạt động.</p>
+    </div>
+    <a asp-area="Admin" asp-controller="Employee" asp-action="Create" class="btn btn-primary shadow-sm">
+      <i class="bi bi-person-plus me-2"></i>Thêm nhân viên
+    </a>
+  </div>
+
+  @if (!string.IsNullOrWhiteSpace(Model.SuccessMessage))
+  {
+      <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+        <i class="bi bi-check-circle me-2"></i>@Model.SuccessMessage
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+  }
+
+  <div class="row g-3 mb-4">
+    <div class="col-xl-3 col-sm-6">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <p class="text-uppercase text-muted fs-12 mb-1">Tổng nhân viên</p>
+          <h3 class="fw-bold mb-0">@Model.TotalEmployees</h3>
+          <small class="text-muted">@Model.ActiveEmployees đang hoạt động</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-3 col-sm-6">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <p class="text-uppercase text-muted fs-12 mb-1">Quản trị viên</p>
+          <h3 class="fw-bold mb-0">@Model.AdminCount</h3>
+          <span class="badge bg-danger-subtle text-danger mt-2">@RoleNames.Admin</span>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-3 col-sm-6">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <p class="text-uppercase text-muted fs-12 mb-1">Quản lý</p>
+          <h3 class="fw-bold mb-0">@Model.ManagerCount</h3>
+          <span class="badge bg-primary-subtle text-primary mt-2">@RoleNames.Manager</span>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-3 col-sm-6">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <p class="text-uppercase text-muted fs-12 mb-1">Nhân viên vận hành</p>
+          <h3 class="fw-bold mb-0">@Model.StaffCount</h3>
+          <span class="badge bg-success-subtle text-success mt-2">@RoleNames.Staff</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card shadow-sm mb-4">
+    <div class="card-body">
+      <form method="get" class="row g-3 align-items-end">
+        <div class="col-lg-4">
+          <label class="form-label fw-semibold">Từ khóa</label>
+          <input type="text" name="search" value="@Model.SearchTerm" class="form-control" placeholder="Tên, tài khoản hoặc số điện thoại" />
+        </div>
+        <div class="col-lg-4">
+          <label class="form-label fw-semibold">Vai trò</label>
+          <select name="role" class="form-select">
+            <option value="all" selected="@(roleFilter == "all" ? "selected" : null)">Tất cả</option>
+            <option value="admin" selected="@(roleFilter == "admin" ? "selected" : null)">Quản trị viên</option>
+            <option value="manager" selected="@(roleFilter == "manager" ? "selected" : null)">Quản lý</option>
+            <option value="staff" selected="@(roleFilter == "staff" ? "selected" : null)">Nhân viên</option>
+          </select>
+        </div>
+        <div class="col-lg-3">
+          <label class="form-label fw-semibold">Trạng thái</label>
+          <select name="status" class="form-select">
+            <option value="all" selected="@(statusFilter == "all" ? "selected" : null)">Tất cả</option>
+            <option value="active" selected="@(statusFilter == "active" ? "selected" : null)">Đang hoạt động</option>
+            <option value="inactive" selected="@(statusFilter == "inactive" ? "selected" : null)">Đã khóa</option>
+          </select>
+        </div>
+        <div class="col-lg-1 d-flex gap-2 justify-content-end">
+          <button type="submit" class="btn btn-primary flex-fill"><i class="bi bi-funnel me-1"></i>Lọc</button>
+          <a asp-area="Admin" asp-controller="Employee" asp-action="Index" class="btn btn-light border">Đặt lại</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="card shadow-sm">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Nhân viên</th>
+              <th>Tài khoản</th>
+              <th>Vai trò</th>
+              <th>Điện thoại</th>
+              <th>Lần đăng nhập cuối</th>
+              <th>Trạng thái</th>
+              <th class="text-end">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            @if (!Model.Employees.Any())
+            {
+                <tr>
+                  <td colspan="7" class="text-center py-5">
+                    <i class="bi bi-people fs-1 text-muted d-block mb-2"></i>
+                    <p class="mb-0 text-muted">Chưa có nhân viên nào phù hợp bộ lọc hiện tại.</p>
+                  </td>
+                </tr>
+            }
+            else
+            {
+                foreach (var employee in Model.Employees)
+                {
+                    var badgeClass = employee.IsActive ? "bg-success-subtle text-success" : "bg-secondary-subtle text-secondary";
+                    var statusLabel = employee.IsActive ? "Đang hoạt động" : "Đã khóa";
+                    var fallbackName = string.IsNullOrWhiteSpace(employee.DisplayName) ? employee.UserName : employee.DisplayName;
+                    var avatarInitial = !string.IsNullOrWhiteSpace(fallbackName)
+                      ? char.ToUpperInvariant(fallbackName.Trim()[0])
+                      : '?';
+                    <tr>
+                      <td>
+                        <div class="d-flex align-items-center gap-3">
+                          @if (!string.IsNullOrWhiteSpace(employee.AvatarUrl))
+                          {
+                              <img src="@employee.AvatarUrl" class="rounded-circle" width="42" height="42" alt="avatar" />
+                          }
+                          else
+                          {
+                              <div class="rounded-circle bg-light border d-flex align-items-center justify-content-center" style="width:42px;height:42px;">
+                                <span class="fw-semibold text-muted">@avatarInitial</span>
+                              </div>
+                          }
+                          <div>
+                            <div class="fw-semibold">@employee.DisplayName</div>
+                            <small class="text-muted">@employee.Description</small>
+                          </div>
+                        </div>
+                      </td>
+                      <td>@employee.UserName</td>
+                      <td><span class="badge @employee.RoleBadgeClass">@employee.RoleName</span></td>
+                      <td>@(string.IsNullOrWhiteSpace(employee.PhoneNumber) ? "-" : employee.PhoneNumber)</td>
+                      <td>
+                        @(employee.LastLogin.HasValue
+                            ? employee.LastLogin.Value.ToString("dd/MM/yyyy HH:mm")
+                            : "Chưa đăng nhập")
+                      </td>
+                      <td><span class="badge @badgeClass">@statusLabel</span></td>
+                      <td class="text-end">
+                        <div class="btn-group">
+                          <a asp-area="Admin" asp-controller="Employee" asp-action="Details" asp-route-id="@employee.Id" class="btn btn-light btn-sm" title="Xem chi tiết">
+                            <i class="bi bi-eye"></i>
+                          </a>
+                          <a asp-area="Admin" asp-controller="Employee" asp-action="Edit" asp-route-id="@employee.Id" class="btn btn-outline-primary btn-sm" title="Chỉnh sửa">
+                            <i class="bi bi-pencil"></i>
+                          </a>
+                          <form asp-area="Admin" asp-controller="Employee" asp-action="ToggleStatus" method="post" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@employee.Id" />
+                            <button type="submit" class="btn btn-outline-@(employee.IsActive ? "danger" : "success") btn-sm" title="@(employee.IsActive ? "Khoá tài khoản" : "Kích hoạt lại")" onclick="return confirm('Bạn chắc chắn muốn @(employee.IsActive ? "khoá" : "kích hoạt") tài khoản này?');">
+                              <i class="bi @(employee.IsActive ? "bi-lock" : "bi-unlock")"></i>
+                            </button>
+                          </form>
+                        </div>
+                      </td>
+                    </tr>
+                }
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>

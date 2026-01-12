@@ -1,90 +1,207 @@
-@model IEnumerable<KD_Restaurant.Models.tblMenuItem>
+@model KD_Restaurant.ViewModels.MenuManagementViewModel
 
 @{
     ViewData["Title"] = "Quản lý món ăn";
     Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+    var items = Model.Items ?? new List<KD_Restaurant.ViewModels.MenuItemRowViewModel>();
+    var filteredItems = items.Count;
 }
+
 @if (TempData["Success"] != null)
 {
     <div class="alert alert-success alert-dismissible fade show" role="alert">
-        @TempData["Success"]
+        <i class="bi bi-check-circle me-2"></i>@TempData["Success"]
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 }
 
-<div class="pagetitle">
-    <h2>Danh sách món ăn</h2>
+<div class="pagetitle d-flex flex-wrap justify-content-between align-items-center gap-3">
+    <div>
+        <h1 class="mb-1">Quản lý món ăn</h1>
+        <p class="text-muted mb-0">Theo dõi món ăn, giá bán và trạng thái hiển thị.</p>
+    </div>
+    <div class="btn-group">
+        <a class="btn btn-outline-primary" asp-area="Admin" asp-controller="MenuCategory" asp-action="Index">
+            <i class="bi bi-folder me-1"></i>Quản lý danh mục
+        </a>
+        <a class="btn btn-success" asp-area="Admin" asp-controller="MenuItem" asp-action="Create">
+            <i class="bi bi-plus-circle me-1"></i>Món ăn mới
+        </a>
+    </div>
 </div>
 
-<p>
-    <a class="btn btn-success" asp-area="Admin" asp-controller="MenuItem" asp-action="Create">
-        <i class="bi bi-file-earmark-text me-1"></i>Thêm món ăn
-    </a>
-</p>
+<div class="row g-3 mb-4">
+    <div class="col-md-6 col-lg-4">
+        <div class="card info-card shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title mb-1">Tổng món ăn</h5>
+                        <p class="text-muted mb-0">Bao gồm tất cả trạng thái</p>
+                    </div>
+                    <span class="display-6 fw-bold text-primary">@Model.TotalItems</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-4">
+        <div class="card info-card shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title mb-1">Đang hiển thị</h5>
+                        <p class="text-muted mb-0">Khách hàng nhìn thấy</p>
+                    </div>
+                    <span class="display-6 fw-bold text-success">@Model.ActiveItems</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-12 col-lg-4">
+        <div class="card info-card shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title mb-1">Danh mục đang dùng</h5>
+                        <p class="text-muted mb-0">Phân theo loại món</p>
+                    </div>
+                    <span class="display-6 fw-bold text-info">@Model.TotalCategories</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-<section class="section dashboard">
-    <div class="row">
-        <div class="col-12">
-            <div class="card recent-sales overflow-auto">
-                <div class="card-body mt-4">
-                    <table class="table table-borderless datatable">
-                        <thead>
+<form asp-area="Admin" asp-controller="MenuItem" asp-action="Index" method="get" class="card shadow-sm p-3 mb-4">
+    <div class="row g-3 align-items-end">
+        <div class="col-md-6">
+            <label class="form-label">Từ khoá tìm kiếm</label>
+            <input type="text" name="search" value="@Model.SearchTerm" class="form-control" placeholder="Tên món, alias hoặc mô tả" />
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Danh mục</label>
+            <select class="form-select" name="categoryId" asp-items="(SelectList)ViewBag.CategoryFilterOptions">
+                <option value="">Tất cả danh mục</option>
+            </select>
+        </div>
+        <div class="col-md-2 d-flex gap-2">
+            <button type="submit" class="btn btn-primary flex-fill">
+                <i class="bi bi-search me-1"></i>Lọc
+            </button>
+            <a class="btn btn-outline-secondary flex-fill" asp-area="Admin" asp-controller="MenuItem" asp-action="Index">
+                Xoá lọc
+            </a>
+        </div>
+    </div>
+</form>
+
+<div class="card shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                    <h5 class="mb-1">Danh sách món ăn (@filteredItems)</h5>
+                    @if (!string.IsNullOrWhiteSpace(Model.SearchTerm) || Model.SelectedCategoryId.HasValue)
+                    {
+                        <small class="text-muted">Đang lọc theo điều kiện tìm kiếm hiện tại.</small>
+                    }
+                    else
+                    {
+                        <small class="text-muted">Hiển thị mới nhất.</small>
+                    }
+                </div>
+                <a class="btn btn-primary" asp-area="Admin" asp-controller="MenuItem" asp-action="Create">
+                    <i class="bi bi-plus-lg me-1"></i>Món ăn mới
+                </a>
+            </div>
+            <div class="table-responsive">
+                @if (filteredItems == 0)
+                {
+                    <div class="p-5 text-center text-muted">
+                        <i class="bi bi-emoji-frown fs-2 d-block mb-2"></i>
+                        Không tìm thấy món ăn phù hợp với điều kiện lọc.
+                    </div>
+                }
+                else
+                {
+                    <table class="table align-middle mb-0">
+                        <thead class="text-uppercase small text-muted">
                             <tr>
-                                <th scope="col">Mã</th>
-                                <th scope="col">Tên món</th>
-                                <th scope="col">Alias</th>
-                                <th scope="col">Mô tả</th>
-                                <th scope="col">Giá</th>
-                                <th scope="col">Giá KM</th>
-                                <th scope="col">Ảnh</th>
-                                <th scope="col">Loại</th>
-                                <th scope="col">Số lượng</th>
-                                <th scope="col">Sao</th>
-                                <th scope="col">Trạng thái</th>
-                                <th scope="col">Chức năng</th>
+                                <th>Món ăn</th>
+                                <th>Danh mục</th>
+                                <th class="text-end">Giá</th>
+                                <th class="text-center">Số lượng</th>
+                                <th class="text-center">Đánh giá</th>
+                                <th class="text-center">Trạng thái</th>
+                                <th class="text-end">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (var item in Model)
+                            @foreach (var item in items)
                             {
                                 <tr>
-                                    <td class="align-middle">@item.IdMenuItem</td>
-                                    <td class="align-middle">@item.Title</td>
-                                    <td class="align-middle">@item.Alias</td>
-                                    <td class="align-middle">@item.Description</td>
-                                    <td class="align-middle">@String.Format("{0:N0}", item.Price)</td>
-                                    <td class="align-middle">@((item.PriceSale.HasValue) ? String.Format("{0:N0}", item.PriceSale) : "-")</td>
-                                    <td class="align-middle">
-                                         @if (!string.IsNullOrEmpty(item.Image))
-                                        {
-                                            <img src="@item.Image" alt="@item.Title" style="max-width:60px;max-height:40px;" />
-                                        }
-                                    </td>
-                                    <td class="align-middle">@item.IdCategory</td>
-                                    <td class="align-middle">@item.Quantity</td>
-                                    <td class="align-middle">@item.Star</td>
-                                    <td class="align-middle">
-                                        <div class="badge p-2 my-1 @(item.IsActive ? "bg-success" : "bg-warning text-dark")">
-                                        @(item.IsActive ? "Hiện" : "Ẩn")
+                                    <td>
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div class="ratio ratio-1x1" style="width:60px;">
+                                                @if (!string.IsNullOrWhiteSpace(item.Image))
+                                                {
+                                                    <img src="@item.Image" class="rounded" style="object-fit:cover;" alt="@item.Title" />
+                                                }
+                                                else
+                                                {
+                                                    <div class="bg-light rounded d-flex align-items-center justify-content-center text-muted">
+                                                        <i class="bi bi-image"></i>
+                                                    </div>
+                                                }
+                                            </div>
+                                            <div>
+                                                <div class="fw-semibold">@item.Title</div>
+                                                <div class="text-muted small">
+                                                    @(!string.IsNullOrWhiteSpace(item.Description) ? item.Description : "Chưa có mô tả")
+                                                </div>
+                                                @if (!string.IsNullOrWhiteSpace(item.Alias))
+                                                {
+                                                    <div class="small text-muted">/@item.Alias</div>
+                                                }
+                                            </div>
                                         </div>
                                     </td>
-                                    <td class="align-middle" style="min-width: 160px; width: 160px;">
-                                        <a href="/Admin/MenuItem/IsActive/@item.IdMenuItem" class="btn @(item.IsActive ? "btn-warning" : "btn-success") mx-1 px-2 py-1" title="Đổi trạng thái">
-                                            <i class="fa-regular @(item.IsActive ? "fa-eye-slash" : "fa-eye") fs-6"></i>
-                                        </a>
-                                        <a href="/Admin/MenuItem/Edit/@item.IdMenuItem" class="btn btn-primary mx-1 px-2 py-1" title="Sửa">
-                                            <i class="fa-regular fa-edit fs-6"></i>
-                                        </a>
-                                        <a href="/Admin/MenuItem/Delete/@item.IdMenuItem" class="btn btn-danger mx-1 px-2 py-1" title="Xóa" onclick="return confirm('Bạn có chắc muốn xoá món này?');">
-                                            <i class="fa-regular fa-trash-can fs-6"></i>
-                                        </a>
+                                    <td class="text-muted">@(string.IsNullOrWhiteSpace(item.CategoryName) ? "Chưa phân loại" : item.CategoryName)</td>
+                                    <td class="text-end">
+                                        <div class="fw-semibold text-primary">@string.Format("{0:N0}", item.Price) đ</div>
+                                        @if (item.PriceSale.HasValue && item.PriceSale.Value > 0)
+                                        {
+                                            <div class="text-muted small">KM: @string.Format("{0:N0}", item.PriceSale) đ</div>
+                                        }
+                                    </td>
+                                    <td class="text-center">@item.Quantity</td>
+                                    <td class="text-center">@item.Star ★</td>
+                                    <td class="text-center">
+                                        <span class="badge @(item.IsActive ? "bg-success" : "bg-warning text-dark")">
+                                            @(item.IsActive ? "Hiển thị" : "Đang ẩn")
+                                        </span>
+                                    </td>
+                                    <td class="text-end">
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <a href="/Admin/MenuItem/IsActive/@item.Id" class="btn btn-outline-secondary" title="Đổi trạng thái">
+                                                <i class="bi @(item.IsActive ? "bi-eye-slash" : "bi-eye")"></i>
+                                            </a>
+                                            <a href="/Admin/MenuItem/Edit/@item.Id" class="btn btn-outline-primary" title="Sửa">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <a href="/Admin/MenuItem/Delete/@item.Id" class="btn btn-outline-danger" onclick="return confirm('Bạn có chắc muốn xoá món này?');" title="Xoá">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
+                                        </div>
                                     </td>
                                 </tr>
                             }
                         </tbody>
                     </table>
-                </div>
+                }
             </div>
         </div>
     </div>
-</section>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,215 @@
+@model KD_Restaurant.ViewModels.MenuCategoryManagementViewModel
+@{
+    ViewData["Title"] = "Danh mục món ăn";
+    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle me-2"></i>@TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle me-2"></i>@TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="pagetitle d-flex flex-wrap justify-content-between align-items-center gap-3">
+    <div>
+        <h1 class="mb-1">Quản lý danh mục món ăn</h1>
+        <p class="text-muted mb-0">Tuỳ chỉnh nhóm món ăn, ảnh đại diện và mô tả hiển thị.</p>
+    </div>
+    <div>
+        <a class="btn btn-success" href="#category-create" data-scroll>
+            <i class="bi bi-plus-circle me-1"></i>Thêm danh mục mới
+        </a>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card info-card shadow-sm h-100">
+            <div class="card-body">
+                <h5 class="card-title">Tổng danh mục</h5>
+                <p class="display-6 fw-bold text-primary mb-0">@Model.TotalItems</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card info-card shadow-sm h-100">
+            <div class="card-body">
+                <h5 class="card-title">Đang hiển thị</h5>
+                <p class="display-6 fw-bold text-success mb-0">@Model.ActiveItems</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card info-card shadow-sm h-100">
+            <div class="card-body">
+                <h5 class="card-title">Đang ẩn</h5>
+                <p class="display-6 fw-bold text-warning mb-0">@Model.InactiveItems</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-5">
+        <div class="card shadow-sm h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Danh sách danh mục</h5>
+                <span class="badge bg-light text-dark">@Model.Categories.Count danh mục</span>
+            </div>
+            <div class="card-body p-0">
+                @if (!Model.Categories.Any())
+                {
+                    <div class="p-5 text-center text-muted">
+                        <i class="bi bi-collection fs-2 d-block mb-2"></i>
+                        Chưa có danh mục nào. Tạo mới ngay!
+                    </div>
+                }
+                else
+                {
+                    <div class="list-group list-group-flush">
+                        @foreach (var category in Model.Categories)
+                        {
+                            var isActive = Model.SelectedCategoryId == category.Id;
+                            <a class="list-group-item list-group-item-action d-flex gap-3 @(isActive ? "active" : string.Empty)" asp-area="Admin" asp-controller="MenuCategory" asp-action="Index" asp-route-id="@category.Id">
+                                <div>
+                                    <div class="fw-semibold">@category.Title</div>
+                                    <div class="small @(isActive ? "text-white-50" : "text-muted")">@(!string.IsNullOrWhiteSpace(category.Description) ? category.Description : "Chưa có mô tả")</div>
+                                    <div class="mt-2">
+                                        <span class="badge @(category.IsActive ? "bg-success" : "bg-secondary")">@(category.IsActive ? "Đang hiển thị" : "Đang ẩn")</span>
+                                        <span class="badge bg-light text-dark">@category.ItemCount món</span>
+                                    </div>
+                                </div>
+                                <div class="ms-auto text-end">
+                                    @if (!string.IsNullOrWhiteSpace(category.Alias))
+                                    {
+                                        <div class="small @(isActive ? "text-white" : "text-muted")">/@category.Alias</div>
+                                    }
+                                    @if (!string.IsNullOrWhiteSpace(category.Image))
+                                    {
+                                        <span class="badge bg-info text-dark mt-2">Có ảnh</span>
+                                    }
+                                </div>
+                            </a>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-7">
+        <div class="card shadow-sm mb-4" id="category-create">
+            <div class="card-header">
+                <h5 class="mb-0">Thêm danh mục mới</h5>
+            </div>
+            <div class="card-body">
+                <form asp-area="Admin" asp-controller="MenuCategory" asp-action="Create" method="post" class="row g-3">
+                    @Html.AntiForgeryToken()
+                    <div class="col-md-6">
+                        <label class="form-label">Tên danh mục *</label>
+                        <input asp-for="CreateModel.Title" class="form-control" required />
+                        <span asp-validation-for="CreateModel.Title" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Alias</label>
+                        <input asp-for="CreateModel.Alias" class="form-control" placeholder="vd: mon-chinh" />
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Mô tả</label>
+                        <textarea asp-for="CreateModel.Description" rows="3" class="form-control" placeholder="Gợi ý nội dung cho danh mục này"></textarea>
+                    </div>
+                    <div class="col-md-8">
+                        <label class="form-label">Ảnh (URL)</label>
+                        <input asp-for="CreateModel.ImageUrl" class="form-control" placeholder="https://..." />
+                    </div>
+                    <div class="col-md-4 d-flex align-items-center">
+                        <div class="form-check form-switch mt-3 mt-md-0">
+                            <input asp-for="CreateModel.IsActive" class="form-check-input" checked />
+                            <label class="form-check-label" for="CreateModel_IsActive">Hiển thị ngay</label>
+                        </div>
+                    </div>
+                    <div class="col-12 text-end">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save me-1"></i>Lưu danh mục
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="mb-0">Chỉnh sửa danh mục</h5>
+                    <small class="text-muted">Chọn danh mục ở bảng bên trái để chỉnh sửa.</small>
+                </div>
+                @if (Model.SelectedCategoryId.HasValue)
+                {
+                    <form asp-area="Admin" asp-controller="MenuCategory" asp-action="Delete" method="post" onsubmit="return confirm('Xoá danh mục này?');">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@Model.SelectedCategoryId" />
+                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                            <i class="bi bi-trash"></i> Xoá
+                        </button>
+                    </form>
+                }
+            </div>
+            <div class="card-body">
+                @if (Model.EditModel == null)
+                {
+                    <div class="text-center text-muted py-5">
+                        <i class="bi bi-mouse fs-2 d-block mb-2"></i>
+                        Vui lòng chọn một danh mục để chỉnh sửa.
+                    </div>
+                }
+                else
+                {
+                    <form asp-area="Admin" asp-controller="MenuCategory" asp-action="Update" method="post" class="row g-3">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="EditModel.Id" />
+                        <div class="col-md-6">
+                            <label class="form-label">Tên danh mục *</label>
+                            <input asp-for="EditModel.Title" class="form-control" required />
+                            <span asp-validation-for="EditModel.Title" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Alias</label>
+                            <input asp-for="EditModel.Alias" class="form-control" />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Mô tả</label>
+                            <textarea asp-for="EditModel.Description" rows="3" class="form-control"></textarea>
+                        </div>
+                        <div class="col-md-8">
+                            <label class="form-label">Ảnh (URL)</label>
+                            <input asp-for="EditModel.ImageUrl" class="form-control" />
+                        </div>
+                        <div class="col-md-4 d-flex align-items-center">
+                            <div class="form-check form-switch mt-3 mt-md-0">
+                                <input asp-for="EditModel.IsActive" class="form-check-input" />
+                                <label class="form-check-label" for="EditModel_IsActive">Hiển thị</label>
+                            </div>
+                        </div>
+                        <div class="col-12 text-end">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save me-1"></i>Lưu thay đổi
+                            </button>
+                        </div>
+                    </form>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

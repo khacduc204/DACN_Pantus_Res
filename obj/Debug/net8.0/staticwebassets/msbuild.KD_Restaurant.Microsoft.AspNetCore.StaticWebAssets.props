@@ -15114,8 +15114,8 @@
       <RelatedAsset></RelatedAsset>
       <AssetTraitName></AssetTraitName>
       <AssetTraitValue></AssetTraitValue>
-      <Fingerprint>wriy92ift3</Fingerprint>
-      <Integrity>jGRy4mvFxlkZ9E2qVAr+qXjCJdY6o6yF4W6k9mICZe4=</Integrity>
+      <Fingerprint>dfsujaynon</Fingerprint>
+      <Integrity>l9lc9gMP8rWGktGXMnAePpktkzBb3bG/k8JSm7Nd0yo=</Integrity>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\assets\css\main.css'))</OriginalItemSpec>
@@ -16230,8 +16230,8 @@
       <RelatedAsset></RelatedAsset>
       <AssetTraitName></AssetTraitName>
       <AssetTraitValue></AssetTraitValue>
-      <Fingerprint>lssqqxhxcq</Fingerprint>
-      <Integrity>ux3pibg5cPb05U3hzZdMXLpVtzWC2l4bIlptDt8ClIM=</Integrity>
+      <Fingerprint>7dn3lb52f1</Fingerprint>
+      <Integrity>9VUTt7WRy4SjuH/w406iTUgx1v7cIuVLkRymS1tUShU=</Integrity>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\assets\vendor\bootstrap-icons\fonts\bootstrap-icons.woff'))</OriginalItemSpec>
@@ -16248,8 +16248,8 @@
       <RelatedAsset></RelatedAsset>
       <AssetTraitName></AssetTraitName>
       <AssetTraitValue></AssetTraitValue>
-      <Fingerprint>xeyugjpn2t</Fingerprint>
-      <Integrity>R2rfQrQDJQmPz6izarPnaRhrtPbOaiSXU+LhqcIr+Z4=</Integrity>
+      <Fingerprint>od0yn6f0e3</Fingerprint>
+      <Integrity>bHVxA2ShylYEJncW9tKJl7JjGf2weM8R4LQqtm/y6mE=</Integrity>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\assets\vendor\bootstrap-icons\fonts\bootstrap-icons.woff2'))</OriginalItemSpec>
@@ -17279,6 +17279,132 @@
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\KD_Restaurant.zojps49gtf.bundle.scp.css'))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\avatars\0ae3349b-b395-41db-80e6-3ab62a97f9ec.jpg'))">
+      <SourceType>Package</SourceType>
+      <SourceId>KD_Restaurant</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/KD_Restaurant</BasePath>
+      <RelativePath>uploads/avatars/0ae3349b-b395-41db-80e6-3ab62a97f9ec.jpg</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <Fingerprint>e02ykcvanl</Fingerprint>
+      <Integrity>Ug2762TBoKjux7GG5UEq+x/B3hNeLEtx94shPNh9lOo=</Integrity>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\avatars\0ae3349b-b395-41db-80e6-3ab62a97f9ec.jpg'))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\avatars\20e7eabe-a7a6-4b50-aab2-f53a28c8d860.jpg'))">
+      <SourceType>Package</SourceType>
+      <SourceId>KD_Restaurant</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/KD_Restaurant</BasePath>
+      <RelativePath>uploads/avatars/20e7eabe-a7a6-4b50-aab2-f53a28c8d860.jpg</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <Fingerprint>e02ykcvanl</Fingerprint>
+      <Integrity>Ug2762TBoKjux7GG5UEq+x/B3hNeLEtx94shPNh9lOo=</Integrity>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\avatars\20e7eabe-a7a6-4b50-aab2-f53a28c8d860.jpg'))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\avatars\26815202-eb18-42ef-b070-f2dc9a73a334.jpg'))">
+      <SourceType>Package</SourceType>
+      <SourceId>KD_Restaurant</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/KD_Restaurant</BasePath>
+      <RelativePath>uploads/avatars/26815202-eb18-42ef-b070-f2dc9a73a334.jpg</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <Fingerprint>e02ykcvanl</Fingerprint>
+      <Integrity>Ug2762TBoKjux7GG5UEq+x/B3hNeLEtx94shPNh9lOo=</Integrity>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\avatars\26815202-eb18-42ef-b070-f2dc9a73a334.jpg'))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\avatars\5cc64355-985c-4f5a-a18f-bc6c43b50a6a.jpg'))">
+      <SourceType>Package</SourceType>
+      <SourceId>KD_Restaurant</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/KD_Restaurant</BasePath>
+      <RelativePath>uploads/avatars/5cc64355-985c-4f5a-a18f-bc6c43b50a6a.jpg</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <Fingerprint>e02ykcvanl</Fingerprint>
+      <Integrity>Ug2762TBoKjux7GG5UEq+x/B3hNeLEtx94shPNh9lOo=</Integrity>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\avatars\5cc64355-985c-4f5a-a18f-bc6c43b50a6a.jpg'))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\avatars\7ddf7959-981e-41af-8897-1a81d8577c95.jpg'))">
+      <SourceType>Package</SourceType>
+      <SourceId>KD_Restaurant</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/KD_Restaurant</BasePath>
+      <RelativePath>uploads/avatars/7ddf7959-981e-41af-8897-1a81d8577c95.jpg</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <Fingerprint>e02ykcvanl</Fingerprint>
+      <Integrity>Ug2762TBoKjux7GG5UEq+x/B3hNeLEtx94shPNh9lOo=</Integrity>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\avatars\7ddf7959-981e-41af-8897-1a81d8577c95.jpg'))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\avatars\7fa1abc3-9fb3-4967-b99d-9d1955dc8ace.jpg'))">
+      <SourceType>Package</SourceType>
+      <SourceId>KD_Restaurant</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/KD_Restaurant</BasePath>
+      <RelativePath>uploads/avatars/7fa1abc3-9fb3-4967-b99d-9d1955dc8ace.jpg</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <Fingerprint>trl1cx5q28</Fingerprint>
+      <Integrity>h1sMfP9fl7GozWWc13JPPv4Bs0auYrXo30TIFn3/pyc=</Integrity>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\avatars\7fa1abc3-9fb3-4967-b99d-9d1955dc8ace.jpg'))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\avatars\ab58ef49-a16d-4456-b321-208bba90b2b5.jpg'))">
+      <SourceType>Package</SourceType>
+      <SourceId>KD_Restaurant</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/KD_Restaurant</BasePath>
+      <RelativePath>uploads/avatars/ab58ef49-a16d-4456-b321-208bba90b2b5.jpg</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <Fingerprint>e02ykcvanl</Fingerprint>
+      <Integrity>Ug2762TBoKjux7GG5UEq+x/B3hNeLEtx94shPNh9lOo=</Integrity>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\avatars\ab58ef49-a16d-4456-b321-208bba90b2b5.jpg'))</OriginalItemSpec>
     </StaticWebAsset>
   </ItemGroup>
 </Project>

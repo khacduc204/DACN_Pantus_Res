@@ -1,0 +1,328 @@
+@using System.Linq
+@model KD_Restaurant.ViewModels.ProfileViewModel
+@{
+    ViewData["Title"] = "Thông tin cá nhân";
+    var initials = "?";
+    if (!string.IsNullOrWhiteSpace(Model.FirstName))
+    {
+        initials = Model.FirstName!.Substring(0, 1).ToUpper();
+    }
+    else if (!string.IsNullOrWhiteSpace(Model.UserName))
+    {
+        initials = Model.UserName.Substring(0, 1).ToUpper();
+    }
+    var displayName = string.Join(" ", new[] { Model.LastName, Model.FirstName }.Where(x => !string.IsNullOrWhiteSpace(x)));
+    var hasCustomAvatar = !string.IsNullOrWhiteSpace(Model.AvatarUrl);
+}
+
+<section class="profile-wrapper py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 col-lg-10">
+                <div class="profile-card shadow-lg">
+                    <div class="row g-0">
+                        <div class="col-md-4 profile-summary">
+                                    <div class="profile-avatar-frame">
+                                        <img src="@Url.Content(Model.AvatarUrl ?? "~/assets/img/chefs/chefs-1.jpg")" alt="Avatar" class="profile-avatar-img" data-avatar-preview>
+                                        <span class="avatar-initials" data-avatar-initials style="opacity:@(hasCustomAvatar ? 0 : 1)">@initials</span>
+                                    </div>
+                                    <button type="button" class="btn btn-outline-light btn-sm w-100 mt-3 d-flex align-items-center justify-content-center gap-1" data-avatar-trigger>
+                                        <i class="bi bi-camera"></i>
+                                        <span>Cập nhật ảnh</span>
+                                    </button>
+                                    <small class="text-muted d-block mt-2">PNG/JPG ≤ 2MB</small>
+                                    <span asp-validation-for="AvatarFile" class="text-warning small"></span>
+
+                                    <div class="profile-summary-text mt-4">
+                                        <p class="eyebrow mb-1">Thành viên</p>
+                                        <h4 class="mb-1">@displayName</h4>
+                                        <p class="text-muted">KD Restaurant</p>
+                                    </div>
+
+                                    <ul class="list-unstyled profile-meta">
+                                        <li>
+                                            <i class="bi bi-person"></i>
+                                            <span>@Model.UserName</span>
+                                        </li>
+                                        @if (!string.IsNullOrWhiteSpace(Model.PhoneNumber))
+                                        {
+                                            <li>
+                                                <i class="bi bi-telephone"></i>
+                                                <span>@Model.PhoneNumber</span>
+                                            </li>
+                                        }
+                                    </ul>
+
+                                    <div class="mt-4">
+                                        <a href="/" class="btn btn-outline-light w-100">Quay lại trang chủ</a>
+                                    </div>
+                                </div>
+
+                        <div class="col-md-8 p-4 p-lg-5 bg-white">
+                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                <div>
+                                    <h3 class="mb-0">Chỉnh sửa thông tin</h3>
+                                    <small class="text-muted">Cập nhật dữ liệu giúp trải nghiệm chuẩn xác hơn</small>
+                                </div>
+                                <span class="badge rounded-pill bg-dark-subtle text-dark fw-medium">ID: @Model.IdUser</span>
+                            </div>
+
+                            @if (!string.IsNullOrWhiteSpace(Model.SuccessMessage))
+                            {
+                                <div class="alert alert-success" role="alert">
+                                    @Model.SuccessMessage
+                                </div>
+                            }
+
+                                    <form asp-action="Profile" method="post" enctype="multipart/form-data" class="row g-3" id="profile-form">
+                                @Html.AntiForgeryToken()
+                                <input asp-for="IdUser" type="hidden" />
+                                        <input asp-for="AvatarFile" type="file" accept="image/*" class="d-none" data-avatar-input id="avatar-file-input" />
+
+                                <div class="col-12">
+                                    <div class="form-floating">
+                                        <input asp-for="UserName" class="form-control" readonly />
+                                        <label asp-for="UserName"></label>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <input asp-for="LastName" class="form-control" />
+                                        <label asp-for="LastName"></label>
+                                        <span asp-validation-for="LastName" class="text-danger small"></span>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <input asp-for="FirstName" class="form-control" />
+                                        <label asp-for="FirstName"></label>
+                                        <span asp-validation-for="FirstName" class="text-danger small"></span>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <input asp-for="PhoneNumber" class="form-control" />
+                                        <label asp-for="PhoneNumber"></label>
+                                        <span asp-validation-for="PhoneNumber" class="text-danger small"></span>
+                                    </div>
+                                </div>
+
+                                <div class="col-12">
+                                    <div class="form-floating">
+                                        <textarea asp-for="Description" class="form-control" style="height: 120px"></textarea>
+                                        <label asp-for="Description"></label>
+                                        <span asp-validation-for="Description" class="text-danger small"></span>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 d-flex justify-content-end gap-3 flex-wrap">
+                                    <button type="submit" class="btn btn-outline-secondary"
+                                            formaction="@Url.Action("Logout", "Account")" formmethod="post">
+                                        Đăng xuất
+                                    </button>
+                                    <button type="submit" class="btn btn-amber">Lưu thay đổi</button>
+                                </div>
+                            </form>
+                                <div class="security-card mt-5">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <div>
+                                            <h4 class="mb-1">Bảo mật tài khoản</h4>
+                                            <small class="text-muted">Đổi mật khẩu để tài khoản luôn an toàn</small>
+                                        </div>
+                                        <i class="bi bi-shield-lock fs-3 text-primary"></i>
+                                    </div>
+
+                                    @if (!string.IsNullOrWhiteSpace(Model.PasswordSuccess))
+                                    {
+                                        <div class="alert alert-success">@Model.PasswordSuccess</div>
+                                    }
+                                    else if (!string.IsNullOrWhiteSpace(Model.PasswordError))
+                                    {
+                                        <div class="alert alert-warning">@Model.PasswordError</div>
+                                    }
+
+                                    <form asp-action="ChangePassword" method="post" class="row g-3">
+                                        @Html.AntiForgeryToken()
+                                        <div class="col-12">
+                                            <div class="form-floating">
+                                                <input asp-for="CurrentPassword" class="form-control" autocomplete="current-password" />
+                                                <label asp-for="CurrentPassword"></label>
+                                                <span asp-validation-for="CurrentPassword" class="text-danger small"></span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-floating">
+                                                <input asp-for="NewPassword" class="form-control" autocomplete="new-password" />
+                                                <label asp-for="NewPassword"></label>
+                                                <span asp-validation-for="NewPassword" class="text-danger small"></span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-floating">
+                                                <input asp-for="ConfirmPassword" class="form-control" autocomplete="new-password" />
+                                                <label asp-for="ConfirmPassword"></label>
+                                                <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+                                            </div>
+                                        </div>
+                                        <div class="col-12 text-end">
+                                            <button type="submit" class="btn btn-dark rounded-pill px-4">Đổi mật khẩu</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .profile-wrapper {
+        background: linear-gradient(120deg, rgba(15, 32, 39, 0.1), rgba(44, 83, 100, 0.1));
+        padding-top: 8rem;
+        padding-bottom: 5rem;
+        margin-top: 4.5rem;
+    }
+
+    .profile-card {
+        border-radius: 30px;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .profile-summary {
+        background: linear-gradient(160deg, #0f2027, #203a43, #2c5364);
+        color: #fff;
+        padding: 3rem 2.5rem;
+    }
+
+    .profile-avatar-frame {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            border-radius: 32px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.25);
+            box-shadow: 0 25px 60px rgba(0,0,0,0.25);
+            background: rgba(255,255,255,0.08);
+        }
+
+        .profile-avatar-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .avatar-initials {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            font-weight: 600;
+            color: rgba(255,255,255,0.85);
+            backdrop-filter: blur(3px);
+            background: rgba(0,0,0,0.35);
+        }
+
+        .profile-summary-text .eyebrow {
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            opacity: 0.7;
+        }
+
+    .profile-meta li {
+        display: flex;
+        gap: 0.75rem;
+        align-items: center;
+        margin-bottom: 0.6rem;
+        font-size: 0.95rem;
+    }
+
+    .btn-amber {
+        background: linear-gradient(135deg, #ffb347, #ffcc33);
+        border: none;
+        color: #442c02;
+        font-weight: 600;
+        padding: 0.8rem 1.9rem;
+        border-radius: 999px;
+        transition: box-shadow 0.2s ease, transform 0.2s ease;
+    }
+
+    .btn-amber:hover {
+        box-shadow: 0 15px 30px rgba(255, 179, 71, 0.35);
+        transform: translateY(-2px);
+    }
+
+        .security-card {
+            border: 1px solid rgba(15,23,42,0.08);
+            border-radius: 24px;
+            padding: 2rem;
+            background: linear-gradient(135deg, rgba(15,23,42,0.04), rgba(255,255,255,0.7));
+        }
+
+    @@media (max-width: 768px) {
+        .profile-summary {
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .profile-summary .btn {
+            width: 100%;
+        }
+        .profile-wrapper {
+            padding-top: 7rem;
+            margin-top: 4rem;
+        }
+    }
+</style>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const fileInput = document.querySelector('[data-avatar-input]');
+                const previewImg = document.querySelector('[data-avatar-preview]');
+                const initialsOverlay = document.querySelector('[data-avatar-initials]');
+                const triggerBtn = document.querySelector('[data-avatar-trigger]');
+
+                if (!fileInput || !previewImg) {
+                    return;
+                }
+
+                if (triggerBtn) {
+                    triggerBtn.addEventListener('click', function () {
+                        fileInput.click();
+                    });
+                }
+
+                fileInput.addEventListener('change', function (event) {
+                    const files = event.target.files;
+                    if (!files || files.length === 0) {
+                        return;
+                    }
+                    const file = files[0];
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        const result = e.target && e.target.result ? e.target.result : null;
+                        if (result) {
+                            previewImg.src = result;
+                        }
+                        if (initialsOverlay) {
+                            initialsOverlay.style.opacity = '0';
+                        }
+                    };
+                    reader.readAsDataURL(file);
+                });
+            });
+        </script>
+}

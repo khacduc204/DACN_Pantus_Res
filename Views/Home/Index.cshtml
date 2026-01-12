@@ -82,37 +82,154 @@
 
       <!-- Section Title -->
       <div class="container section-title" data-aos="fade-up">
-        <h2>Thực Đơn</h2>
-        <div><span>Các món ăn của</span> <span class="description-title">Nhà Hàng</span></div>
+        <h2>Món nổi bật</h2>
+        <div><span>Những món ăn được yêu thích của</span> <span class="description-title">nhà hàng</span></div>
+        <p class="mt-2 text-muted">Những lựa chọn tinh túy nhất trong thực đơn được đội ngũ bếp trưởng cập nhật mỗi ngày.</p>
       </div><!-- End Section Title -->
 
-      <div class="container isotope-layout" data-default-filter="*" data-layout="masonry" data-sort="original-order">
+      <div class="container">
 
-        <div class="row" data-aos="fade-up" data-aos-delay="100">
-             <div class="col-lg-12 d-flex justify-content-center">
-                <ul class="menu-filters isotope-filters">
-                    <li data-filter="*" class="filter-active">All</li>
-
-            @if (ViewBag.Categories != null)
-            {
-                foreach (var category in ViewBag.Categories)
-                {
-                    <li data-filter=".filter-@category.Alias">@category.Title</li>
-                }
+        <style>
+            .featured-menu-grid {
+                margin-top: 1rem;
+                margin-bottom: 3rem;
             }
-                </ul>
-            </div>
+
+            .featured-menu-grid > [class*='col-'] {
+                margin-bottom: 2rem;
+            }
+
+            .featured-dish-card {
+                border: 1px solid rgba(0,0,0,0.08);
+                border-radius: 18px;
+                overflow: hidden;
+                box-shadow: 0 8px 24px rgba(15,23,42,0.1);
+                transition: transform .3s ease, box-shadow .3s ease;
+                background: #fff;
+                display: flex;
+                flex-direction: column;
+                min-height: 520px;
+                height: 100%;
+            }
+
+            .featured-dish-card:hover {
+                transform: translateY(-8px);
+                box-shadow: 0 16px 48px rgba(15,23,42,0.2);
+            }
+
+            .dish-thumb img {
+                width: 100%;
+                height: 220px;
+                object-fit: cover;
+            }
+
+            .dish-price {
+                position: absolute;
+                bottom: 16px;
+                right: 16px;
+                background: rgba(0,0,0,0.75);
+                color: #fff;
+                padding: 6px 16px;
+                border-radius: 999px;
+                display: flex;
+                flex-direction: column;
+                align-items: flex-end;
+                gap: 2px;
+                font-weight: 600;
+            }
+
+            .dish-price .old-price {
+                font-size: 0.85rem;
+                text-decoration: line-through;
+                opacity: 0.7;
+            }
+
+            .dish-body {
+                padding: 1.5rem;
+                display: flex;
+                flex-direction: column;
+                flex: 1;
+            }
+
+            .dish-category {
+                font-size: 0.75rem;
+                text-transform: uppercase;
+                letter-spacing: 0.1em;
+                color: #a27b5c;
+                margin-bottom: 0.5rem;
+                font-weight: 600;
+            }
+
+            .dish-title {
+                font-size: 1.35rem;
+                font-weight: 700;
+                color: #2c1c13;
+                margin-bottom: 0.75rem;
+                line-height: 1.3;
+                min-height: 2.6rem;
+            }
+
+            .dish-desc {
+                color: #5c4c43;
+                font-size: 0.95rem;
+                line-height: 1.6;
+                margin-bottom: 1.25rem;
+                min-height: 4.8rem;
+            }
+
+            .dish-actions {
+                margin-top: auto;
+                padding-top: 1rem;
+            }
+
+            .dish-actions .btn {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 0.5rem;
+                padding: 0.75rem 1.5rem;
+                font-weight: 600;
+                transition: all .25s ease;
+                width: 100%;
+                margin-bottom: 0.5rem;
+            }
+
+            .dish-actions .btn:last-child {
+                margin-bottom: 0;
+            }
+
+            .dish-actions .btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            }
+
+            .btn-view-all {
+                border-radius: 999px;
+                padding: 0.75rem 2.5rem;
+                font-weight: 600;
+                background: #ffb03b;
+                border: none;
+                color: #2c1c13;
+                box-shadow: 0 20px 40px rgba(255,176,59,0.35);
+                text-transform: uppercase;
+                letter-spacing: 0.08em;
+            }
+
+            .btn-view-all:hover {
+                background: #ff9800;
+                color: #fff;
+            }
+        </style>
+
+        <div class="row g-4 featured-menu-grid" data-aos="fade-up" data-aos-delay="200">
+            @await Component.InvokeAsync("MenuItem")
         </div>
 
-
-        <div class="row isotope-container" data-aos="fade-up" data-aos-delay="200">
-
-               @await Component.InvokeAsync("MenuItem")
-               
-
+        <div class="text-center mt-4" data-aos="fade-up" data-aos-delay="350">
+            <a class="btn btn-view-all" asp-controller="Menu" asp-action="Index">
+                Xem tất cả thực đơn
+            </a>
         </div>
-
-
 
       </div>
 
@@ -120,7 +237,7 @@
 
 
        
-        <!-- Events Section -->
+        @* <!-- Events Section -->
         <section id="events" class="events section">
 
             <img class="slider-bg" src="~/assets/img/events-bg.jpg" alt="" data-aos="fade-in">
@@ -494,7 +611,7 @@
 
             </div>
 
-        </section><!-- /Testimonials Section -->
+        </section><!-- /Testimonials Section --> *@
         <!-- Contact Section -->
         <section id="contact" class="contact section">
 
@@ -576,3 +693,69 @@
             </div>
 
         </section><!-- /Contact Section -->
+
+@section Scripts {
+    <script>
+        (() => {
+            const initHomeMenu = () => {
+                const updateCartBadge = (count) => {
+                    const badge = document.getElementById('cart-count');
+                    if (badge) {
+                        badge.textContent = count;
+                        badge.style.display = count > 0 ? 'inline-block' : 'none';
+                    }
+                };
+
+                const showToast = (message, isSuccess) => {
+                    if (isSuccess) {
+                        const toast = document.createElement('div');
+                        toast.className = 'alert alert-success position-fixed top-0 start-50 translate-middle-x mt-3';
+                        toast.style.zIndex = '9999';
+                        toast.textContent = message;
+                        document.body.appendChild(toast);
+                        setTimeout(() => toast.remove(), 3000);
+                    }
+                };
+
+                document.querySelectorAll('.btn-add-to-cart').forEach(btn => {
+                    btn.addEventListener('click', async () => {
+                        const id = btn.dataset.itemId;
+                        const originalContent = btn.innerHTML;
+                        btn.disabled = true;
+                        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span><span>Đang thêm...</span>';
+                        
+                        try {
+                            const response = await fetch('/Cart/AddToCart', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+                                credentials: 'same-origin',
+                                body: new URLSearchParams({ id, quantity: 1 })
+                            });
+                            const data = await response.json();
+                            
+                            if (data.success) {
+                                showToast(data.message || 'Đã thêm món vào giỏ hàng!', true);
+                                const currentCount = parseInt(document.getElementById('cart-count')?.textContent || '0');
+                                updateCartBadge(currentCount + 1);
+                            } else {
+                                alert(data.message || 'Không thể thêm món vào giỏ hàng.');
+                            }
+                        } catch (err) {
+                            console.error(err);
+                            alert('Không thể thêm món, vui lòng thử lại.');
+                        } finally {
+                            btn.disabled = false;
+                            btn.innerHTML = originalContent;
+                        }
+                    });
+                });
+            };
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initHomeMenu);
+            } else {
+                initHomeMenu();
+            }
+        })();
+    </script>
+}

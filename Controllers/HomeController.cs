@@ -31,13 +31,9 @@ namespace KD_Restaurant.Controllers
         {
             return View();
         }
-         public IActionResult Menu()
+        public IActionResult Menu()
         {
-            var categories = _context.tblMenuCategory.Where(c => c.IsActive).ToList();
-            var menuItems = _context.tblMenuItem.Where(i => i.IsActive).ToList();
-
-            ViewBag.Categories = categories;
-            return View(menuItems);
+            return RedirectToAction(nameof(MenuController.Index), "Menu");
         }
 
 

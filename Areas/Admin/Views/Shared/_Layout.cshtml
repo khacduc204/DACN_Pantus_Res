@@ -1,3 +1,9 @@
+@using System
+@using System.Collections.Generic
+@using System.Linq
+@using Microsoft.EntityFrameworkCore
+@using System.Security.Claims
+@inject KD_Restaurant.Models.KDContext DbContext
 <!DOCTYPE html>
 <html lang="en">
 
@@ -32,6 +38,8 @@
 <!-- Template Main CSS File -->
 <link href="/admin/assets/css/style.css" rel="stylesheet">
 
+@RenderSection("Styles", required: false)
+
   <!-- =======================================================
   * Template Name: NiceAdmin - v2.4.1
   * Template URL: https://bootstrapmade.com/nice-admin-bootstrap-admin-html-template/
@@ -47,7 +55,7 @@
 
     <div class="d-flex align-items-center justify-content-between">
       <a href="index.html" class="logo d-flex align-items-center">
-        <img src="assets/img/logo.png" alt="">
+        <img src="/admin/assets/img/logo.png" alt="">
         <span class="d-none d-lg-block">KD RESTAURANT</span>
       </a>
       <i class="bi bi-list toggle-sidebar-btn"></i>
@@ -162,7 +170,7 @@
 
             <li class="message-item">
               <a href="#">
-                <img src="assets/img/messages-1.jpg" alt="" class="rounded-circle">
+                <img src="/admin/assets/img/messages-1.jpg" alt="" class="rounded-circle">
                 <div>
                   <h4>Maria Hudson</h4>
                   <p>Velit asperiores et ducimus soluta repudiandae labore officia est ut...</p>
@@ -176,7 +184,7 @@
 
             <li class="message-item">
               <a href="#">
-                <img src="assets/img/messages-2.jpg" alt="" class="rounded-circle">
+                <img src="/admin/assets/img/messages-2.jpg" alt="" class="rounded-circle">
                 <div>
                   <h4>Anna Nelson</h4>
                   <p>Velit asperiores et ducimus soluta repudiandae labore officia est ut...</p>
@@ -190,7 +198,7 @@
 
             <li class="message-item">
               <a href="#">
-                <img src="assets/img/messages-3.jpg" alt="" class="rounded-circle">
+                <img src="/admin/assets/img/messages-3.jpg" alt="" class="rounded-circle">
                 <div>
                   <h4>David Muldon</h4>
                   <p>Velit asperiores et ducimus soluta repudiandae labore officia est ut...</p>
@@ -211,25 +219,82 @@
         </li><!-- End Messages Nav -->
 
         <li class="nav-item dropdown pe-3">
+            @{
+              var adminDisplayName = User.Identity?.Name ?? "Tài khoản";
+              string? adminAvatar = null;
+              var idClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+              var roleClaim = User.FindFirstValue(ClaimTypes.Role);
+              if (int.TryParse(idClaim, out var adminId))
+              {
+                var adminUser = DbContext.tblUser
+                  .AsNoTracking()
+                  .FirstOrDefault(u => u.IdUser == adminId);
+                if (adminUser != null)
+                {
+                  var composed = string.Join(" ", new[] { adminUser.LastName, adminUser.FirstName }
+                    .Where(part => !string.IsNullOrWhiteSpace(part)));
+                  adminDisplayName = string.IsNullOrWhiteSpace(composed) ? adminUser.UserName : composed;
+                  adminAvatar = adminUser.Avatar;
+                }
+              }
+              var adminInitial = !string.IsNullOrWhiteSpace(adminDisplayName)
+                ? adminDisplayName.Substring(0, 1).ToUpper()
+                : "?";
+
+              var permissionSet = string.IsNullOrWhiteSpace(roleClaim)
+                ? new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+                : DbContext.tblRolePermission
+                  .AsNoTracking()
+                  .Where(rp => rp.IsAllowed && rp.Role != null && rp.Role.RoleName == roleClaim)
+                  .Select(rp => rp.PermissionKey)
+                  .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+              bool HasPermission(string key) => permissionSet.Contains(key);
+              var canDashboard = HasPermission(KD_Restaurant.Utilities.PermissionKeys.Dashboard);
+              var canMenuStructure = HasPermission(KD_Restaurant.Utilities.PermissionKeys.MenuStructure);
+              var canMenuCatalog = HasPermission(KD_Restaurant.Utilities.PermissionKeys.MenuCatalog);
+              var canBooking = HasPermission(KD_Restaurant.Utilities.PermissionKeys.BookingManagement);
+              var canOrders = HasPermission(KD_Restaurant.Utilities.PermissionKeys.OrderManagement);
+              var canTables = HasPermission(KD_Restaurant.Utilities.PermissionKeys.TableManagement);
+              var canSlider = HasPermission(KD_Restaurant.Utilities.PermissionKeys.SliderManagement);
+              var canCustomer = HasPermission(KD_Restaurant.Utilities.PermissionKeys.CustomerManagement);
+              var canEmployee = HasPermission(KD_Restaurant.Utilities.PermissionKeys.EmployeeManagement);
+              var canRole = HasPermission(KD_Restaurant.Utilities.PermissionKeys.RoleManagement);
+              var canBranch = HasPermission(KD_Restaurant.Utilities.PermissionKeys.BranchManagement);
+              var canRestaurantInfo = HasPermission(KD_Restaurant.Utilities.PermissionKeys.RestaurantSettings);
+            }
 
           <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
-            <img src="assets/img/profile-img.jpg" alt="Profile" class="rounded-circle">
-            <span class="d-none d-md-block dropdown-toggle ps-2">K. Anderson</span>
-          </a><!-- End Profile Iamge Icon -->
+            @if (!string.IsNullOrWhiteSpace(adminAvatar))
+            {
+                <img src="@adminAvatar" alt="Avatar" class="rounded-circle admin-avatar-img">
+            }
+            else
+            {
+                <span class="rounded-circle admin-avatar-fallback">@adminInitial</span>
+            }
+            <span class="d-none d-md-block dropdown-toggle ps-2">@adminDisplayName</span>
+          </a><!-- End Profile Image Icon -->
 
           <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
             <li class="dropdown-header">
-              <h6>Kevin Anderson</h6>
-              <span>Web Designer</span>
+              <h6>@adminDisplayName</h6>
+              <span>Quản trị viên KD Restaurant</span>
             </li>
             <li>
               <hr class="dropdown-divider">
             </li>
 
             <li>
-              <a class="dropdown-item d-flex align-items-center" href="users-profile.html">
+              <a class="dropdown-item d-flex align-items-center" href="/Account/Profile">
                 <i class="bi bi-person"></i>
-                <span>My Profile</span>
+                <span>Thông tin cá nhân</span>
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item d-flex align-items-center" href="/">
+                <i class="bi bi-arrow-return-left"></i>
+                <span>Quay lại website</span>
               </a>
             </li>
             <li>
@@ -237,30 +302,11 @@
             </li>
 
             <li>
-              <a class="dropdown-item d-flex align-items-center" href="users-profile.html">
-                <i class="bi bi-gear"></i>
-                <span>Account Settings</span>
-              </a>
-            </li>
-            <li>
-              <hr class="dropdown-divider">
-            </li>
-
-            <li>
-              <a class="dropdown-item d-flex align-items-center" href="pages-faq.html">
-                <i class="bi bi-question-circle"></i>
-                <span>Need Help?</span>
-              </a>
-            </li>
-            <li>
-              <hr class="dropdown-divider">
-            </li>
-
-            <li>
-              <a class="dropdown-item d-flex align-items-center" href="#">
-                <i class="bi bi-box-arrow-right"></i>
-                <span>Sign Out</span>
-              </a>
+              <form asp-area="" asp-controller="Account" asp-action="Logout" method="post" class="dropdown-item d-flex align-items-center gap-2">
+                @Html.AntiForgeryToken()
+                <i class="bi bi-box-arrow-right text-danger"></i>
+                <button type="submit" class="btn btn-link p-0 text-danger fw-semibold">Đăng xuất</button>
+              </form>
             </li>
 
           </ul><!-- End Profile Dropdown Items -->
@@ -274,115 +320,202 @@
  <!-- ======= Sidebar ======= -->
  <aside id="sidebar" class=" sidebar">
    <ul class="accordion sidebar-nav" id="accordionExample">
+     @if (canDashboard)
+     {
        <li class="nav-item">
-               <a class="nav-link collapsed" href="/admin/home"><i class="fa-solid fa-bars me-2 fs-5"></i> Thống kê</a>
+       <a class="nav-link collapsed" href="/admin/home"><i class="fa-solid fa-bars me-2 fs-5"></i> Thống kê</a>
+       </li>
+     }
+
+     @if (canMenuStructure)
+     {
+       <li class="nav-item">
+       <button class="accordion-button collapsed nav-link" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false">
+         <i class="fa-solid fa-bars me-2 fs-5"></i> Quản lý menu
+       </button>
+       <ul id="collapseOne" class="nav-item accordion-collapse collapse" data-bs-parent="#accordionExample">
+         <li class="nav-item">
+           <a class="ps-0 nav-link collapsed" href="/Admin/Menu"><i class="me-2"></i>Danh sách</a>
+         </li>
+         <li class="nav-item">
+           <a class="ps-0 nav-link collapsed" href="/Admin/Menu/Create"><i class="me-2"></i>Thêm mới</a>
+         </li>
+       </ul>
+       </li>
+     }
+
+     @if (canTables || canBooking)
+     {
+       <li class="nav-item">
+       <button class="accordion-button collapsed nav-link" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false">
+         <i class="fa-solid fa-sliders me-2 fs-5"></i>Đặt bàn
+       </button>
+       <ul id="collapseTwo" class="nav-item accordion-collapse collapse" data-bs-parent="#accordionExample">
+         @if (canTables)
+         {
+           <li class="nav-item">
+             <a class="ps-0 nav-link collapsed" href="/Admin/Tables"><i class="me-2"></i>Sơ đồ bàn</a>
            </li>
-     <li class="nav-item">
-         <button class="accordion-button collapsed nav-link " type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false">
-             <i class="fa-solid fa-bars me-2 fs-5"></i> Quản lý menu
-         </button>
-         <ul id="collapseOne" class="nav-item accordion-collapse collapse" data-bs-parent="#accordionExample">
-             <li class="nav-item">
-                 <a class="ps-0 nav-link collapsed" href="/Admin/Menu"><i class="me-2"></i>Danh sách</a>
-             </li>
-             <li class="nav-item">
-                     <a class="ps-0 nav-link collapsed" href="/Admin/Menu/Create"><i class="me-2"></i>Thêm mới</a>
-             </li>
-         </ul>
-     </li>
-         <li class="nav-item">
-             <button class="accordion-button collapsed nav-link " type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false">
-                 <i class="fa-solid fa-sliders me-2 fs-5"></i>Đặt bàn
-             </button>
-             <ul id="collapseTwo" class="nav-item accordion-collapse collapse" data-bs-parent="#accordionExample">
-                 <li class="nav-item">
-                     <a class="ps-0 nav-link collapsed" href="/Admin/Slider"><i class="me-2"></i>Sơ đồ bàn</a>
-                 </li>
-                 <li class="nav-item">
-                     <a class="ps-0 nav-link collapsed" href="/Admin/Slider/Create"><i class="me-2"></i>Danh sách lịch đặt bàn</a>
-                 </li>
-                 <li class="nav-item">
-                     <a class="ps-0 nav-link collapsed" href="/Admin/Slider/Booking"><i class="me-2"></i>Lịch sử đặt bàn</a>
-             </ul>
-         </li>
+         }
+         @if (canBooking)
+         {
            <li class="nav-item">
-             <button class="accordion-button collapsed nav-link " type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false">
-                 <i class="fa-solid fa-book-bookmark me-2 fs-5"></i> Hoá đơn
-             </button>
-             <ul id="collapseThree" class="nav-item accordion-collapse collapse" data-bs-parent="#accordionExample">
-                 <li class="nav-item">
-                     <a class="ps-0 nav-link collapsed" href="/Admin/Book"><i class="me-2"></i>Đơn hiện tại</a>
-                 </li>
-                 <li class="nav-item">
-                     <a class="ps-0 nav-link collapsed" href="/Admin/Book/Create"><i class="me-2"></i>Lịch sử hoá đơn</a>
-                 </li>
-             </ul>
-         </li>
+             <a class="ps-0 nav-link collapsed" href="/Admin/Bookings"><i class="me-2"></i>Danh sách lịch đặt bàn</a>
+           </li>
            <li class="nav-item">
-             <button class="accordion-button collapsed nav-link " type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false">
-                 <i class="fa-solid fa-feather fs-5 me-2"></i> Quản lý thực đơn
-             </button>
-             <ul id="collapseFour" class="nav-item accordion-collapse collapse" data-bs-parent="#accordionExample">
-                 <li class="nav-item">
-                     <a class="ps-0 nav-link collapsed" href="/Admin/MenuItem"><i class="me-2"></i>Danh sách</a>
-                 </li>
-                 <li class="nav-item">
-                     <a class="ps-0 nav-link collapsed" href="/Admin/MenuItem/Create"><i class="me-2"></i>Thêm mới</a>
-                 </li>
-             </ul>
+             <a class="ps-0 nav-link collapsed" asp-area="Admin" asp-controller="Bookings" asp-action="History"><i class="me-2"></i>Lịch sử đặt bàn</a>
+           </li>
+         }
+       </ul>
+       </li>
+     }
+
+     @if (canOrders)
+     {
+       <li class="nav-item">
+       <button class="accordion-button collapsed nav-link" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false">
+         <i class="fa-solid fa-book-bookmark me-2 fs-5"></i> Hoá đơn
+       </button>
+       <ul id="collapseThree" class="nav-item accordion-collapse collapse" data-bs-parent="#accordionExample">
+         <li class="nav-item">
+           <a class="ps-0 nav-link collapsed" asp-area="Admin" asp-controller="Book" asp-action="Index"><i class="me-2"></i>Đơn hiện tại</a>
          </li>
          <li class="nav-item">
-             <button class="accordion-button collapsed nav-link " type="button" data-bs-toggle="collapse" data-bs-target="#collapseFive" aria-expanded="false">
-                 <i class="fa-solid fa-pen me-2 fs-6"></i> Quản lý nhân viên
-             </button>
-             <ul id="collapseFive" class="nav-item accordion-collapse collapse" data-bs-parent="#accordionExample">
-                 <li class="nav-item">
-                     <a class="ps-0 nav-link collapsed" href="/Admin/Publisher"><i class="me-2"></i>Danh sách</a>
-                 </li>
-                 <li class="nav-item">
-                     <a class="ps-0 nav-link collapsed" href="/Admin/Publisher/Create"><i class="me-2"></i>Thêm mới</a>
-                 </li>
-             </ul>
+           <a class="ps-0 nav-link collapsed" asp-area="Admin" asp-controller="Book" asp-action="History"><i class="me-2"></i>Lịch sử hoá đơn</a>
+         </li>
+       </ul>
+       </li>
+     }
+
+     @if (canMenuCatalog)
+     {
+       <li class="nav-item">
+       <button class="accordion-button collapsed nav-link" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false">
+         <i class="fa-solid fa-feather fs-5 me-2"></i> Quản lý thực đơn
+       </button>
+       <ul id="collapseFour" class="nav-item accordion-collapse collapse" data-bs-parent="#accordionExample">
+         <li class="nav-item">
+           <a class="ps-0 nav-link collapsed" href="/Admin/MenuItem"><i class="me-2"></i>Danh sách món ăn</a>
          </li>
          <li class="nav-item">
-             <button class="accordion-button collapsed nav-link " type="button" data-bs-toggle="collapse" data-bs-target="#collapseSix" aria-expanded="false">
-                 <i class="fa-solid fa-user me-2 fs-6"></i> Quản lý người dùng
-             </button>
-             <ul id="collapseSix" class="nav-item accordion-collapse collapse" data-bs-parent="#accordionExample">
-                 <li class="nav-item">
-                     <a class="ps-0 nav-link collapsed" href="/Admin/User"><i class="me-2"></i>Danh sách</a>
-                 </li>
-                 <li class="nav-item">
-                     <a class="ps-0 nav-link collapsed" href="/Admin/User/Create"><i class="me-2"></i>Thêm mới</a>
-                 </li>
-             </ul>
+           <a class="ps-0 nav-link collapsed" href="/Admin/MenuItem/Create"><i class="me-2"></i>Thêm món ăn</a>
          </li>
          <li class="nav-item">
-             <button class="accordion-button collapsed nav-link " type="button" data-bs-toggle="collapse" data-bs-target="#collapseSeven" aria-expanded="false">
-                 <i class="fa-brands fa-blogger fs-5 me-2 fw-blod"></i> Quản lý khách hàng
-             </button>
-             <ul id="collapseSeven" class="nav-item accordion-collapse collapse" data-bs-parent="#accordionExample">
-                 <li class="nav-item">
-                     <a class="ps-0 nav-link collapsed" href="/Admin/Blog"><i class="me-2"></i>Danh sách</a>
-                 </li>
-                 <li class="nav-item">
-                     <a class="ps-0 nav-link collapsed" href="/Admin/Blog/Create"><i class="me-2"></i>Thêm mới</a>
-                 </li>
-             </ul>
+           <a class="ps-0 nav-link collapsed" href="/Admin/MenuCategory"><i class="me-2"></i>Danh mục món ăn</a>
          </li>
-          <li class="nav-item">
-              <button class="accordion-button collapsed nav-link " type="button" data-bs-toggle="collapse" data-bs-target="#collapseEight" aria-expanded="false">
-                  <i class="fa-solid fa-gear me-2 fs-5"></i> Quản lý slider
-              </button>
-              <ul id="collapseEight" class="nav-item accordion-collapse collapse" data-bs-parent="#accordionExample">
-                  <li class="nav-item">
-                      <a class="ps-0 nav-link collapsed" href="/Admin/Slider"><i class="me-2"></i>Danh sách</a>
-                  </li>
-                  <li class="nav-item">
-                      <a class="ps-0 nav-link collapsed" href="/Admin/Slider/Create"><i class="me-2"></i>Thêm mới</a>
-                  </li>
-              </ul>
-        
+         <li class="nav-item">
+           <a class="ps-0 nav-link collapsed" href="/Admin/MenuCategory#category-create"><i class="me-2"></i>Thêm danh mục</a>
+         </li>
+       </ul>
+       </li>
+     }
+
+     @* @if (canBranch || canRestaurantInfo)
+     {
+       <li class="nav-item">
+       <button class="accordion-button collapsed nav-link" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSettings" aria-expanded="false">
+         <i class="fa-solid fa-gears fs-5 me-2"></i> Thiết lập nhà hàng
+       </button>
+       <ul id="collapseSettings" class="nav-item accordion-collapse collapse" data-bs-parent="#accordionExample">
+         @if (canBranch)
+         {
+           <li class="nav-item">
+             <a class="ps-0 nav-link collapsed" href="/Admin/Branch"><i class="me-2"></i>Thiết lập cơ sở</a>
+           </li>
+         }
+         @if (canRestaurantInfo)
+         {
+           <li class="nav-item">
+             <a class="ps-0 nav-link collapsed" href="/Admin/RestaurantInfo"><i class="me-2"></i>Thông tin nhà hàng</a>
+           </li>
+         }
+       </ul>
+       </li>
+     } *@
+
+     @if (canEmployee || canRole)
+     {
+       <li class="nav-item">
+       <button class="accordion-button collapsed nav-link" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFive" aria-expanded="false">
+         <i class="fa-solid fa-pen me-2 fs-6"></i> Quản lý nhân viên
+       </button>
+       <ul id="collapseFive" class="nav-item accordion-collapse collapse" data-bs-parent="#accordionExample">
+         @if (canEmployee)
+         {
+           <li class="nav-item">
+             <a class="ps-0 nav-link collapsed" asp-area="Admin" asp-controller="Employee" asp-action="Index"><i class="me-2"></i>Danh sách nhân viên</a>
+           </li>
+           <li class="nav-item">
+             <a class="ps-0 nav-link collapsed" asp-area="Admin" asp-controller="Employee" asp-action="Create"><i class="me-2"></i>Thêm nhân viên</a>
+           </li>
+         }
+         @if (canRole)
+         {
+           <li class="nav-item">
+             <a class="ps-0 nav-link collapsed" asp-area="Admin" asp-controller="Role" asp-action="Index"><i class="me-2"></i>Phân quyền & vai trò</a>
+           </li>
+         }
+       </ul>
+       </li>
+     }
+
+     @if (canCustomer)
+     {
+       <li class="nav-item">
+       <button class="accordion-button collapsed nav-link" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSeven" aria-expanded="false">
+         <i class="fa-brands fa-blogger fs-5 me-2 fw-blod"></i> Quản lý khách hàng
+       </button>
+       <ul id="collapseSeven" class="nav-item accordion-collapse collapse" data-bs-parent="#accordionExample">
+         <li class="nav-item">
+           <a class="ps-0 nav-link collapsed" href="/Admin/Customer"><i class="me-2"></i>Danh sách khách hàng</a>
+         </li>
+         <li class="nav-item">
+           <a class="ps-0 nav-link collapsed" href="/Admin/Customer/Create"><i class="me-2"></i>Thêm khách hàng</a>
+         </li>
+       </ul>
+       </li>
+     }
+
+     @if (canSlider)
+     {
+       <li class="nav-item">
+       <button class="accordion-button collapsed nav-link" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEight" aria-expanded="false">
+         <i class="fa-solid fa-gear me-2 fs-5"></i> Quản lý slider
+       </button>
+       <ul id="collapseEight" class="nav-item accordion-collapse collapse" data-bs-parent="#accordionExample">
+         <li class="nav-item">
+           <a class="ps-0 nav-link collapsed" href="/Admin/Slider"><i class="me-2"></i>Danh sách</a>
+         </li>
+         <li class="nav-item">
+           <a class="ps-0 nav-link collapsed" href="/Admin/Slider/Create"><i class="me-2"></i>Thêm mới</a>
+         </li>
+       </ul>
+       </li>
+     }
+
+     @if (canBranch || canRestaurantInfo)
+     {
+       <li class="nav-item">
+       <button class="accordion-button collapsed nav-link" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSettings" aria-expanded="false">
+         <i class="fa-solid fa-gears fs-5 me-2"></i> Thiết lập nhà hàng
+       </button>
+       <ul id="collapseSettings" class="nav-item accordion-collapse collapse" data-bs-parent="#accordionExample">
+         @if (canBranch)
+         {
+           <li class="nav-item">
+             <a class="ps-0 nav-link collapsed" href="/Admin/Branch"><i class="me-2"></i>Thiết lập cơ sở</a>
+           </li>
+         }
+         @if (canRestaurantInfo)
+         {
+           <li class="nav-item">
+             <a class="ps-0 nav-link collapsed" href="/Admin/RestaurantInfo"><i class="me-2"></i>Thông tin nhà hàng</a>
+           </li>
+         }
+       </ul>
+       </li>
+     }
+     
    </ul>
    </aside><!-- End Sidebar-->
 
@@ -407,6 +540,37 @@
   </footer><!-- End Footer -->
 
   <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+
+    <style>
+    .admin-avatar-img {
+      width: 38px;
+      height: 38px;
+      object-fit: cover;
+      border-radius: 999px;
+      border: 2px solid rgba(255, 255, 255, 0.4);
+    }
+
+    .admin-avatar-fallback {
+      width: 38px;
+      height: 38px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      background: linear-gradient(135deg, #f8d67a, #f3a953);
+      color: #3e1f00;
+    }
+
+    .profile .dropdown-item form,
+    .profile .dropdown-item button,
+    .profile form.dropdown-item {
+      width: 100%;
+    }
+
+    .profile form.dropdown-item button {
+      text-align: left;
+    }
+    </style>
 
 <!-- Vendor JS Files -->
 <script src="/admin/assets/vendor/apexcharts/apexcharts.min.js"></script>

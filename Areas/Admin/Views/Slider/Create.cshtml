@@ -5,37 +5,166 @@
     Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
 }
 
-<h2>Thêm slider</h2>
+<div class="pagetitle">
+    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+        <div>
+            <p class="text-uppercase text-muted small mb-1">Slider Homepage</p>
+            <h1 class="mb-2">Thêm slider mới</h1>
+            <p class="text-muted mb-0">Gợi tả thông điệp chính và giữ visual đồng bộ với chiến dịch hiện tại.</p>
+        </div>
+        <a asp-area="Admin" asp-controller="Slider" asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Quay về danh sách
+        </a>
+    </div>
+</div>
 
-<form asp-action="Create" enctype="multipart/form-data" method="post">
+<form asp-action="Create" enctype="multipart/form-data" method="post" class="needs-validation" novalidate>
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm form-card h-100">
+                <div class="card-header bg-white border-0 pb-0">
+                    <h5 class="mb-1">Nội dung hiển thị</h5>
+                    <p class="text-muted small mb-0">Tiêu đề và mô tả sẽ được hiển thị trên banner đầu trang.</p>
+                </div>
+                <div class="card-body">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                    <div class="mb-3">
+                        <label asp-for="Title" class="form-label">Tiêu đề nổi bật</label>
+                        <input asp-for="Title" class="form-control form-control-lg" placeholder="VD: Trải nghiệm Fine Dining chuẩn Ý" />
+                        <span asp-validation-for="Title" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Description" class="form-label">Mô tả phụ</label>
+                        <textarea asp-for="Description" class="form-control" rows="4" placeholder="Tóm tắt ưu đãi, hương vị hoặc trải nghiệm thực khách sẽ nhận được"></textarea>
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="DisplayOrder" class="form-label">Thứ tự hiển thị</label>
+                            <input asp-for="DisplayOrder" class="form-control" type="number" min="0" placeholder="0, 1, 2..." />
+                            <span asp-validation-for="DisplayOrder" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Trạng thái mặc định</label>
+                            <div class="form-switch-lg form-check form-switch">
+                                <input asp-for="IsActive" class="form-check-input" type="checkbox" role="switch" />
+                                <label class="form-check-label" asp-for="IsActive">Hiển thị ngay sau khi tạo</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm form-card h-100">
+                <div class="card-header bg-white border-0 pb-0">
+                    <h5 class="mb-1">Ảnh hero</h5>
+                    <p class="text-muted small mb-0">Kích thước gợi ý 1440x600px, định dạng .JPG hoặc .PNG.</p>
+                </div>
+                <div class="card-body d-flex flex-column gap-3">
+                    <div class="preview-frame">
+                        <img id="createSliderPreview" class="preview-image d-none" alt="Xem trước slider" />
+                        <div id="createSliderPlaceholder" class="placeholder-state">
+                            <i class="bi bi-image"></i>
+                            <p class="mb-0">Chưa chọn ảnh</p>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="form-label">Tải ảnh từ thiết bị</label>
+                        <input type="file" name="imageFile" class="form-control" accept="image/*" data-preview-image="createSliderPreview" data-placeholder="createSliderPlaceholder" />
+                        <small class="text-muted d-block mt-2">Ảnh rõ nét, không quá 2MB để đảm bảo tốc độ tải.</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    <div class="mb-3">
-        <label asp-for="Title" class="form-label">Tiêu đề</label>
-        <input asp-for="Title" class="form-control" />
-        <span asp-validation-for="Title" class="text-danger"></span>
+    <div class="card border-0 shadow-sm mt-4">
+        <div class="card-body d-flex flex-column flex-md-row gap-2 justify-content-between align-items-md-center">
+            <div class="text-muted small">Kiểm tra kỹ nội dung và hình ảnh trước khi công bố.</div>
+            <div class="d-flex gap-2">
+                <a asp-area="Admin" asp-controller="Slider" asp-action="Index" class="btn btn-light">Huỷ</a>
+                <button type="submit" class="btn btn-primary px-4">
+                    <i class="bi bi-check-circle me-1"></i>Thêm slider
+                </button>
+            </div>
+        </div>
     </div>
-    <div class="mb-3">
-        <label asp-for="Description" class="form-label">Mô tả</label>
-        <textarea asp-for="Description" class="form-control"></textarea>
-        <span asp-validation-for="Description" class="text-danger"></span>
-    </div>
-    <div class="mb-3">
-        <label class="form-label">Ảnh</label>
-        <input type="file" name="imageFile" class="form-control" accept="image/*" />
-    </div>
-    <div class="mb-3">
-        <label asp-for="DisplayOrder" class="form-label">Thứ tự hiển thị</label>
-        <input asp-for="DisplayOrder" class="form-control" type="number" min="0" />
-        <span asp-validation-for="DisplayOrder" class="text-danger"></span>
-    </div>
-    <div class="form-check mb-3">
-        <input asp-for="IsActive" class="form-check-input" type="checkbox" />
-        <label asp-for="IsActive" class="form-check-label">Hiển thị</label>
-    </div>
-    <button type="submit" class="btn btn-success">Thêm mới</button>
-    <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
 </form>
 
+@section Styles {
+    <style>
+        .form-card {
+            border-radius: 1.25rem;
+        }
+
+        .form-switch-lg .form-check-input {
+            width: 3.5rem;
+            height: 1.5rem;
+        }
+
+        .preview-frame {
+            border-radius: 1rem;
+            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+            min-height: 220px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .preview-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .placeholder-state {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #94a3b8;
+            gap: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .placeholder-state i {
+            font-size: 2rem;
+        }
+    </style>
+}
+
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const input = document.querySelector('[data-preview-image="createSliderPreview"]');
+            if (!input) return;
+
+            input.addEventListener('change', function (event) {
+                const file = event.target.files?.[0];
+                const previewId = event.target.getAttribute('data-preview-image');
+                const placeholderId = event.target.getAttribute('data-placeholder');
+                const previewImg = document.getElementById(previewId);
+                const placeholder = document.getElementById(placeholderId);
+
+                if (!previewImg || !placeholder) return;
+
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = e => {
+                        previewImg.src = e.target?.result;
+                        previewImg.classList.remove('d-none');
+                        placeholder.classList.add('d-none');
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    previewImg.src = '';
+                    previewImg.classList.add('d-none');
+                    placeholder.classList.remove('d-none');
+                }
+            });
+        });
+    </script>
 }

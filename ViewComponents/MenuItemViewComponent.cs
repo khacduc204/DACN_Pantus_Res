@@ -15,12 +15,15 @@ namespace KD_Restaurant.ViewComponents
 
         public async Task<IViewComponentResult> InvokeAsync()
         {
-            var categories = await _context.tblMenuCategory
-                .Where(c => c.IsActive)
-                .Include(c => c.tblMenuItems.Where(m => m.IsActive))
+            var featuredItems = await _context.tblMenuItem
+                .Include(m => m.Category)
+                .Where(m => m.IsActive)
+                .OrderByDescending(m => m.IdMenuItem)
+                .ThenBy(m => m.Title)
+                .Take(6)
                 .ToListAsync();
 
-            return View(categories); // Trả về List<tblMenuCategory>
+            return View(featuredItems);
         }
     }
 }

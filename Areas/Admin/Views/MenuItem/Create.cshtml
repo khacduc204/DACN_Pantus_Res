@@ -2,81 +2,229 @@
 @{
     ViewData["Title"] = "Thêm món ăn";
     Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+    var categorySelect = ViewBag.Categories;
 }
 
-<h3>Thêm món ăn</h3>
-<div class="row">
-    <div class="col-md-8 col-lg-6">
-        <form asp-area="Admin" asp-controller="MenuItem" asp-action="Create" method="post" enctype="multipart/form-data">
-            <div class="mb-3">
-                <label class="form-label">Tên món</label>
-                <input asp-for="Title" class="form-control" />
-                <span asp-validation-for="Title" class="text-danger"></span>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Alias</label>
-                <input asp-for="Alias" class="form-control" />
-                <span asp-validation-for="Alias" class="text-danger"></span>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Mô tả</label>
-                <textarea asp-for="Description" class="form-control"></textarea>
-                <span asp-validation-for="Description" class="text-danger"></span>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Giá</label>
-                <input asp-for="Price" class="form-control" type="number" min="0" />
-                <span asp-validation-for="Price" class="text-danger"></span>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Giá khuyến mãi</label>
-                <input asp-for="PriceSale" class="form-control" type="number" min="0" />
-                <span asp-validation-for="PriceSale" class="text-danger"></span>
-            </div>
-            <div class="mb-3">
-        <label class="form-label">Ảnh</label>
-        <input name="imageFile" class="form-control" type="file" accept="image/*" />
-        <span asp-validation-for="Image" class="text-danger"></span>
+<div class="pagetitle mb-4 admin-page-title">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h1 class="mb-1">Thêm món ăn</h1>
+            <p class="text-muted mb-0">Tạo món mới cho thực đơn trực tuyến của KD Restaurant.</p>
+        </div>
+        <a asp-area="Admin" asp-controller="MenuItem" asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Quay lại danh sách
+        </a>
     </div>
-            <div class="mb-3">
-                <label class="form-label">Loại món</label>
-                <select asp-for="IdCategory" class="form-select">
-                    <option value="">-- Chọn loại món --</option>
-                    @if (ViewBag.Categories != null)
-                    {
-                        foreach (var cat in (IEnumerable<KD_Restaurant.Models.tblMenuCategory>)ViewBag.Categories)
-                        {
-                            <option value="@cat.IdCategory">@cat.Title</option>
-                        }
-                    }
-                </select>
-                <span asp-validation-for="IdCategory" class="text-danger"></span>
+</div>
+
+<div class="row g-4 admin-module-grid">
+    <div class="col-xl-8">
+        <div class="card shadow-sm admin-form-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="mb-0">Thông tin món ăn</h5>
+                    <small class="text-muted">Điền đầy đủ thông tin để khách hàng dễ hình dung.</small>
+                </div>
+                <span class="badge bg-light text-dark">Trường * bắt buộc</span>
             </div>
-            <div class="mb-3">
-                <label class="form-label">Số lượng</label>
-                <input asp-for="Quantity" class="form-control" type="number" min="0" />
-                <span asp-validation-for="Quantity" class="text-danger"></span>
+            <div class="card-body">
+                <form asp-area="Admin" asp-controller="MenuItem" asp-action="Create" method="post" enctype="multipart/form-data" class="row g-3">
+                    <div class="col-md-12">
+                        <label class="form-label">Tên món *</label>
+                        <input asp-for="Title" class="form-control form-control-lg" placeholder="Ví dụ: Bò lúc lắc" required />
+                        <span asp-validation-for="Title" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Alias</label>
+                        <div class="input-group">
+                            <span class="input-group-text">/</span>
+                            <input asp-for="Alias" class="form-control" placeholder="bo-luc-lac" />
+                        </div>
+                        <span asp-validation-for="Alias" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Danh mục *</label>
+                        <select asp-for="IdCategory" class="form-select" asp-items="categorySelect" required>
+                            <option value="">-- Chọn loại món --</option>
+                        </select>
+                        <span asp-validation-for="IdCategory" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label">Mô tả ngắn</label>
+                        <textarea asp-for="Description" class="form-control" rows="3" placeholder="Ghi chú hương vị, thành phần chính..."></textarea>
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Giá bán (VND) *</label>
+                        <input asp-for="Price" class="form-control" type="number" min="0" placeholder="120000" required />
+                        <span asp-validation-for="Price" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Giá khuyến mãi</label>
+                        <input asp-for="PriceSale" class="form-control" type="number" min="0" placeholder="90000" />
+                        <span asp-validation-for="PriceSale" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Số lượng tồn</label>
+                        <input asp-for="Quantity" class="form-control" type="number" min="0" />
+                        <span asp-validation-for="Quantity" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Đánh giá sao</label>
+                        <input asp-for="Star" class="form-control" type="number" min="0" max="5" />
+                        <span asp-validation-for="Star" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label">Ảnh đại diện món *</label>
+                        <div class="upload-tile">
+                            <i class="bi bi-cloud-arrow-up"></i>
+                            <p class="mb-1">Kéo thả hoặc chọn ảnh dung lượng &lt; 2MB</p>
+                            <small class="text-muted">Tỉ lệ gợi ý 4:3 để hiển thị đẹp.</small>
+                            <input name="imageFile" class="form-control" type="file" accept="image/*" required />
+                        </div>
+                        <span asp-validation-for="Image" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label">Chi tiết món</label>
+                        <textarea asp-for="Detail" class="form-control" rows="4" placeholder="Mô tả cách chế biến, thành phần, lưu ý dị ứng..."></textarea>
+                        <span asp-validation-for="Detail" class="text-danger"></span>
+                    </div>
+                    <div class="col-12">
+                        <div class="form-check form-switch">
+                            <input asp-for="IsActive" class="form-check-input" type="checkbox" checked />
+                            <label class="form-check-label" asp-for="IsActive">Hiển thị món ngay sau khi tạo</label>
+                        </div>
+                    </div>
+                    <div class="col-12 d-flex gap-2 justify-content-end">
+                        <button type="submit" class="btn btn-primary px-4">
+                            <i class="bi bi-save me-1"></i>Lưu món ăn
+                        </button>
+                        <a asp-area="Admin" asp-controller="MenuItem" asp-action="Index" class="btn btn-outline-secondary px-4">Huỷ</a>
+                    </div>
+                </form>
             </div>
-            <div class="mb-3">
-                <label class="form-label">Sao (đánh giá)</label>
-                <input asp-for="Star" class="form-control" type="number" min="0" max="5" />
-                <span asp-validation-for="Star" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-xl-4">
+        <div class="card shadow-sm mb-4 admin-tip-card">
+            <div class="card-body">
+                <h6 class="text-uppercase text-muted fw-semibold mb-3">Gợi ý trình bày</h6>
+                <ul class="list-unstyled small mb-0">
+                    <li class="mb-2 d-flex gap-2">
+                        <i class="bi bi-check-circle-fill text-success"></i>
+                        <span>Ảnh món nên có nền sáng, rõ món chính để tăng tỉ lệ chuyển đổi.</span>
+                    </li>
+                    <li class="mb-2 d-flex gap-2">
+                        <i class="bi bi-check-circle-fill text-success"></i>
+                        <span>Mô tả đậm nét hương vị, topping nổi bật và khẩu phần.</span>
+                    </li>
+                    <li class="d-flex gap-2">
+                        <i class="bi bi-check-circle-fill text-success"></i>
+                        <span>Sử dụng giá khuyến mãi để thúc đẩy bán kèm combo.</span>
+                    </li>
+                </ul>
             </div>
-            <div class="mb-3">
-                <label class="form-label">Chi tiết</label>
-                <textarea asp-for="Detail" class="form-control"></textarea>
-                <span asp-validation-for="Detail" class="text-danger"></span>
+        </div>
+        <div class="card shadow-sm admin-tip-card">
+            <div class="card-body">
+                <h6 class="text-uppercase text-muted fw-semibold mb-3">Trạng thái hiển thị</h6>
+                <p class="small text-muted">Có thể tắt mở món bất kỳ lúc nào trong danh sách để giữ menu gọn gàng.</p>
+                <a asp-area="Admin" asp-controller="MenuCategory" asp-action="Index" class="btn btn-outline-primary w-100">
+                    <i class="bi bi-folder2-open me-1"></i>Quản lý danh mục
+                </a>
             </div>
-            <div class="mb-3 form-check">
-                <input asp-for="IsActive" class="form-check-input" type="checkbox" />
-                <label class="form-check-label" asp-for="IsActive">Hiển thị</label>
-            </div>
-            <button type="submit" class="btn btn-success">Lưu</button>
-            <a asp-area="Admin" asp-controller="MenuItem" asp-action="Index" class="btn btn-secondary ms-2">Quay lại</a>
-        </form>
+        </div>
     </div>
 </div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+}
+
+@section Styles {
+    <style>
+        .admin-page-title h1 {
+            font-weight: 700;
+        }
+
+        .admin-module-grid {
+            position: relative;
+        }
+
+        .admin-module-grid::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(67, 97, 238, .07), rgba(99, 125, 255, .04));
+            border-radius: 20px;
+            z-index: -1;
+        }
+
+        .admin-form-card,
+        .admin-tip-card {
+            border: none;
+            border-radius: 18px;
+            box-shadow: 0 18px 40px rgba(15, 23, 42, .08);
+        }
+
+        .admin-form-card .card-header {
+            border-bottom: none;
+            background: transparent;
+        }
+
+        .admin-form-card .form-label {
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        .admin-form-card .form-control,
+        .admin-form-card .form-select {
+            border-radius: 12px;
+            border: 1px solid #dbe4ff;
+            padding: 0.75rem 1rem;
+            transition: border-color .2s ease, box-shadow .2s ease;
+        }
+
+        .admin-form-card .form-control:focus,
+        .admin-form-card .form-select:focus {
+            border-color: #6c63ff;
+            box-shadow: 0 0 0 0.2rem rgba(108, 99, 255, .15);
+        }
+
+        .admin-form-card .input-group-text {
+            border-radius: 12px 0 0 12px;
+            background: #f6f8ff;
+            border-color: #dbe4ff;
+            font-weight: 600;
+        }
+
+        .upload-tile {
+            border: 1px dashed #c7d7ff;
+            border-radius: 16px;
+            padding: 1.5rem;
+            text-align: center;
+            background: #f8f9ff;
+        }
+
+        .upload-tile i {
+            font-size: 2rem;
+            color: #4f46e5;
+        }
+
+        .admin-form-card button.btn-primary {
+            background: linear-gradient(120deg, #4f46e5, #7c3aed);
+            border: none;
+            box-shadow: 0 12px 30px rgba(79, 70, 229, .25);
+        }
+
+        .admin-form-card button.btn-primary:hover {
+            filter: brightness(1.05);
+        }
+
+        @@media (max-width: 991.98px) {
+            .admin-module-grid::before {
+                border-radius: 12px;
+            }
+        }
+    </style>
 }

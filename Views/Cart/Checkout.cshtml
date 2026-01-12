@@ -1,12 +1,13 @@
 <!-- Page Title -->
-<div class="page-title dark-background py-5 mb-4">
+<div class="page-title dark-background py-5 mb-5">
     <div class="heading">
         <div class="container">
-            <div class="row d-flex justify-content-center text-center">
+            <div class="row justify-content-center text-center">
                 <div class="col-lg-8">
-                    <h1 class="heading-title text-white mb-3">Thanh toán đơn đặt bàn</h1>
-                    <p class="mb-0 text-light fs-5">
-                        Xác nhận thông tin đặt bàn và thực đơn trước khi hoàn tất thanh toán. Chúc bạn có trải nghiệm tuyệt vời tại nhà hàng!
+                    <p class="eyebrow mb-2">Bước cuối cùng</p>
+                    <h1 class="heading-title mb-3">Chốt thanh toán & sẵn sàng dùng bữa</h1>
+                    <p class="lead text-light mb-0">
+                        Kiểm tra lại thông tin đặt bàn, thực đơn và chọn phương thức thanh toán phù hợp. Mọi chi tiết đều được bảo mật tuyệt đối.
                     </p>
                 </div>
             </div>
@@ -15,135 +16,367 @@
     <nav class="breadcrumbs mt-4">
         <div class="container">
             <ol class="breadcrumb bg-transparent justify-content-center mb-0">
-                <li class="breadcrumb-item"><a href="/">Home</a></li>
+                <li class="breadcrumb-item"><a href="/">Trang chủ</a></li>
+                <li class="breadcrumb-item"><a href="/Cart">Giỏ hàng</a></li>
                 <li class="breadcrumb-item active">Thanh toán</li>
             </ol>
         </div>
     </nav>
 </div>
 
-<style>
-    .page-title.dark-background {
-        background: #2c1c13;
-        color: #fff;
-        border-radius: 10px;
-        margin-bottom: 30px;
-    }
-    .heading-title {
-        font-family: 'Pacifico', cursive;
-        font-size: 2.5rem;
-        font-weight: 700;
-        color: #fff;
-        letter-spacing: 1px;
-    }
-    .breadcrumb {
-        background: transparent;
-        padding: 0;
-        margin-bottom: 0;
-    }
-    .breadcrumb-item a {
-        color: #ffb03b;
-        text-decoration: none;
-    }
-    .breadcrumb-item.active {
-        color: #fff;
-        font-weight: 600;
-    }
-    .card {
-        border-radius: 12px;
-        box-shadow: 0 2px 12px rgba(44,28,19,0.08);
-        margin-bottom: 24px;
-    }
-    .card-header {
-        border-radius: 12px 12px 0 0;
-        font-size: 1.1rem;
-        font-weight: 600;
-    }
-    .table th, .table td {
-        vertical-align: middle;
-        text-align: center;
-    }
-    .btn-success {
-        background: #ffb03b;
-        border: none;
-        font-weight: 600;
-        font-size: 1.1rem;
-    }
-    .btn-success:hover {
-        background: #e09e2f;
-    }
-</style>
-
 @{
     var order = ViewBag.Order as KD_Restaurant.Models.tblOrder;
     var booking = order?.Booking;
     var customer = booking?.Customer;
     var details = ViewBag.OrderDetails as List<KD_Restaurant.Models.tblOrder_detail>;
+    var total = order?.TotalAmount ?? 0;
+    var grandTotal = total;
 }
 
-<h2 class="text-success text-center mb-4">THANH TOÁN TRƯỚC CHO ĐƠN ĐẶT BÀN</h2>
-<div class="row">
-    <div class="col-md-8">
-        <div class="card mb-3">
-            <div class="card-header bg-info text-white">Thông tin đơn đặt bàn</div>
-            <div class="card-body">
-                <p><b>Tên người đặt bàn:</b> @customer?.FullName</p>
-                <p><b>Điện thoại:</b> @customer?.PhoneNumber</p>
-                <p><b>Thời gian dùng bữa dự kiến:</b> @booking?.BookingDate.ToString("dd/MM/yyyy") @booking?.TimeSlot</p>
-                <p><b>Địa điểm dùng bữa:</b> @booking?.Branch?.BranchName</p>
-            </div>
+<style>
+    .page-title.dark-background {
+        background: radial-gradient(circle at top, #51311f, #1b120c 70%);
+        color: #fff;
+        border-radius: 24px;
+        overflow: hidden;
+        position: relative;
+    }
+    .page-title::after {
+        content: "";
+        position: absolute;
+        inset: 1.5rem;
+        border: 1px solid rgba(255,255,255,0.15);
+        border-radius: 18px;
+        pointer-events: none;
+    }
+    .eyebrow {
+        text-transform: uppercase;
+        letter-spacing: 0.35rem;
+        font-size: 0.85rem;
+        color: rgba(255,255,255,0.7);
+    }
+    .heading-title {
+        font-family: "Playfair Display", "Segoe UI", serif;
+        font-size: 2.75rem;
+        font-weight: 600;
+        color: #fff;
+    }
+    .breadcrumb {
+        margin-bottom: 0;
+    }
+    .breadcrumb-item a {
+        color: #f3c07b;
+    }
+    .checkout-shell {
+        background: #fff;
+        border-radius: 24px;
+        padding: 2.5rem;
+        box-shadow: 0 20px 70px rgba(23,16,11,0.12);
+    }
+    .badge-chip {
+        padding: 0.6rem 1.2rem;
+        border-radius: 999px;
+        background: #f6efe7;
+        color: #8c5a2c;
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+    .info-card {
+        border: 1px solid #f0e7dc;
+        border-radius: 16px;
+        padding: 1.25rem;
+        background: #fffaf5;
+    }
+    .info-card .label {
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.15rem;
+        color: #9c7b60;
+    }
+    .info-card .value {
+        font-size: 1.15rem;
+        font-weight: 600;
+        color: #1c140f;
+        margin-top: 0.35rem;
+    }
+    .table-modern {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1.5rem;
+    }
+    .table-modern thead {
+        background: #f5eee5;
+        text-transform: uppercase;
+        letter-spacing: 0.12rem;
+        font-size: 0.75rem;
+        color: #7b5b3a;
+    }
+    .table-modern th,
+    .table-modern td {
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid #f1e8dd;
+        text-align: left;
+    }
+    .table-modern td:last-child,
+    .table-modern th:last-child {
+        text-align: right;
+    }
+    .summary-card {
+        border-radius: 20px;
+        background: linear-gradient(135deg, #23160e, #3d2618 60%, #51311f);
+        color: #fff;
+        padding: 1.75rem;
+        box-shadow: 0 20px 60px rgba(20,12,8,0.4);
+    }
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    .summary-row:last-child {
+        margin-bottom: 0;
+    }
+    .summary-row.total {
+        border-top: 1px solid rgba(255,255,255,0.2);
+        padding-top: 1rem;
+        margin-top: 1rem;
+        font-size: 1.35rem;
+        font-weight: 600;
+    }
+    .payment-card {
+        border: 1px solid rgba(255,255,255,0.3);
+        border-radius: 16px;
+        padding: 1rem;
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        cursor: pointer;
+        position: relative;
+        transition: transform 0.25s ease, border-color 0.25s;
+        margin-bottom: 1rem;
+    }
+    .payment-card:hover {
+        transform: translateY(-2px);
+    }
+    .payment-card input {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        cursor: pointer;
+    }
+    .payment-card.active {
+        border-color: #f3c07b;
+        background: rgba(255,255,255,0.05);
+    }
+    .payment-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: rgba(255,255,255,0.15);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+    }
+    .payment-card h6 {
+        margin: 0;
+        font-size: 1rem;
+    }
+    .payment-card p {
+        margin: 0.2rem 0 0;
+        font-size: 0.85rem;
+        opacity: 0.85;
+    }
+    .btn-checkout {
+        width: 100%;
+        border: none;
+        border-radius: 999px;
+        padding: 1rem;
+        background: linear-gradient(90deg, #f3c07b, #f0a04b);
+        color: #1b120c;
+        font-weight: 700;
+        letter-spacing: 0.08rem;
+        text-transform: uppercase;
+        box-shadow: 0 15px 45px rgba(255,176,59,0.35);
+        transition: transform 0.25s ease;
+    }
+    .btn-checkout:hover {
+        transform: translateY(-2px);
+    }
+    .support-note {
+        font-size: 0.85rem;
+        color: rgba(255,255,255,0.65);
+        margin-top: 0.75rem;
+        text-align: center;
+    }
+    @@media (max-width: 991px) {
+        .checkout-shell {
+            padding: 1.5rem;
+        }
+        .table-modern th,
+        .table-modern td {
+            padding: 0.75rem;
+        }
+        .summary-card {
+            margin-top: 2rem;
+        }
+    }
+</style>
+
+<div class="checkout-shell mb-5">
+    <div class="d-flex justify-content-between flex-wrap gap-3 align-items-center mb-4">
+        <span class="badge-chip">Mã đặt bàn #@booking?.IdBooking</span>
+        <span class="badge-chip">Trạng thái hiện tại: <strong>@booking?.Status?.StatusName ?? "Chưa nhận bàn"</strong></span>
+    </div>
+
+    <div class="info-grid">
+        <div class="info-card">
+            <span class="label">Khách hàng</span>
+            <div class="value">@customer?.FullName ?? "Khách lẻ"</div>
+            <small class="text-muted">Điện thoại: @customer?.PhoneNumber</small>
         </div>
-        <div class="card">
-            <div class="card-header bg-primary text-white">Thực đơn đặt trước</div>
-            <div class="card-body p-0">
-                <table class="table mb-0">
-                    <thead>
-                        <tr>
-                            <th>STT</th>
-                            <th>Món ăn</th>
-                            <th>Giá bán</th>
-                            <th>Số lượng</th>
-                            <th>Thành tiền</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @if (details != null)
-                        {
-                            int stt = 1;
-                            foreach (var item in details)
-                            {
-                                <tr>
-                                    <td>@(stt++)</td>
-                                    <td>@item.MenuItem?.Title</td>
-                                    <td>@(item.PriceSale.GetValueOrDefault().ToString("N0")) đ</td>
-                                    <td>@item.Quantity</td>
-                                    <td>@((item.PriceSale.GetValueOrDefault() * (item.Quantity ?? 0)).ToString("N0")) đ</td>
-                                </tr>
-                            }
-                        }
-                    </tbody>
-                </table>
-            </div>
+        <div class="info-card">
+            <span class="label">Thời gian</span>
+            <div class="value">@booking?.BookingDate.ToString("dd/MM/yyyy") &bull; @booking?.TimeSlot</div>
+            <small class="text-muted">Số khách: @booking?.NumberGuests</small>
+        </div>
+        <div class="info-card">
+            <span class="label">Chi nhánh</span>
+            <div class="value">@booking?.Branch?.BranchName</div>
+            <small class="text-muted">Ghi chú: @booking?.Note</small>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-header bg-light">THANH TOÁN</div>
-            <div class="card-body">
-                <div class="mb-2">Tạm tính: <b>@((order?.TotalAmount ?? 0).ToString("N0")) đ</b></div>
-                <div class="mb-2">Khuyến mãi: <b>0 đ</b></div>
-                <div class="mb-2 text-danger">Tổng cộng (VAT): <b>@((order?.TotalAmount ?? 0).ToString("N0")) đ</b></div>
-                <div class="mb-2">Phương thức thanh toán:</div>
-                <form asp-action="ConfirmPayment" asp-controller="Cart" method="post">
+
+    <div class="mt-4">
+        <h5 class="fw-semibold mb-3">Thực đơn đã chọn</h5>
+        <div class="table-responsive rounded-4 border border-light-subtle">
+            <table class="table-modern mb-0">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Món ăn</th>
+                        <th>Đơn giá</th>
+                        <th>Số lượng</th>
+                        <th>Thành tiền</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (details != null)
+                    {
+                        var index = 1;
+                        foreach (var item in details)
+                        {
+                            var price = item.PriceSale.GetValueOrDefault();
+                            var quantity = item.Quantity ?? 0;
+                            <tr>
+                                <td>@index</td>
+                                <td class="fw-semibold">@item.MenuItem?.Title</td>
+                                <td>@(price.ToString("N0")) đ</td>
+                                <td>@quantity</td>
+                                <td>@((price * quantity).ToString("N0")) đ</td>
+                            </tr>
+                            index++;
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="row mt-4 g-4">
+        <div class="col-lg-7">
+            <div class="rounded-4 border p-4 h-100 bg-light-subtle">
+                <h5 class="fw-semibold mb-4">Chọn phương thức thanh toán</h5>
+                <form asp-action="ConfirmPayment" asp-controller="Cart" method="post" id="paymentForm">
                     <input type="hidden" name="id" value="@order?.IdOrder" />
-                    <div>
-                        <input type="radio" name="paymentMethod" value="Tại nhà hàng" checked /> Thanh toán tại nhà hàng<br>
-                        <input type="radio" name="paymentMethod" value="VNPAY" /> Thanh toán qua ví VNPAY<br>
-                        <input type="radio" name="paymentMethod" value="Chuyển khoản" /> Chuyển khoản ngân hàng
-                    </div>
-                    <button type="submit" class="btn btn-success w-100 mt-3">THANH TOÁN</button>
+
+                    <p class="text-uppercase text-muted fw-semibold mb-2" style="letter-spacing:0.15rem;">Thanh toán trực tiếp</p>
+                    <label class="payment-card active">
+                        <input type="radio" name="paymentMethod" value="IN_STORE" checked>
+                        <div class="payment-icon">POS</div>
+                        <div>
+                            <h6>Thanh toán tại nhà hàng</h6>
+                            <p>Hoàn tất tại quầy lễ tân, hỗ trợ tiền mặt và quẹt thẻ.</p>
+                        </div>
+                    </label>
+
+                    <p class="text-uppercase text-muted fw-semibold mt-4 mb-2" style="letter-spacing:0.15rem;">Cổng thanh toán MoMo</p>
+                    <label class="payment-card">
+                        <input type="radio" name="paymentMethod" value="MOMO_WALLET">
+                        <div class="payment-icon">Mo</div>
+                        <div>
+                            <h6>Ví MoMo</h6>
+                            <p>Xác nhận trên ứng dụng MoMo, tiền được giữ chỗ ngay.</p>
+                        </div>
+                        <span class="badge bg-warning text-dark position-absolute end-0 me-3">Đề xuất</span>
+                    </label>
+
+                    <label class="payment-card">
+                        <input type="radio" name="paymentMethod" value="MOMO_ATM">
+                        <div class="payment-icon">ATM</div>
+                        <div>
+                            <h6>Thẻ ATM nội địa</h6>
+                            <p>Đăng nhập Internet Banking, thanh toán ngay trên cổng MoMo.</p>
+                        </div>
+                    </label>
+
+                    <label class="payment-card">
+                        <input type="radio" name="paymentMethod" value="MOMO_CARD">
+                        <div class="payment-icon">VISA</div>
+                        <div>
+                            <h6>Visa/Master/JCB</h6>
+                            <p>Nhập thông tin thẻ quốc tế, MoMo bảo mật theo chuẩn PCI-DSS.</p>
+                        </div>
+                    </label>
+
+                    <p class="text-uppercase text-muted fw-semibold mt-4 mb-2" style="letter-spacing:0.15rem;">Thanh toán chuyển khoản</p>
+                    <label class="payment-card">
+                        <input type="radio" name="paymentMethod" value="BANK_TRANSFER">
+                        <div class="payment-icon">IB</div>
+                        <div>
+                            <h6>Chuyển khoản ngân hàng</h6>
+                            <p>Nhận số tài khoản KD Restaurant ngay sau khi xác nhận đơn.</p>
+                        </div>
+                    </label>
+
+                    <button type="submit" class="btn-checkout mt-3">Xác nhận thanh toán</button>
+                    <p class="support-note">Bằng việc tiếp tục, bạn đồng ý với chính sách bảo mật và điều kiện đặt bàn của KD Restaurant.</p>
                 </form>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="summary-card h-100">
+                <h5 class="fw-semibold mb-4">Tóm tắt chi phí</h5>
+                <div class="summary-row">
+                    <span>Tạm tính</span>
+                    <strong>@(total.ToString("N0")) đ</strong>
+                </div>
+                <div class="summary-row total">
+                    <span>Tổng thanh toán</span>
+                    <strong>@(grandTotal.ToString("N0")) đ</strong>
+                </div>
+                <p class="support-note">Sau khi hoàn tất, bạn sẽ nhận email xác nhận cùng mã QR nhận bàn.</p>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const cards = document.querySelectorAll('.payment-card');
+        cards.forEach(card => {
+            card.addEventListener('click', () => {
+                cards.forEach(c => c.classList.remove('active'));
+                card.classList.add('active');
+            });
+        });
+    });
+</script>

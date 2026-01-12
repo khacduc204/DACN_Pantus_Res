@@ -1,11 +1,26 @@
 ﻿@model IEnumerable<KD_Restaurant.Models.tblMenu>
 
+@{
+    bool hasAboutLink = Model?.Any(item =>
+        !string.IsNullOrWhiteSpace(item.UrlPath) &&
+        item.UrlPath.Equals("/About/Index", System.StringComparison.OrdinalIgnoreCase)) ?? false;
+}
+
 <nav>
     <ul class="menu-top">
-        @foreach (var item in Model)
+        @if (Model != null)
+        {
+            foreach (var item in Model)
+            {
+                <li>
+                    <a href="@item.UrlPath" class="nav-link">@item.Title</a>
+                </li>
+            }
+        }
+        @if (!hasAboutLink)
         {
             <li>
-                <a href="@item.UrlPath" class="nav-link">@item.Title</a>
+                <a asp-controller="About" asp-action="Index" class="nav-link">Giới thiệu</a>
             </li>
         }
     </ul>

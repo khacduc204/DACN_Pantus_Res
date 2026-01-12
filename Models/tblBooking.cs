@@ -25,6 +25,12 @@ namespace KD_Restaurant.Models
         [ForeignKey("IdBranch")]
         public virtual tblBranch Branch { get; set; } = null!;
 
+        [ForeignKey("IdTable")]
+        public virtual tblTable? Table { get; set; }
+
+        [ForeignKey("IdStatus")]
+        public virtual tblBooking_status? Status { get; set; }
+
         public virtual ICollection<tblOrder> tblOrder { get; set; } = new HashSet<tblOrder>();
     }
 }

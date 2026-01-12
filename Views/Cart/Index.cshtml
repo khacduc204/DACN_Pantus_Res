@@ -1,8 +1,16 @@
-@model List<KD_Restaurant.Models.CartItem>
+@model KD_Restaurant.ViewModels.CartPageViewModel
+@using KD_Restaurant.Models
+
 @{
     ViewBag.Title = "Đặt bàn";
-    var total = Model.Sum(x => x.Price * x.Quantity);
+    var cartItems = Model?.Items ?? new List<CartItem>();
+    var total = cartItems.Sum(x => x.Price * x.Quantity);
+    var branches = Model?.Branches ?? new List<tblBranch>();
+    var timeSlots = Model?.TimeSlots ?? Array.Empty<string>();
+    var minDate = DateTime.Today.ToString("yyyy-MM-dd");
+    var maxDate = DateTime.Today.AddDays(30).ToString("yyyy-MM-dd");
 }
+
 @if (TempData["Success"] != null)
 {
     <div class="alert alert-success text-center">@TempData["Success"]</div>
@@ -33,202 +41,423 @@
     </nav>
 </div>
 
-
 <style>
+    @@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
     .page-title.dark-background {
-        background: #2c1c13;
+        background: radial-gradient(circle at top right, #4c1d95, #2c1c13 60%);
         color: #fff;
     }
+
     .heading-title {
         font-family: 'Pacifico', cursive;
         font-size: 2.5rem;
         font-weight: 700;
         color: #fff;
     }
+
     .breadcrumb {
         background: transparent;
         padding: 0;
         margin-bottom: 0;
     }
+
     .breadcrumb-item a {
         color: #ffb03b;
         text-decoration: none;
     }
+
     .breadcrumb-item.active {
         color: #fff;
         font-weight: 600;
     }
-    .cart-table th, .cart-table td {
+
+    .cart-page {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        color: #1f2937;
+    }
+
+    .cart-card,
+    .booking-card,
+    .summary-card {
+        background: #fff;
+        border-radius: 24px;
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        box-shadow: 0 25px 50px -20px rgba(15, 23, 42, 0.2);
+        padding: 24px 28px;
+    }
+
+    .cart-card__header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .cart-card__header .eyebrow {
+        text-transform: uppercase;
+        letter-spacing: 0.2em;
+        font-size: 0.72rem;
+        color: #a78bfa;
+        margin-bottom: 0.3rem;
+        font-weight: 600;
+    }
+
+    .cart-card__header h2 {
+        font-size: 1.85rem;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .cart-table thead {
+        background: rgba(79, 70, 229, 0.05);
+        font-size: 0.9rem;
+        letter-spacing: 0.05em;
+        color: #475569;
+    }
+
+    .cart-table th,
+    .cart-table td {
         vertical-align: middle;
         text-align: center;
+        border-color: rgba(15, 23, 42, 0.06) !important;
     }
+
+    .cart-table td.text-start {
+        text-align: left;
+    }
+
     .cart-table img {
-        border-radius: 6px;
-        margin-right: 8px;
+        border-radius: 12px;
+        margin-right: 12px;
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
     }
-    .cart-action-btns .btn {
-        min-width: 110px;
-        margin-right: 8px;
-    }
-    .cart-summary {
-        font-size: 1.1rem;
-        margin-top: 16px;
-        margin-bottom: 24px;
-        text-align: right;
-    }
-    .cart-summary .text-danger {
-        font-weight: bold;
-    }
-    .booking-form-box {
-        background: #fff;
-        border-radius: 10px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-        padding: 24px 32px;
-        margin-top: 32px;
-    }
-    .booking-form-title {
-        color: #388e3c;
-        font-size: 1.4rem;
-        font-weight: 600;
-        margin-bottom: 24px;
+
+    .cart-empty {
+        padding: 3rem 1rem;
         text-align: center;
-    }
-    .form-label {
+        color: #94a3b8;
         font-weight: 500;
     }
-    .btn-booking {
-        background: #ffb300;
-        color: #222;
-        font-weight: 600;
-        border-radius: 24px;
-        padding: 10px 32px;
-        margin-top: 16px;
-        transition: background 0.2s;
+
+    .cart-card__actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-top: 1.5rem;
     }
-    .btn-booking:hover {
-        background: #ffa000;
+
+    .cart-card__actions .btn {
+        min-width: 150px;
+        border-radius: 999px;
+        font-weight: 600;
+    }
+
+    .cart-card__actions .btn-outline-secondary {
+        border-color: rgba(15, 23, 42, 0.2);
+        color: #0f172a;
+    }
+
+    .cart-card__actions .btn-danger,
+    .cart-card__actions .btn-success {
+        box-shadow: 0 12px 25px -10px rgba(239, 68, 68, 0.6);
+    }
+
+    .summary-card {
+        margin-bottom: 1.5rem;
+    }
+
+    .summary-card__row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.9rem 0;
+        border-bottom: 1px dashed rgba(15, 23, 42, 0.08);
+        font-size: 1rem;
+    }
+
+    .summary-card__row:last-child {
+        border-bottom: none;
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #c026d3;
+    }
+
+    .summary-card__label {
+        color: #64748b;
+        font-weight: 500;
+    }
+
+    .summary-card__value {
+        font-weight: 600;
+    }
+
+    .summary-card__value--emphasis {
+        color: #dc2626;
+    }
+
+    .booking-card h3 {
+        font-size: 1.45rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .booking-card p {
+        color: #64748b;
+        margin-bottom: 1.25rem;
+        font-size: 0.95rem;
+    }
+
+    .alert-soft-success {
+        background: rgba(34, 197, 94, 0.1);
+        border: 1px solid rgba(34, 197, 94, 0.3);
+        color: #15803d;
+        border-radius: 16px;
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+    }
+
+    .booking-form .row {
+        row-gap: 1rem;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #0f172a;
+        font-size: 0.875rem;
+        margin-bottom: 0.4rem;
+    }
+
+    .form-control,
+    .form-select {
+        border-radius: 12px;
+        border-color: rgba(15, 23, 42, 0.15);
+        padding: 0.65rem 0.9rem;
+        font-size: 0.95rem;
+        transition: all 0.2s ease;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: #8b5cf6;
+        box-shadow: 0 0 0 0.2rem rgba(139, 92, 246, 0.15);
+    }
+
+    .btn-booking {
+        background: linear-gradient(135deg, #f97316, #fb923c);
         color: #fff;
+        font-weight: 600;
+        border-radius: 999px;
+        padding: 0.9rem 2rem;
+        border: none;
+        width: 100%;
+        box-shadow: 0 20px 30px -15px rgba(249, 115, 22, 0.7);
+        transition: all 0.3s ease;
+        margin-top: 0.75rem;
+    }
+
+    .btn-booking:hover {
+        color: #fff;
+        transform: translateY(-2px);
+        box-shadow: 0 25px 35px -15px rgba(249, 115, 22, 0.9);
+    }
+
+    .note-helper {
+        font-size: 0.8rem;
+        color: #94a3b8;
+        margin-top: 0.5rem;
+        margin-bottom: 0;
+    }
+
+    @@media (max-width: 991.98px) {
+        .cart-card,
+        .booking-card,
+        .summary-card {
+            border-radius: 20px;
+            padding: 20px;
+        }
+
+        .cart-card__header {
+            flex-direction: column;
+            text-align: center;
+            gap: 0.5rem;
+        }
+
+        .cart-card__actions {
+            flex-direction: column;
+            align-items: stretch;
+        }
+    }
+
+    @@media (max-width: 575.98px) {
+        .cart-table {
+            font-size: 0.85rem;
+        }
+
+        .cart-table img {
+            width: 48px;
+            height: 48px;
+        }
     }
 </style>
 
-<div class="container my-4">
-    <h2 class="mb-4">Đặt bàn</h2>
-    <table class="table table-bordered cart-table">
-        <thead class="table-light">
-            <tr>
-                <th>STT</th>
-                <th>Món ăn</th>
-                <th>Giá bán</th>
-                <th>Số lượng</th>
-                <th>Thành tiền</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @if (Model.Count == 0)
-            {
-                <tr>
-                    <td colspan="6" class="text-center text-danger">Giỏ hàng của bạn đang trống.</td>
-                </tr>
-            }
-            else
-            {
-                for (int i = 0; i < Model.Count; i++)
-                {
-                    <tr>
-                        <td>@(i+1)</td>
-                        <td class="text-start">
-                            <img src="@Model[i].Image" width="48" height="48" />
-                            @Model[i].Title
-                        </td>
-                        <td>@Model[i].Price.ToString("N0") đ</td>
-                        <td>
-                            <div class="d-flex justify-content-center align-items-center">
-                                <button type="button" class="btn btn-outline-secondary btn-sm btn-qty" data-id="@Model[i].IdMenuItem" data-action="decrease">-</button>
-                                <input type="number" min="1" value="@Model[i].Quantity" class="form-control quantity mx-2" data-id="@Model[i].IdMenuItem" style="width:60px;display:inline-block;" />
-                                <button type="button" class="btn btn-outline-secondary btn-sm btn-qty" data-id="@Model[i].IdMenuItem" data-action="increase">+</button>
-                            </div>
-                        </td>
-                        
-                        <td>@(((decimal)Model[i].Price * Model[i].Quantity).ToString("N0")) đ</td>
-                        <td>
-                            <button type="button" class="btn btn-danger btn-sm btn-remove" data-id="@Model[i].IdMenuItem">
-                                <i class="fa fa-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
-                }
-            }
-        </tbody>
-    </table>
+<div class="cart-page container my-5">
+    <div class="row g-4">
+        <div class="col-lg-7">
+            <div class="cart-card">
+                <div class="cart-card__header">
+                    <div>
+                        <p class="eyebrow">Danh sách món đã chọn</p>
+                        <h2>Giỏ hàng của bạn</h2>
+                    </div>
+                    <span class="badge bg-light text-dark rounded-pill">@cartItems.Count món</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table align-middle cart-table">
+                        <thead>
+                            <tr>
+                                <th>STT</th>
+                                <th class="text-start">Món ăn</th>
+                                <th>Giá bán</th>
+                                <th>Số lượng</th>
+                                <th>Thành tiền</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (!cartItems.Any())
+                            {
+                                <tr>
+                                    <td colspan="6" class="cart-empty">Giỏ hàng của bạn đang trống.</td>
+                                </tr>
+                            }
+                            else
+                            {
+                                for (int i = 0; i < cartItems.Count; i++)
+                                {
+                                    var item = cartItems[i];
+                                    <tr>
+                                        <td>@(i + 1)</td>
+                                        <td class="text-start">
+                                            <div class="d-flex align-items-center">
+                                                <img src="@item.Image" alt="@item.Title" />
+                                                <div>
+                                                    <div class="fw-semibold">@item.Title</div>
+                                                    <small class="text-muted">@item.IdMenuItem</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>@item.Price.ToString("N0") đ</td>
+                                        <td>
+                                            <div class="d-flex justify-content-center align-items-center gap-2">
+                                                <button type="button" class="btn btn-outline-secondary btn-sm btn-qty" data-id="@item.IdMenuItem" data-action="decrease">-</button>
+                                                <input type="number" min="1" value="@item.Quantity" class="form-control quantity text-center" data-id="@item.IdMenuItem" style="width:70px;" />
+                                                <button type="button" class="btn btn-outline-secondary btn-sm btn-qty" data-id="@item.IdMenuItem" data-action="increase">+</button>
+                                            </div>
+                                        </td>
+                                        <td>@((item.Price * item.Quantity).ToString("N0")) đ</td>
+                                        <td>
+                                            <button type="button" class="btn btn-link text-danger btn-remove" data-id="@item.IdMenuItem" title="Xóa món">
+                                                <i class="fa fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
 
-    <div class="d-flex justify-content-between cart-action-btns mb-3">
-        <a href="/Home/Menu" class="btn btn-outline-secondary">Tiếp tục chọn món</a>
-        <div>
-            <button type="button" class="btn btn-danger" id="btn-clear-cart">Xóa hết</button>
-            <button type="button" class="btn btn-success">Thanh toán</button>
+                <div class="cart-card__actions">
+                    <a class="btn btn-outline-secondary" asp-controller="Menu" asp-action="Index">Tiếp tục chọn món</a>
+                    <div class="d-flex flex-wrap gap-3">
+                        <button type="button" class="btn btn-danger" id="btn-clear-cart">Xóa hết</button>
+                        <a class="btn btn-success" href="#booking-form">Thanh toán</a>
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
 
-    <div class="cart-summary">
-        <div>Tạm tính: <span>@total.ToString("N0") đ</span></div>
-        <div>Khuyến mãi: <span>0 đ</span></div>
-        <div>Tổng cộng (VAT): <span class="text-danger">@total.ToString("N0") đ</span></div>
-    </div>
-
-    <div class="booking-form-box">
-        <div class="booking-form-title">Thông tin đặt bàn</div>
-        <form asp-action="PlaceOrder" method="post">
-            <div class="row g-3">
-                <div class="col-md-4">
-                    <label class="form-label">---Chọn nhà hàng---</label>
-                        <select name="IdBranch" class="form-select" required>
-                        <option value="">---Chọn nhà hàng---</option>
-                        @foreach (var branch in (IEnumerable<KD_Restaurant.Models.tblBranch>)ViewBag.Branches)
-                        {
-                            <option value="@branch.IdBranch">@branch.BranchName</option>
-                        }
-                    </select>
+        <div class="col-lg-5">
+            <div class="summary-card">
+                <div class="summary-card__row">
+                    <span class="summary-card__label">Tạm tính</span>
+                    <span class="summary-card__value">@total.ToString("N0") đ</span>
                 </div>
-                <div class="col-md-4">
-                    <label class="form-label">Họ tên (*)</label>
-                    <input name="FullName" class="form-control" required />
+                <div class="summary-card__row">
+                    <span class="summary-card__label">Khuyến mãi</span>
+                    <span class="summary-card__value">0 đ</span>
                 </div>
-                <div class="col-md-4">
-                    <label class="form-label">---Chọn ngày---</label>
-                    <input name="BookingDate" type="date" class="form-control" 
-                        min="@DateTime.Now.ToString("yyyy-MM-dd")" 
-                        max="@DateTime.Now.AddDays(30).ToString("yyyy-MM-dd")" required />
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">Số khách (*)</label>
-                    <input name="NumberGuests" type="number" min="1" class="form-control" max="100" required />
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">Số điện thoại (*)</label>
-                    <input name="PhoneNumber" class="form-control" required />
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">---Khung giờ---</label>
-                        <select name="TimeSlot" class="form-select" required>
-                        <option value="">---Khung giờ---</option>
-                        <option value="Sáng 07:00 - 09:00">Sáng 07:00 - 09:00</option>
-                        <option value="Sáng 09:00 - 11:00">Sáng 09:00 - 11:00</option>
-                        <option value="Trưa 11:00 - 13:00">Trưa 11:00 - 13:00</option>
-                        <option value="Chiều 13:00 - 17:00">Chiều 13:00 - 17:00</option>
-                        <option value="Tối 17:00 - 19:00">Tối 17:00 - 19:00</option>
-                        <option value="Tối 19:00 - 21:00">Tối 19:00 - 21:00</option>
-                    </select>
-                </div>
-                <div class="col-md-12">
-                    <label class="form-label">Lời nhắn với nhà hàng</label>
-                    <textarea name="Note" class="form-control"></textarea>
+                <div class="summary-card__row">
+                    <span class="summary-card__label">Tổng cộng (VAT)</span>
+                    <span class="summary-card__value summary-card__value--emphasis">@total.ToString("N0") đ</span>
                 </div>
             </div>
-            <div class="text-center">
-                <button type="submit" class="btn btn-booking mt-3">Gửi đơn đặt bàn</button>
+
+            <div class="booking-card">
+                <h3>Thông tin đặt bàn</h3>
+                <p>Điền các thông tin bên dưới để nhân viên xác nhận đặt bàn và chuẩn bị món trước cho bạn.</p>
+
+                @if (Model?.IsAuthenticated == true)
+                {
+                    <div class="alert-soft-success mb-3">
+                        Đã điền sẵn họ tên và số điện thoại từ tài khoản của bạn. Bạn có thể chỉnh sửa nếu cần.
+                    </div>
+                }
+
+                <form asp-action="PlaceOrder" method="post" class="booking-form" id="booking-form">
+                    @Html.AntiForgeryToken()
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label">Chọn nhà hàng *</label>
+                            <select name="IdBranch" class="form-select" required>
+                                <option value="">-- Chọn cơ sở --</option>
+                                @foreach (var branch in branches)
+                                {
+                                    <option value="@branch.IdBranch">@branch.BranchName</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Họ tên *</label>
+                            <input name="FullName" class="form-control" value="@Model?.DefaultFullName" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Số điện thoại *</label>
+                            <input name="PhoneNumber" class="form-control" value="@Model?.DefaultPhoneNumber" required />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Ngày đến *</label>
+                            <input name="BookingDate" type="date" class="form-control" min="@minDate" max="@maxDate" required />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Khung giờ *</label>
+                            <select name="TimeSlot" class="form-select" required>
+                                <option value="">-- Chọn khung giờ --</option>
+                                @foreach (var slot in timeSlots)
+                                {
+                                    <option value="@slot">@slot</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Số khách *</label>
+                            <input name="NumberGuests" type="number" min="1" max="100" value="2" class="form-control" required />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Lời nhắn với nhà hàng</label>
+                            <textarea name="Note" class="form-control" rows="3" placeholder="Ví dụ: cần phòng riêng, trang trí sinh nhật..."></textarea>
+                            <p class="note-helper mt-2">Nhân viên sẽ liên hệ xác nhận trong vòng 15 phút sau khi gửi yêu cầu.</p>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-booking mt-3">Gửi đơn đặt bàn</button>
+                </form>
             </div>
-        </form>
+        </div>
     </div>
 </div>
 

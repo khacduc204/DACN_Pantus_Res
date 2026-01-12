@@ -1,9 +1,17 @@
 @model IEnumerable<KD_Restaurant.Models.tblSlider>
+@using System.Linq
 
 @{
     ViewData["Title"] = "Quản lý slider";
     Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+
+    var sliders = Model?.OrderBy(s => s.DisplayOrder).ToList() ?? new List<KD_Restaurant.Models.tblSlider>();
+    var totalSliders = sliders.Count;
+    var activeSliders = sliders.Count(s => s.IsActive == true);
+    var hiddenSliders = totalSliders - activeSliders;
+    var newestSlider = sliders.OrderByDescending(s => s.CreatedDate).FirstOrDefault();
 }
+
 @if (TempData["Success"] != null)
 {
     <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -12,71 +20,181 @@
     </div>
 }
 
-<div class="pagetitle">
-    <h2>Danh sách slider</h2>
+<div class="slider-hero rounded-4 p-4 p-lg-5 mb-4 shadow-sm">
+    <div class="d-flex flex-column flex-lg-row align-items-lg-end justify-content-between gap-4">
+        <div>
+            <p class="text-uppercase fw-semibold small text-white-50 mb-2">Slider Homepage</p>
+            <h2 class="text-white fw-bold mb-3">Kiểm soát trải nghiệm đầu trang</h2>
+            <p class="text-white-50 mb-0">Cập nhật nội dung hero, điều chỉnh thứ tự và trạng thái để đồng bộ cùng chiến dịch hiện tại.</p>
+        </div>
+        <div class="text-lg-end">
+            <a class="btn btn-light btn-lg px-4" asp-area="Admin" asp-controller="Slider" asp-action="Create">
+                <i class="bi bi-plus-circle me-2"></i>Thêm slider mới
+            </a>
+            @if (newestSlider != null)
+            {
+                <p class="small text-white-50 mt-3 mb-0">Cập nhật gần nhất: @newestSlider.CreatedDate.ToString("dd/MM/yyyy HH:mm")</p>
+            }
+        </div>
+    </div>
 </div>
 
-<p>
-    <a class="btn btn-success" asp-area="Admin" asp-controller="Slider" asp-action="Create">
-        <i class="bi bi-file-earmark-text me-1"></i>Thêm slider
-    </a>
-</p>
-
-<section class="section dashboard">
-    <div class="row">
-        <div class="col-12">
-            <div class="card recent-sales overflow-auto">
-                <div class="card-body mt-4">
-                    <table class="table table-borderless datatable">
-                        <thead>
-                            <tr>
-                                <th scope="col">Mã</th>
-                                <th scope="col">Tiêu đề</th>
-                                <th scope="col">Mô tả</th>
-                                <th scope="col">Ảnh</th>
-                                <th scope="col">Thứ tự</th>
-                                <th scope="col">Ngày tạo</th>
-                                <th scope="col">Trạng thái</th>
-                                <th scope="col">Chức năng</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var item in Model)
-                            {
-                                <tr>
-                                    <td class="align-middle">@item.IdSlider</td>
-                                    <td class="align-middle">@item.Title</td>
-                                    <td class="align-middle">@item.Description</td>
-                                    <td class="align-middle">
-                                        @if (!string.IsNullOrEmpty(item.ImagePath))
-                                        {
-                                            <img src="@item.ImagePath" alt="@item.Title" style="max-width:80px;max-height:40px;" />
-                                        }
-                                    </td>
-                                    <td class="align-middle">@item.DisplayOrder</td>
-                                    <td class="align-middle">@item.CreatedDate.ToString("dd/MM/yyyy")</td>
-                                    <td class="align-middle">
-                                        <div class="badge p-2 my-1 @(item.IsActive == true ? "bg-success" : "bg-warning text-dark")">
-                                            @(item.IsActive == true ? "Hiện" : "Ẩn")
-                                        </div>
-                                    </td>
-                                    <td class="align-middle" style="min-width: 160px; width: 160px;">
-                                        <a href="/Admin/Slider/IsActive/@item.IdSlider" class="btn @(item.IsActive == true ? "btn-warning" : "btn-success") mx-1 px-2 py-1" title="Đổi trạng thái">
-                                            <i class="fa-regular @(item.IsActive == true ? "fa-eye-slash" : "fa-eye") fs-6"></i>
-                                        </a>
-                                        <a href="/Admin/Slider/Edit/@item.IdSlider" class="btn btn-primary mx-1 px-2 py-1" title="Sửa">
-                                            <i class="fa-regular fa-edit fs-6"></i>
-                                        </a>
-                                        <a href="/Admin/Slider/Delete/@item.IdSlider" class="btn btn-danger mx-1 px-2 py-1" title="Xóa" onclick="return confirm('Bạn có chắc muốn xoá slider này?');">
-                                            <i class="fa-regular fa-trash-can fs-6"></i>
-                                        </a>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
+<div class="row g-3 mb-4">
+    <div class="col-sm-4">
+        <div class="card kpi-card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <p class="text-muted text-uppercase small mb-1">Tổng slider</p>
+                <h3 class="fw-bold mb-0">@totalSliders</h3>
             </div>
         </div>
     </div>
-</section>
+    <div class="col-sm-4">
+        <div class="card kpi-card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <p class="text-muted text-uppercase small mb-1">Đang hiển thị</p>
+                <h3 class="fw-bold text-success mb-0">@activeSliders</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-4">
+        <div class="card kpi-card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <p class="text-muted text-uppercase small mb-1">Đang ẩn</p>
+                <h3 class="fw-bold text-warning mb-0">@hiddenSliders</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (!sliders.Any())
+{
+    <div class="card border-0 shadow-sm empty-state">
+        <div class="card-body text-center py-5">
+            <div class="empty-icon rounded-circle mx-auto mb-3">
+                <i class="bi bi-image-alt"></i>
+            </div>
+            <h4 class="fw-semibold mb-2">Chưa có slider nào</h4>
+            <p class="text-muted mb-4">Tạo slider đầu tiên để chào đón khách hàng bằng chiến dịch ấn tượng.</p>
+            <a class="btn btn-primary px-4" asp-area="Admin" asp-controller="Slider" asp-action="Create">
+                <i class="bi bi-plus-circle me-2"></i>Thêm slider
+            </a>
+        </div>
+    </div>
+}
+else
+{
+    <section class="section">
+        <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
+            @foreach (var item in sliders)
+            {
+                var isActive = item.IsActive == true;
+                <div class="col">
+                    <div class="card slider-card border-0 h-100 shadow-sm">
+                        <div class="slider-thumb position-relative rounded-4 overflow-hidden mx-3 mt-3">
+                            @if (!string.IsNullOrWhiteSpace(item.ImagePath))
+                            {
+                                <img src="@item.ImagePath" alt="@item.Title" class="w-100" style="height: 200px; object-fit: cover;" />
+                            }
+                            else
+                            {
+                                <div class="thumb-placeholder d-flex align-items-center justify-content-center text-muted">
+                                    <i class="bi bi-image fs-1"></i>
+                                </div>
+                            }
+                            <span class="badge position-absolute top-0 end-0 m-3 status-badge @(isActive ? "bg-success" : "bg-secondary")">
+                                <i class="bi @(isActive ? "bi-eye" : "bi-eye-slash") me-1"></i>@(isActive ? "Đang hiện" : "Đang ẩn")
+                            </span>
+                            <span class="order-chip">#@item.DisplayOrder</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between gap-3 mb-2">
+                                <div>
+                                    <h5 class="card-title mb-1">@item.Title</h5>
+                                    <p class="text-muted small mb-0">Tạo ngày @item.CreatedDate.ToString("dd/MM/yyyy")</p>
+                                </div>
+                                <span class="badge text-bg-light text-secondary fw-semibold">ID @item.IdSlider</span>
+                            </div>
+                            <p class="text-muted small mb-3 line-clamp">@item.Description</p>
+                        </div>
+                        <div class="card-footer bg-transparent border-0 pt-0 pb-4 px-3">
+                            <div class="d-flex flex-column gap-2">
+                                <a href="/Admin/Slider/IsActive/@item.IdSlider" class="btn btn-outline-secondary w-100">
+                                    <i class="bi @(isActive ? "bi-eye-slash" : "bi-eye") me-1"></i>@(isActive ? "Ẩn slider" : "Hiển thị slider")
+                                </a>
+                                <div class="d-flex gap-2">
+                                    <a href="/Admin/Slider/Edit/@item.IdSlider" class="btn btn-primary flex-fill">
+                                        <i class="bi bi-pencil-square me-1"></i>Chỉnh sửa
+                                    </a>
+                                    <a href="/Admin/Slider/Delete/@item.IdSlider" class="btn btn-danger flex-fill" onclick="return confirm('Bạn có chắc muốn xoá slider này?');">
+                                        <i class="bi bi-trash me-1"></i>Xóa
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </section>
+}
+
+@section Styles {
+    <style>
+        .slider-hero {
+            background: radial-gradient(circle at top right, #fb923c, #db2777);
+        }
+
+        .kpi-card {
+            border-radius: 1rem;
+        }
+
+        .slider-card {
+            border-radius: 1.5rem;
+        }
+
+        .slider-thumb {
+            min-height: 200px;
+            background: #f8f9fa;
+        }
+
+        .thumb-placeholder {
+            height: 200px;
+            background: linear-gradient(120deg, #f8fafc, #e2e8f0);
+        }
+
+        .status-badge {
+            border-radius: 999px;
+            padding: 0.35rem 0.85rem;
+        }
+
+        .order-chip {
+            position: absolute;
+            bottom: 16px;
+            left: 16px;
+            background: rgba(255, 255, 255, 0.85);
+            border-radius: 999px;
+            padding: 0.25rem 0.9rem;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #475569;
+        }
+
+        .line-clamp {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .empty-state .empty-icon {
+            width: 72px;
+            height: 72px;
+            background: rgba(99, 102, 241, 0.1);
+            color: #6366f1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+        }
+    </style>
+}

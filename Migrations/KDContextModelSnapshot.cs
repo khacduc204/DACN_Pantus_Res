@@ -22,6 +22,178 @@ namespace KD_Restaurant.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("KD_Restaurant.Models.tblArea", b =>
+                {
+                    b.Property<int>("IdArea")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdArea"));
+
+                    b.Property<string>("AreaName")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<int?>("IdBranch")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("isActive")
+                        .HasColumnType("bit");
+
+                    b.HasKey("IdArea");
+
+                    b.HasIndex("IdBranch");
+
+                    b.ToTable("tblArea");
+                });
+
+            modelBuilder.Entity("KD_Restaurant.Models.tblBooking", b =>
+                {
+                    b.Property<int>("IdBooking")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdBooking"));
+
+                    b.Property<DateTime>("BookingDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("IdBranch")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("IdCustomer")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("IdStatus")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("IdTable")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("NumberGuests")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("PrePayment")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TimeSlot")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("isActive")
+                        .HasColumnType("bit");
+
+                    b.HasKey("IdBooking");
+
+                    b.HasIndex("IdBranch");
+
+                    b.HasIndex("IdCustomer");
+
+                    b.HasIndex("IdStatus");
+
+                    b.HasIndex("IdTable");
+
+                    b.ToTable("tblBooking");
+                });
+
+            modelBuilder.Entity("KD_Restaurant.Models.tblBooking_status", b =>
+                {
+                    b.Property<int>("IdStatus")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdStatus"));
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("StatusName")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<bool>("isActive")
+                        .HasColumnType("bit");
+
+                    b.HasKey("IdStatus");
+
+                    b.ToTable("tblBooking_status");
+                });
+
+            modelBuilder.Entity("KD_Restaurant.Models.tblBranch", b =>
+                {
+                    b.Property<int>("IdBranch")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdBranch"));
+
+                    b.Property<string>("Address")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("BranchName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Email")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("IdBranch");
+
+                    b.ToTable("tblBranch");
+                });
+
+            modelBuilder.Entity("KD_Restaurant.Models.tblCustomer", b =>
+                {
+                    b.Property<int>("IdCustomer")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdCustomer"));
+
+                    b.Property<string>("Address")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Avatar")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FullName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastLogin")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Password")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("IdCustomer");
+
+                    b.ToTable("tblCustomer");
+                });
+
             modelBuilder.Entity("KD_Restaurant.Models.tblMenu", b =>
                 {
                     b.Property<int>("IdMenu")
@@ -80,19 +252,29 @@ namespace KD_Restaurant.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdCategory"));
 
                     b.Property<string>("Alias")
-                        .HasColumnType("nvarchar(max)");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("nvarchar(max)")
+                        .HasDefaultValue("");
 
                     b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("nvarchar(max)")
+                        .HasDefaultValue("");
 
                     b.Property<string>("Image")
-                        .HasColumnType("nvarchar(max)");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("nvarchar(max)")
+                        .HasDefaultValue("");
 
                     b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
 
                     b.Property<string>("Title")
-                        .HasColumnType("nvarchar(max)");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("nvarchar(max)")
+                        .HasDefaultValue("");
 
                     b.HasKey("IdCategory");
 
@@ -113,41 +295,57 @@ namespace KD_Restaurant.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTime?>("CreatedDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("getdate()");
 
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Detail")
-                        .HasColumnType("nvarchar(max)");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("nvarchar(max)")
+                        .HasDefaultValue("");
 
                     b.Property<int>("IdCategory")
                         .HasColumnType("int");
 
                     b.Property<string>("Image")
-                        .HasColumnType("nvarchar(max)");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("nvarchar(max)")
+                        .HasDefaultValue("");
 
                     b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
 
                     b.Property<string>("ModifiedBy")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("ModifiedDate")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTime?>("ModifiedDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("getdate()");
 
                     b.Property<int>("Price")
                         .HasColumnType("int");
 
-                    b.Property<int>("PriceSale")
-                        .HasColumnType("int");
+                    b.Property<int?>("PriceSale")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
 
                     b.Property<int>("Quantity")
-                        .HasColumnType("int");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
 
                     b.Property<int>("Star")
-                        .HasColumnType("int");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
 
                     b.Property<string>("Title")
                         .HasColumnType("nvarchar(max)");
@@ -159,6 +357,261 @@ namespace KD_Restaurant.Migrations
                     b.ToTable("tblMenuItem");
                 });
 
+            modelBuilder.Entity("KD_Restaurant.Models.tblMenuReview", b =>
+                {
+                    b.Property<int>("IdMenuReview")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdMenuReview"));
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<DateTime?>("CreatedDate")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("Detail")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("IdMenuItem")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Image")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("Phone")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("Rating")
+                        .HasColumnType("int");
+
+                    b.HasKey("IdMenuReview");
+
+                    b.HasIndex("IdMenuItem");
+
+                    b.ToTable("tblMenuReview");
+                });
+
+            modelBuilder.Entity("KD_Restaurant.Models.tblOrder", b =>
+                {
+                    b.Property<int>("IdOrder")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdOrder"));
+
+                    b.Property<int?>("IdBooking")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("IdCustomer")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("IdTable")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("IdUser")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("OrderDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("PaymentMethod")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("PaymentTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("TimeIn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("TimeOut")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("TotalAmount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TotalCost")
+                        .HasColumnType("int");
+
+                    b.HasKey("IdOrder");
+
+                    b.HasIndex("IdBooking");
+
+                    b.HasIndex("IdCustomer");
+
+                    b.HasIndex("IdUser");
+
+                    b.ToTable("tblOrder");
+                });
+
+            modelBuilder.Entity("KD_Restaurant.Models.tblOrder_cancelled", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("CancelledBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("CancelledTime")
+                        .HasColumnType("datetime")
+                        .HasColumnName("CancellDate");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int?>("IdOrder")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CancelledBy");
+
+                    b.HasIndex("IdOrder");
+
+                    b.ToTable("tblOrder_cancelled", null, t =>
+                        {
+                            t.ExcludeFromMigrations();
+                        });
+                });
+
+            modelBuilder.Entity("KD_Restaurant.Models.tblOrder_detail", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Amount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("IdCombo")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("IdMenuItem")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IdOrder")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("PriceSale")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("Quantity")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IdMenuItem");
+
+                    b.HasIndex("IdOrder");
+
+                    b.ToTable("tblOrder_detail");
+                });
+
+            modelBuilder.Entity("KD_Restaurant.Models.tblRestaurantInfo", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Heading")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("HeroImageUrl")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("Highlights")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("IntroContent")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Subheading")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("VideoUrl")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("tblRestaurantInfo");
+                });
+
+            modelBuilder.Entity("KD_Restaurant.Models.tblRole", b =>
+                {
+                    b.Property<int>("IdRole")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("RoleName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("IdRole");
+
+                    b.ToTable("tblRole");
+                });
+
+            modelBuilder.Entity("KD_Restaurant.Models.tblRolePermission", b =>
+                {
+                    b.Property<int>("IdRole")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PermissionKey")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<bool>("IsAllowed")
+                        .HasColumnType("bit");
+
+                    b.HasKey("IdRole", "PermissionKey");
+
+                    b.ToTable("tblRolePermission");
+                });
+
             modelBuilder.Entity("KD_Restaurant.Models.tblSlider", b =>
                 {
                     b.Property<int>("IdSlider")
@@ -168,27 +621,224 @@ namespace KD_Restaurant.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdSlider"));
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime2");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("getdate()");
 
                     b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<int?>("DisplayOrder")
-                        .HasColumnType("int");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
 
                     b.Property<string>("ImagePath")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
 
-                    b.Property<bool?>("IsActive")
-                        .HasColumnType("bit");
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
 
                     b.Property<string>("Title")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
 
                     b.HasKey("IdSlider");
 
                     b.ToTable("tblSlider");
+                });
+
+            modelBuilder.Entity("KD_Restaurant.Models.tblTable", b =>
+                {
+                    b.Property<int>("IdTable")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdTable"));
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<int?>("IdArea")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("IdStatus")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("IdType")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TableName")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<bool>("isActive")
+                        .HasColumnType("bit");
+
+                    b.HasKey("IdTable");
+
+                    b.HasIndex("IdArea");
+
+                    b.HasIndex("IdStatus");
+
+                    b.HasIndex("IdType");
+
+                    b.ToTable("tblTables");
+                });
+
+            modelBuilder.Entity("KD_Restaurant.Models.tblTable_status", b =>
+                {
+                    b.Property<int>("IdStatus")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdStatus"));
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("StatusName")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<bool>("isActive")
+                        .HasColumnType("bit");
+
+                    b.HasKey("IdStatus");
+
+                    b.ToTable("tblTable_status");
+                });
+
+            modelBuilder.Entity("KD_Restaurant.Models.tblTable_type", b =>
+                {
+                    b.Property<int>("IdType")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdType"));
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<int?>("MaxSeats")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TypeName")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<bool>("isActive")
+                        .HasColumnType("bit");
+
+                    b.HasKey("IdType");
+
+                    b.ToTable("tblTable_type");
+                });
+
+            modelBuilder.Entity("KD_Restaurant.Models.tblUser", b =>
+                {
+                    b.Property<int>("IdUser")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdUser"));
+
+                    b.Property<string>("Avatar")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("FirstName")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("IdRole")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastLogin")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LastName")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Password")
+                        .IsRequired()
+                        .HasMaxLength(512)
+                        .HasColumnType("nvarchar(512)");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("IdUser");
+
+                    b.HasIndex("IdRole");
+
+                    b.HasIndex("UserName")
+                        .IsUnique();
+
+                    b.ToTable("tblUser");
+                });
+
+            modelBuilder.Entity("KD_Restaurant.Models.tblArea", b =>
+                {
+                    b.HasOne("KD_Restaurant.Models.tblBranch", "Branch")
+                        .WithMany("Areas")
+                        .HasForeignKey("IdBranch")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("Branch");
+                });
+
+            modelBuilder.Entity("KD_Restaurant.Models.tblBooking", b =>
+                {
+                    b.HasOne("KD_Restaurant.Models.tblBranch", "Branch")
+                        .WithMany("tblBooking")
+                        .HasForeignKey("IdBranch")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("KD_Restaurant.Models.tblCustomer", "Customer")
+                        .WithMany("tblBooking")
+                        .HasForeignKey("IdCustomer")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("KD_Restaurant.Models.tblBooking_status", "Status")
+                        .WithMany("Bookings")
+                        .HasForeignKey("IdStatus")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("KD_Restaurant.Models.tblTable", "Table")
+                        .WithMany("Bookings")
+                        .HasForeignKey("IdTable")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Branch");
+
+                    b.Navigation("Customer");
+
+                    b.Navigation("Status");
+
+                    b.Navigation("Table");
                 });
 
             modelBuilder.Entity("KD_Restaurant.Models.tblMenuItem", b =>
@@ -202,9 +852,186 @@ namespace KD_Restaurant.Migrations
                     b.Navigation("Category");
                 });
 
+            modelBuilder.Entity("KD_Restaurant.Models.tblMenuReview", b =>
+                {
+                    b.HasOne("KD_Restaurant.Models.tblMenuItem", "MenuItem")
+                        .WithMany("tblMenuReview")
+                        .HasForeignKey("IdMenuItem")
+                        .IsRequired()
+                        .HasConstraintName("FK__tb_MenuRe__MenuI__76969D2E");
+
+                    b.Navigation("MenuItem");
+                });
+
+            modelBuilder.Entity("KD_Restaurant.Models.tblOrder", b =>
+                {
+                    b.HasOne("KD_Restaurant.Models.tblBooking", "Booking")
+                        .WithMany("tblOrder")
+                        .HasForeignKey("IdBooking");
+
+                    b.HasOne("KD_Restaurant.Models.tblCustomer", "Customer")
+                        .WithMany("tblOrder")
+                        .HasForeignKey("IdCustomer");
+
+                    b.HasOne("KD_Restaurant.Models.tblUser", "User")
+                        .WithMany()
+                        .HasForeignKey("IdUser");
+
+                    b.Navigation("Booking");
+
+                    b.Navigation("Customer");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("KD_Restaurant.Models.tblOrder_cancelled", b =>
+                {
+                    b.HasOne("KD_Restaurant.Models.tblUser", "CancelledByUser")
+                        .WithMany()
+                        .HasForeignKey("CancelledBy")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("KD_Restaurant.Models.tblOrder", "Order")
+                        .WithMany("Cancellations")
+                        .HasForeignKey("IdOrder")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("CancelledByUser");
+
+                    b.Navigation("Order");
+                });
+
+            modelBuilder.Entity("KD_Restaurant.Models.tblOrder_detail", b =>
+                {
+                    b.HasOne("KD_Restaurant.Models.tblMenuItem", "MenuItem")
+                        .WithMany("tblOrder_details")
+                        .HasForeignKey("IdMenuItem");
+
+                    b.HasOne("KD_Restaurant.Models.tblOrder", "Order")
+                        .WithMany("tblOrder_detail")
+                        .HasForeignKey("IdOrder")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("MenuItem");
+
+                    b.Navigation("Order");
+                });
+
+            modelBuilder.Entity("KD_Restaurant.Models.tblRolePermission", b =>
+                {
+                    b.HasOne("KD_Restaurant.Models.tblRole", "Role")
+                        .WithMany("Permissions")
+                        .HasForeignKey("IdRole")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Role");
+                });
+
+            modelBuilder.Entity("KD_Restaurant.Models.tblTable", b =>
+                {
+                    b.HasOne("KD_Restaurant.Models.tblArea", "Area")
+                        .WithMany("Tables")
+                        .HasForeignKey("IdArea")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("KD_Restaurant.Models.tblTable_status", "Status")
+                        .WithMany("Tables")
+                        .HasForeignKey("IdStatus")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("KD_Restaurant.Models.tblTable_type", "Type")
+                        .WithMany("Tables")
+                        .HasForeignKey("IdType")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Area");
+
+                    b.Navigation("Status");
+
+                    b.Navigation("Type");
+                });
+
+            modelBuilder.Entity("KD_Restaurant.Models.tblUser", b =>
+                {
+                    b.HasOne("KD_Restaurant.Models.tblRole", "Role")
+                        .WithMany("Users")
+                        .HasForeignKey("IdRole")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Role");
+                });
+
+            modelBuilder.Entity("KD_Restaurant.Models.tblArea", b =>
+                {
+                    b.Navigation("Tables");
+                });
+
+            modelBuilder.Entity("KD_Restaurant.Models.tblBooking", b =>
+                {
+                    b.Navigation("tblOrder");
+                });
+
+            modelBuilder.Entity("KD_Restaurant.Models.tblBooking_status", b =>
+                {
+                    b.Navigation("Bookings");
+                });
+
+            modelBuilder.Entity("KD_Restaurant.Models.tblBranch", b =>
+                {
+                    b.Navigation("Areas");
+
+                    b.Navigation("tblBooking");
+                });
+
+            modelBuilder.Entity("KD_Restaurant.Models.tblCustomer", b =>
+                {
+                    b.Navigation("tblBooking");
+
+                    b.Navigation("tblOrder");
+                });
+
             modelBuilder.Entity("KD_Restaurant.Models.tblMenuCategory", b =>
                 {
                     b.Navigation("tblMenuItems");
+                });
+
+            modelBuilder.Entity("KD_Restaurant.Models.tblMenuItem", b =>
+                {
+                    b.Navigation("tblMenuReview");
+
+                    b.Navigation("tblOrder_details");
+                });
+
+            modelBuilder.Entity("KD_Restaurant.Models.tblOrder", b =>
+                {
+                    b.Navigation("Cancellations");
+
+                    b.Navigation("tblOrder_detail");
+                });
+
+            modelBuilder.Entity("KD_Restaurant.Models.tblRole", b =>
+                {
+                    b.Navigation("Permissions");
+
+                    b.Navigation("Users");
+                });
+
+            modelBuilder.Entity("KD_Restaurant.Models.tblTable", b =>
+                {
+                    b.Navigation("Bookings");
+                });
+
+            modelBuilder.Entity("KD_Restaurant.Models.tblTable_status", b =>
+                {
+                    b.Navigation("Tables");
+                });
+
+            modelBuilder.Entity("KD_Restaurant.Models.tblTable_type", b =>
+                {
+                    b.Navigation("Tables");
                 });
 #pragma warning restore 612, 618
         }

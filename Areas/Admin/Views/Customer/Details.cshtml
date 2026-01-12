@@ -1,0 +1,196 @@
+@model KD_Restaurant.ViewModels.CustomerDetailsViewModel
+@{
+    ViewData["Title"] = "Chi tiết khách hàng";
+    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+}
+
+<div class="pagetitle mb-4 admin-page-title">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h1 class="mb-1">Hồ sơ khách hàng</h1>
+            <p class="text-muted mb-0">Thông tin liên hệ, lịch sử đặt bàn và trạng thái hoạt động.</p>
+        </div>
+        <div class="btn-group">
+            <a asp-area="Admin" asp-controller="Customer" asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-primary">
+                <i class="bi bi-pencil me-1"></i>Chỉnh sửa
+            </a>
+            <a asp-area="Admin" asp-controller="Customer" asp-action="Index" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i>Danh sách
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 admin-module-grid">
+    <div class="col-xl-4">
+        <div class="card shadow-sm admin-form-card mb-4">
+            <div class="card-body text-center">
+                <div class="profile-avatar mb-3">
+                    @if (!string.IsNullOrWhiteSpace(Model.Avatar))
+                    {
+                        <img src="@Model.Avatar" alt="@Model.DisplayName" class="img-fluid" />
+                    }
+                    else
+                    {
+                        <span>@(string.IsNullOrWhiteSpace(Model.DisplayName) ? "K" : Model.DisplayName.Substring(0, 1).ToUpper())</span>
+                    }
+                </div>
+                <h4 class="mb-1">@Model.DisplayName</h4>
+                <p class="text-muted">@Model.UserName</p>
+                <span class="badge @(Model.IsActive ? "bg-success" : "bg-secondary")">
+                    @(Model.IsActive ? "Đang hoạt động" : "Tạm khoá")
+                </span>
+                <hr />
+                <div class="text-start small">
+                    <p class="mb-2"><i class="bi bi-telephone me-2 text-primary"></i>@(string.IsNullOrWhiteSpace(Model.PhoneNumber) ? "Chưa cập nhật" : Model.PhoneNumber)</p>
+                    <p class="mb-2"><i class="bi bi-geo-alt me-2 text-primary"></i>@(string.IsNullOrWhiteSpace(Model.Address) ? "Chưa có địa chỉ" : Model.Address)</p>
+                    <p class="mb-0"><i class="bi bi-clock-history me-2 text-primary"></i>
+                        @(Model.LastLogin.HasValue ? $"Đăng nhập {Model.LastLogin:dd/MM/yyyy HH:mm}" : "Chưa từng đăng nhập")
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="row g-3">
+            <div class="col-6">
+                <div class="card shadow-sm info-card customer-card">
+                    <div class="card-body">
+                        <p class="text-muted mb-1">Lượt đặt bàn</p>
+                        <span class="display-6 fw-bold">@Model.BookingCount</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="card shadow-sm info-card customer-card">
+                    <div class="card-body">
+                        <p class="text-muted mb-1">Số đơn hàng</p>
+                        <span class="display-6 fw-bold">@Model.OrderCount</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-8">
+        <div class="card shadow-sm admin-form-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="mb-0">Lịch sử đặt bàn gần đây</h5>
+                    <small class="text-muted">Hiển thị tối đa 5 lịch gần nhất.</small>
+                </div>
+            </div>
+            <div class="card-body">
+                @if (Model.RecentBookings == null || Model.RecentBookings.Count == 0)
+                {
+                    <div class="text-center text-muted py-5">
+                        <i class="bi bi-calendar-x fs-2 d-block mb-3"></i>
+                        Khách hàng chưa có lịch đặt bàn nào.
+                    </div>
+                }
+                else
+                {
+                    <div class="timeline">
+                        @foreach (var booking in Model.RecentBookings)
+                        {
+                            <div class="timeline-item">
+                                <div class="timeline-dot"></div>
+                                <div>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="fw-semibold">Mã booking #@booking.BookingId</span>
+                                        <span class="badge bg-light text-dark">@(string.IsNullOrWhiteSpace(booking.Status) ? "Chưa cập nhật" : booking.Status)</span>
+                                    </div>
+                                    <p class="mb-1 text-muted small">@booking.BookingDate.ToString("dd/MM/yyyy") @booking.TimeSlot</p>
+                                    <small class="text-muted">Số khách: @(booking.NumberGuests?.ToString() ?? "--")</small>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .admin-page-title h1 {
+            font-weight: 700;
+        }
+
+        .admin-module-grid {
+            position: relative;
+        }
+
+        .admin-module-grid::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(67, 97, 238, .07), rgba(99, 125, 255, .04));
+            border-radius: 20px;
+            z-index: -1;
+        }
+
+        .admin-form-card,
+        .customer-card {
+            border: none;
+            border-radius: 18px;
+            box-shadow: 0 18px 40px rgba(15, 23, 42, .08);
+        }
+
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            margin: 0 auto;
+            background: linear-gradient(135deg, #7c3aed, #4f46e5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 2.5rem;
+            font-weight: 700;
+            overflow: hidden;
+        }
+
+        .profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .timeline {
+            position: relative;
+            margin-left: 1rem;
+        }
+
+        .timeline::before {
+            content: "";
+            position: absolute;
+            left: 12px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #e0e7ff;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding: 1rem 1rem 1rem 2.5rem;
+        }
+
+        .timeline-dot {
+            position: absolute;
+            left: 6px;
+            top: 1.4rem;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #4f46e5;
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, .2);
+        }
+
+        @@media (max-width: 991.98px) {
+            .admin-module-grid::before {
+                border-radius: 12px;
+            }
+        }
+    </style>
+}

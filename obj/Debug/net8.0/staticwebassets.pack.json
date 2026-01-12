@@ -3841,6 +3841,34 @@
       "PackagePath": "staticwebassets\\assets\\vendor\\swiper\\swiper-bundle.min.js.map"
     },
     {
+      "Id": "D:\\DACN\\KD_Restaurant\\KD_Restaurant\\wwwroot\\uploads\\avatars\\0ae3349b-b395-41db-80e6-3ab62a97f9ec.jpg",
+      "PackagePath": "staticwebassets\\uploads\\avatars\\0ae3349b-b395-41db-80e6-3ab62a97f9ec.jpg"
+    },
+    {
+      "Id": "D:\\DACN\\KD_Restaurant\\KD_Restaurant\\wwwroot\\uploads\\avatars\\20e7eabe-a7a6-4b50-aab2-f53a28c8d860.jpg",
+      "PackagePath": "staticwebassets\\uploads\\avatars\\20e7eabe-a7a6-4b50-aab2-f53a28c8d860.jpg"
+    },
+    {
+      "Id": "D:\\DACN\\KD_Restaurant\\KD_Restaurant\\wwwroot\\uploads\\avatars\\26815202-eb18-42ef-b070-f2dc9a73a334.jpg",
+      "PackagePath": "staticwebassets\\uploads\\avatars\\26815202-eb18-42ef-b070-f2dc9a73a334.jpg"
+    },
+    {
+      "Id": "D:\\DACN\\KD_Restaurant\\KD_Restaurant\\wwwroot\\uploads\\avatars\\5cc64355-985c-4f5a-a18f-bc6c43b50a6a.jpg",
+      "PackagePath": "staticwebassets\\uploads\\avatars\\5cc64355-985c-4f5a-a18f-bc6c43b50a6a.jpg"
+    },
+    {
+      "Id": "D:\\DACN\\KD_Restaurant\\KD_Restaurant\\wwwroot\\uploads\\avatars\\7ddf7959-981e-41af-8897-1a81d8577c95.jpg",
+      "PackagePath": "staticwebassets\\uploads\\avatars\\7ddf7959-981e-41af-8897-1a81d8577c95.jpg"
+    },
+    {
+      "Id": "D:\\DACN\\KD_Restaurant\\KD_Restaurant\\wwwroot\\uploads\\avatars\\7fa1abc3-9fb3-4967-b99d-9d1955dc8ace.jpg",
+      "PackagePath": "staticwebassets\\uploads\\avatars\\7fa1abc3-9fb3-4967-b99d-9d1955dc8ace.jpg"
+    },
+    {
+      "Id": "D:\\DACN\\KD_Restaurant\\KD_Restaurant\\wwwroot\\uploads\\avatars\\ab58ef49-a16d-4456-b321-208bba90b2b5.jpg",
+      "PackagePath": "staticwebassets\\uploads\\avatars\\ab58ef49-a16d-4456-b321-208bba90b2b5.jpg"
+    },
+    {
       "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.KD_Restaurant.Microsoft.AspNetCore.StaticWebAssetEndpoints.props",
       "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssetEndpoints.props"
     },

@@ -1,11 +1,14 @@
 using KD_Restaurant.Models;
+using KD_Restaurant.Security;
+using KD_Restaurant.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 
 namespace KD_Restaurant.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    
+    [Authorize(Roles = RoleNames.AdminManagerStaff)]
+    [PermissionAuthorize(PermissionKeys.MenuStructure)]
     public class MenuController : Controller
     {
         private readonly KDContext _context;

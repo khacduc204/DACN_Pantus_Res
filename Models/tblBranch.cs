@@ -13,5 +13,6 @@ namespace KD_Restaurant.Models
         public bool IsActive { get; set; } = true;
 
         public virtual ICollection<tblBooking> tblBooking { get; set; } = new HashSet<tblBooking>();
+        public virtual ICollection<tblArea> Areas { get; set; } = new HashSet<tblArea>();
     }
 }

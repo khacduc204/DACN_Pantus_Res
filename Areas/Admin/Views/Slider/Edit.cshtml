@@ -3,48 +3,181 @@
 @{
     ViewData["Title"] = "Sửa slider";
     Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+    var hasImage = !string.IsNullOrWhiteSpace(Model.ImagePath);
 }
 
-<h2>Sửa slider</h2>
+<div class="pagetitle">
+    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+        <div>
+            <p class="text-uppercase text-muted small mb-1">Slider Homepage</p>
+            <h1 class="mb-2">Chỉnh sửa slider</h1>
+            <p class="text-muted mb-0">Cập nhật nội dung và hình ảnh để giữ câu chuyện thương hiệu nhất quán.</p>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <span class="badge text-bg-light text-secondary fw-semibold">ID #@Model.IdSlider</span>
+            <a asp-area="Admin" asp-controller="Slider" asp-action="Index" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i>Quay về danh sách
+            </a>
+        </div>
+    </div>
+</div>
 
-<form asp-action="Edit" enctype="multipart/form-data" method="post">
+<form asp-action="Edit" enctype="multipart/form-data" method="post" class="needs-validation" novalidate>
     <input type="hidden" asp-for="IdSlider" />
     <input type="hidden" name="OldImage" value="@Model.ImagePath" />
 
-    <div class="mb-3">
-        <label asp-for="Title" class="form-label">Tiêu đề</label>
-        <input asp-for="Title" class="form-control" />
-        <span asp-validation-for="Title" class="text-danger"></span>
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm form-card h-100">
+                <div class="card-header bg-white border-0 pb-0">
+                    <h5 class="mb-1">Nội dung hiển thị</h5>
+                    <p class="text-muted small mb-0">Sửa tiêu đề, mô tả và thứ tự hiển thị.</p>
+                </div>
+                <div class="card-body">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                    <div class="mb-3">
+                        <label asp-for="Title" class="form-label">Tiêu đề nổi bật</label>
+                        <input asp-for="Title" class="form-control form-control-lg" />
+                        <span asp-validation-for="Title" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Description" class="form-label">Mô tả phụ</label>
+                        <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="DisplayOrder" class="form-label">Thứ tự hiển thị</label>
+                            <input asp-for="DisplayOrder" class="form-control" type="number" min="0" />
+                            <span asp-validation-for="DisplayOrder" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Trạng thái hiển thị</label>
+                            <div class="form-switch-lg form-check form-switch">
+                                <input asp-for="IsActive" class="form-check-input" type="checkbox" role="switch" />
+                                <label class="form-check-label" asp-for="IsActive">Hiển thị trên trang chủ</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm form-card h-100">
+                <div class="card-header bg-white border-0 pb-0">
+                    <h5 class="mb-1">Ảnh hero</h5>
+                    <p class="text-muted small mb-0">Giữ đúng tỷ lệ 1440x600px để tránh crop.</p>
+                </div>
+                <div class="card-body d-flex flex-column gap-3">
+                    <div class="preview-frame">
+                        <img id="editSliderPreview" class="preview-image @(hasImage ? string.Empty : "d-none")" src="@(hasImage ? Model.ImagePath : string.Empty)" alt="Xem trước slider" data-initial-src="@(hasImage ? Model.ImagePath : string.Empty)" />
+                        <div id="editSliderPlaceholder" class="placeholder-state @(hasImage ? "d-none" : string.Empty)">
+                            <i class="bi bi-image"></i>
+                            <p class="mb-0">Chưa có ảnh</p>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="form-label">Chọn ảnh mới (tuỳ chọn)</label>
+                        <input type="file" name="imageFile" class="form-control" accept="image/*" data-preview-image="editSliderPreview" data-placeholder="editSliderPlaceholder" />
+                        <small class="text-muted d-block mt-2">Nếu không chọn, hệ thống giữ ảnh hiện tại.</small>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="mb-3">
-        <label asp-for="Description" class="form-label">Mô tả</label>
-        <textarea asp-for="Description" class="form-control"></textarea>
-        <span asp-validation-for="Description" class="text-danger"></span>
+
+    <div class="card border-0 shadow-sm mt-4">
+        <div class="card-body d-flex flex-column flex-md-row gap-2 justify-content-between align-items-md-center">
+            <div class="text-muted small">Thay đổi sẽ áp dụng ngay khi lưu.</div>
+            <div class="d-flex gap-2">
+                <a asp-area="Admin" asp-controller="Slider" asp-action="Index" class="btn btn-light">Huỷ</a>
+                <button type="submit" class="btn btn-primary px-4">
+                    <i class="bi bi-save me-1"></i>Lưu thay đổi
+                </button>
+            </div>
+        </div>
     </div>
-    <div class="mb-3">
-        <label class="form-label">Ảnh hiện tại</label><br />
-        @if (!string.IsNullOrEmpty(Model.ImagePath))
-        {
-            <img src="@Model.ImagePath" alt="@Model.Title" style="max-width:120px;max-height:60px;" />
-        }
-    </div>
-    <div class="mb-3">
-        <label class="form-label">Chọn ảnh mới (nếu muốn thay đổi)</label>
-        <input type="file" name="imageFile" class="form-control" accept="image/*" />
-    </div>
-    <div class="mb-3">
-        <label asp-for="DisplayOrder" class="form-label">Thứ tự hiển thị</label>
-        <input asp-for="DisplayOrder" class="form-control" type="number" min="0" />
-        <span asp-validation-for="DisplayOrder" class="text-danger"></span>
-    </div>
-    <div class="form-check mb-3">
-        <input asp-for="IsActive" class="form-check-input" type="checkbox" />
-        <label asp-for="IsActive" class="form-check-label">Hiển thị</label>
-    </div>
-    <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
-    <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
 </form>
 
+@section Styles {
+    <style>
+        .form-card {
+            border-radius: 1.25rem;
+        }
+
+        .form-switch-lg .form-check-input {
+            width: 3.5rem;
+            height: 1.5rem;
+        }
+
+        .preview-frame {
+            border-radius: 1rem;
+            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+            min-height: 220px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .preview-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .placeholder-state {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #94a3b8;
+            gap: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .placeholder-state i {
+            font-size: 2rem;
+        }
+    </style>
+}
+
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const input = document.querySelector('[data-preview-image="editSliderPreview"]');
+            if (!input) return;
+
+            input.addEventListener('change', function (event) {
+                const file = event.target.files?.[0];
+                const previewId = event.target.getAttribute('data-preview-image');
+                const placeholderId = event.target.getAttribute('data-placeholder');
+                const previewImg = document.getElementById(previewId);
+                const placeholder = document.getElementById(placeholderId);
+
+                if (!previewImg || !placeholder) return;
+
+                const initialSrc = previewImg.getAttribute('data-initial-src') || '';
+
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = e => {
+                        previewImg.src = e.target?.result;
+                        previewImg.classList.remove('d-none');
+                        placeholder.classList.add('d-none');
+                    };
+                    reader.readAsDataURL(file);
+                } else if (initialSrc) {
+                    previewImg.src = initialSrc;
+                    previewImg.classList.remove('d-none');
+                    placeholder.classList.add('d-none');
+                } else {
+                    previewImg.src = '';
+                    previewImg.classList.add('d-none');
+                    placeholder.classList.remove('d-none');
+                }
+            });
+        });
+    </script>
 }

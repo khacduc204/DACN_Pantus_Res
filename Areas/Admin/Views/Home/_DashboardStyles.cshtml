@@ -1,0 +1,89 @@
+<style>
+    .dashboard-filters {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+    .dashboard-filters .btn-filter {
+        border-radius: 999px;
+        padding: 6px 20px;
+        border: 1px solid #e2e8f0;
+        background: #fff;
+        color: #1e293b;
+        font-weight: 600;
+        transition: all 0.2s ease;
+    }
+    .dashboard-filters .btn-filter.active {
+        background: #2563eb;
+        color: #fff;
+        border-color: #2563eb;
+        box-shadow: 0 8px 24px rgba(37, 99, 235, 0.2);
+    }
+    .metric-card {
+        border: none;
+        border-radius: 24px;
+        box-shadow: 0 8px 30px rgba(15, 23, 42, 0.08);
+        background: #fff;
+    }
+
+        .items-filter-form .form-select {
+            min-width: 120px;
+        }
+
+        .pagination-rounded .btn {
+            border-radius: 999px;
+            min-width: 90px;
+        }
+    .metric-card .metric-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 18px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+    }
+    .metric-card .trend-up {
+        color: #16a34a;
+    }
+    .metric-card .trend-down {
+        color: #dc2626;
+    }
+    .chart-card {
+        border: none;
+        border-radius: 32px;
+        background: linear-gradient(135deg, #eef2ff, #f8fafc);
+        padding: 32px;
+        box-shadow: 0 20px 40px rgba(37, 99, 235, 0.15);
+    }
+    .items-table-card {
+        border-radius: 24px;
+        border: none;
+        box-shadow: 0 20px 40px rgba(15, 23, 42, 0.05);
+    }
+    .items-table-card table {
+        border-collapse: separate;
+        border-spacing: 0 12px;
+    }
+    .items-table-card tbody tr {
+        background: #f8fafc;
+        border-radius: 16px;
+    }
+    .items-table-card tbody tr td {
+        vertical-align: middle;
+        border-top: none;
+        border-bottom: none;
+        padding: 18px 12px;
+    }
+    .top-items-card {
+        border-radius: 24px;
+        border: none;
+        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.1);
+    }
+    .item-thumb {
+        width: 56px;
+        height: 56px;
+        border-radius: 16px;
+        object-fit: cover;
+    }
+</style>

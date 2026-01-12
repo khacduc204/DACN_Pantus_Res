@@ -1,0 +1,852 @@
+@using KD_Restaurant.ViewModels
+@using KD_Restaurant.Utilities
+@using System.Net
+@using System.Linq
+@model BookingManagementViewModel
+@{
+    ViewData["Title"] = "Quản lý lịch đặt bàn";
+    var bookings = Model.Bookings ?? new List<BookingCardViewModel>();
+    var statuses = Model.Statuses ?? new List<BookingStatusOption>();
+    var statusCounters = Model.StatusCounters ?? new Dictionary<int, int>();
+    var branches = Model.Branches ?? new List<SelectOption>();
+    var customers = Model.Customers ?? new List<SelectOption>();
+    var menuItems = Model.MenuItems ?? new List<SelectOption>();
+    var selectedDateValue = Model.SelectedDate == default ? DateTime.Today.ToString("yyyy-MM-dd") : Model.SelectedDate.ToString("yyyy-MM-dd");
+    var selectedDateDisplay = Model.SelectedDate == default ? DateTime.Today.ToString("dd/MM/yyyy") : Model.SelectedDate.ToString("dd/MM/yyyy");
+    var selectedBranchValue = Model.SelectedBranchId?.ToString() ?? string.Empty;
+    var selectedStatusValue = Model.SelectedStatusId?.ToString() ?? string.Empty;
+    Func<BookingCardViewModel, int> calculateBookingTotal = booking =>
+    {
+        if (booking?.OrderItems == null || !booking.OrderItems.Any())
+        {
+            return 0;
+        }
+        return booking.OrderItems.Sum(item => (item.Price ?? 0) * item.Quantity);
+    };
+    var totalRevenue = bookings.Sum(calculateBookingTotal);
+    var timeSlotOptions = BookingTimeSlotProvider.GetDefaultSlots();
+}
+
+<div class="pagetitle">
+    <h1>@ViewData["Title"]</h1>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-area="Admin" asp-controller="Home" asp-action="Index">Dashboard</a></li>
+            <li class="breadcrumb-item active">Lịch đặt bàn</li>
+        </ol>
+    </nav>
+</div>
+
+<section class="section booking-management-section">
+    <div id="bookingAlert" class="mb-3" aria-live="polite"></div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-xl-3 col-sm-6">
+                <div class="status-widget gradient-graphite">
+                <div class="status-label">Tổng đặt bàn</div>
+                <div class="status-value">@bookings.Count</div>
+                    <p class="status-note">Trong ngày @selectedDateDisplay</p>
+            </div>
+        </div>
+        <div class="col-xl-3 col-sm-6">
+            <div class="status-widget gradient-emerald">
+                <div class="status-label">Tổng giá trị món đã chọn</div>
+                <div class="status-value">@totalRevenue.ToString("N0") ₫</div>
+                <p class="status-note">Cập nhật theo danh sách hiện tại</p>
+            </div>
+        </div>
+        @foreach (var status in statuses)
+        {
+            var count = statusCounters.TryGetValue(status.Id, out var value) ? value : 0;
+            <div class="col-xl-3 col-sm-6">
+                <div class="status-widget gradient-muted">
+                    <div class="status-label">@status.Name</div>
+                    <div class="status-value">@count</div>
+                    <span class="badge @status.BadgeClass">@status.Name</span>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form class="row g-3 align-items-end" method="get" asp-area="Admin" asp-controller="Bookings" asp-action="Index" id="bookingFilterForm">
+                <div class="col-md-3">
+                    <label class="form-label">Ngày phục vụ</label>
+                    <input type="date" class="form-control" name="date" value="@selectedDateValue" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Cơ sở</label>
+                    <select class="form-select" name="branchId">
+                        <option value="">Tất cả</option>
+                        @foreach (var branch in branches)
+                        {
+                            <option value="@branch.Id" selected="@(selectedBranchValue == branch.Id.ToString() ? "selected" : null)">@branch.Name</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Trạng thái</label>
+                    <select class="form-select" name="statusId">
+                        <option value="">Tất cả</option>
+                        @foreach (var status in statuses)
+                        {
+                            <option value="@status.Id" selected="@(selectedStatusValue == status.Id.ToString() ? "selected" : null)">@status.Name</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex gap-2 justify-content-md-end">
+                    <button type="submit" class="btn btn-outline-secondary flex-fill flex-md-grow-0">Lọc</button>
+                    <button type="button"
+                            class="btn btn-primary flex-fill flex-md-grow-0"
+                            data-bs-toggle="modal"
+                            data-bs-target="#bookingCreateModal"
+                            data-default-date="@selectedDateValue"
+                            id="openCreateModalBtn">
+                        <i class="bi bi-calendar-plus me-1"></i>Tạo đặt bàn
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @if (!bookings.Any())
+    {
+        <div class="card empty-state-card">
+            <div class="card-body text-center py-5">
+                <img src="/assets/img/empty.svg" alt="Empty" class="empty-illustration mb-3" />
+                <h4>Chưa có đặt bàn nào trong ngày</h4>
+                <p class="text-muted mb-4">Bấm "Tạo đặt bàn" để thêm lịch mới hoặc chọn ngày khác.</p>
+                <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#bookingCreateModal">
+                    Thêm đặt bàn đầu tiên
+                </button>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row row-cols-1 row-cols-lg-2 row-cols-xxl-3 g-4" id="bookingCardGrid">
+            @foreach (var booking in bookings)
+            {
+                var bookingTotal = calculateBookingTotal(booking);
+                <div class="col">
+                    <div class="booking-card">
+                        <div class="booking-card__head">
+                            <div>
+                                <div class="eyebrow-label">@booking.TimeSlot</div>
+                                <h5 class="mb-1">@booking.CustomerName</h5>
+                                <div class="text-muted small">@booking.CustomerPhone</div>
+                            </div>
+                            <span class="badge @booking.StatusBadgeClass">@booking.StatusName</span>
+                        </div>
+                        <div class="booking-card__body">
+                            <div class="info-row">
+                                <div>
+                                    <div class="info-label">Cơ sở</div>
+                                    <div class="info-value">@(!string.IsNullOrWhiteSpace(booking.BranchName) ? booking.BranchName : "Chưa gán")</div>
+                                </div>
+                                <div>
+                                    <div class="info-label">Bàn</div>
+                                    <div class="info-value">@(!string.IsNullOrWhiteSpace(booking.TableName) ? booking.TableName : "Chưa xếp")</div>
+                                </div>
+                                <div>
+                                    <div class="info-label">Khách</div>
+                                    <div class="info-value">@(booking.Guests?.ToString() ?? "—")</div>
+                                </div>
+                            </div>
+                            @if (!string.IsNullOrWhiteSpace(booking.Note))
+                            {
+                                var safeNote = WebUtility.HtmlEncode(booking.Note ?? string.Empty).Replace("\n", "<br />");
+                                <div class="booking-note">
+                                    <strong>Ghi chú:</strong>
+                                    <p class="mb-0">@Html.Raw(safeNote)</p>
+                                </div>
+                            }
+                            @if (booking.HasOrder)
+                            {
+                                <div class="order-chip">
+                                    <div class="order-chip__title">
+                                        <i class="bi bi-receipt-cutoff me-1"></i>Món đã chọn
+                                    </div>
+                                    <ul class="order-chip__list">
+                                        @foreach (var item in booking.OrderItems)
+                                        {
+                                            var lineAmount = (item.Price ?? 0) * item.Quantity;
+                                            <li>
+                                                <span class="order-item__name">@item.ItemName</span>
+                                                <span class="order-item__qty">× @item.Quantity</span>
+                                                <span class="order-item__price">@lineAmount.ToString("N0") ₫</span>
+                                            </li>
+                                        }
+                                    </ul>
+                                    <div class="order-chip__total">
+                                        Tổng tạm tính <strong>@bookingTotal.ToString("N0") ₫</strong>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                        <div class="booking-card__actions">
+                            <button type="button" class="btn btn-outline-primary btn-sm"
+                                    data-action="assign-table"
+                                    data-booking-id="@booking.Id"
+                                    data-branch-id="@booking.BranchId"
+                                    data-date="@booking.BookingDate.ToString("yyyy-MM-dd")"
+                                    data-time-slot="@booking.TimeSlot"
+                                    data-min-seats="@booking.Guests"
+                                    data-current-table="@booking.TableName">
+                                <i class="bi bi-diagram-3 me-1"></i>Xếp bàn
+                            </button>
+                            <button type="button" class="btn btn-success btn-sm"
+                                    data-action="check-in"
+                                    data-booking-id="@booking.Id"
+                                    data-table-id="@booking.TableId"
+                                    disabled="@(booking.TableId.HasValue ? null : "disabled")">
+                                <i class="bi bi-person-check me-1"></i>Khách nhận bàn
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm"
+                                    data-action="add-menu"
+                                    data-booking-id="@booking.Id"
+                                    data-customer="@booking.CustomerName">
+                                <i class="bi bi-plus-circle me-1"></i>Chọn món
+                            </button>
+                            <button type="button" class="btn btn-outline-danger btn-sm"
+                                    data-action="cancel-booking"
+                                    data-booking-id="@booking.Id"
+                                    data-customer="@booking.CustomerName">
+                                <i class="bi bi-x-circle me-1"></i>Huỷ
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</section>
+
+<!-- Create booking modal -->
+<div class="modal fade" id="bookingCreateModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <form id="bookingCreateForm" method="post" asp-area="Admin" asp-controller="Bookings" asp-action="Create">
+                @Html.AntiForgeryToken()
+                <div class="modal-header">
+                    <h5 class="modal-title">Tạo lịch đặt bàn</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Khách hàng</label>
+                            <select class="form-select" name="CustomerId">
+                                <option value="">-- Chọn khách đã có --</option>
+                                @foreach (var customer in customers)
+                                {
+                                    <option value="@customer.Id">@customer.Name</option>
+                                }
+                            </select>
+                            <div class="form-text">Hoặc nhập nhanh thông tin bên dưới.</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Tên khách mới</label>
+                            <input type="text" class="form-control" name="CustomerName" maxlength="150" />
+                            <input type="tel" class="form-control mt-2" name="CustomerPhone" maxlength="20" placeholder="SĐT" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Ngày</label>
+                            <input type="date" class="form-control" name="BookingDate" value="@selectedDateValue" required />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Khung giờ</label>
+                            <input type="text" class="form-control" name="TimeSlot" list="booking-time-slots" placeholder="18:00 - 20:00" required />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Số khách</label>
+                            <input type="number" class="form-control" name="NumberGuests" min="1" value="2" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Cơ sở</label>
+                            <select class="form-select" name="BranchId">
+                                <option value="">-- Chọn cơ sở --</option>
+                                @foreach (var branch in branches)
+                                {
+                                    <option value="@branch.Id" selected="@(selectedBranchValue == branch.Id.ToString() ? "selected" : null)">@branch.Name</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Bàn gợi ý</label>
+                            <select class="form-select" name="TableId" id="createTableSelect">
+                                <option value="">Đang tải danh sách...</option>
+                            </select>
+                            <div class="form-text">Hệ thống chỉ hiển thị bàn còn trống theo thời gian.</div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Ghi chú</label>
+                            <textarea class="form-control" name="Note" rows="2" maxlength="255" placeholder="Yêu cầu đặc biệt, dị ứng..."></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-primary">Lưu đặt bàn</button>
+                </div>
+            </form>
+            <datalist id="booking-time-slots">
+                @foreach (var slot in timeSlotOptions)
+                {
+                    <option value="@slot"></option>
+                }
+            </datalist>
+        </div>
+    </div>
+</div>
+
+<!-- Assign table modal -->
+<div class="modal fade" id="assignTableModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="assignTableForm" method="post" asp-area="Admin" asp-controller="Bookings" asp-action="AssignTable">
+                @Html.AntiForgeryToken()
+                <div class="modal-header">
+                    <h5 class="modal-title">Xếp bàn cho khách</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="BookingId" />
+                    <div class="mb-3">
+                        <label class="form-label">Bàn khả dụng</label>
+                        <select class="form-select" name="TableId" id="assignTableSelect">
+                            <option value="">Đang tải...</option>
+                        </select>
+                        <div class="form-text">Danh sách lọc theo ngày & khung giờ của đặt bàn.</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Huỷ</button>
+                    <button type="submit" class="btn btn-primary">Lưu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Add menu modal -->
+<div class="modal fade" id="bookingMenuModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="bookingMenuForm" method="post" asp-area="Admin" asp-controller="Bookings" asp-action="AddMenuItem">
+                @Html.AntiForgeryToken()
+                <div class="modal-header">
+                    <h5 class="modal-title">Chọn món trước</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="BookingId" />
+                    <div class="mb-3">
+                        <label class="form-label">Món ăn</label>
+                        <select class="form-select" name="MenuItemId" required>
+                            <option value="">-- Chọn món --</option>
+                            @foreach (var item in menuItems)
+                            {
+                                <option value="@item.Id">@item.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Số lượng</label>
+                        <input type="number" class="form-control" name="Quantity" min="1" value="1" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-primary">Thêm món</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Cancel modal -->
+<div class="modal fade" id="bookingCancelModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="bookingCancelForm" method="post" asp-area="Admin" asp-controller="Bookings" asp-action="Cancel">
+                @Html.AntiForgeryToken()
+                <div class="modal-header">
+                    <h5 class="modal-title">Huỷ đặt bàn</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="BookingId" />
+                    <div class="mb-3">
+                        <label class="form-label">Cập nhật trạng thái</label>
+                        <select class="form-select" name="StatusId">
+                            <option value="">-- Giữ nguyên --</option>
+                            @foreach (var status in statuses)
+                            {
+                                <option value="@status.Id">@status.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Lý do</label>
+                        <textarea class="form-control" name="Reason" rows="2" maxlength="255" placeholder="Khách báo huỷ, không đến..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Để sau</button>
+                    <button type="submit" class="btn btn-danger">Xác nhận</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (() => {
+            const tablesApi = '@Url.Action("AvailableTables", "Bookings", new { area = "Admin" })';
+            const checkInUrl = '@Url.Action("CheckIn", "Bookings", new { area = "Admin" })';
+            const alertPlaceholder = document.getElementById('bookingAlert');
+            const debounce = (fn, delay = 300) => {
+                let timer;
+                return (...args) => {
+                    clearTimeout(timer);
+                    timer = setTimeout(() => fn.apply(null, args), delay);
+                };
+            };
+
+            const getAntiForgeryToken = () => {
+                const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+                return tokenInput?.value || '';
+            };
+
+            const showAlert = (message, type = 'success') => {
+                if (!alertPlaceholder) return;
+                alertPlaceholder.innerHTML = `\n                    <div class="alert alert-${type} alert-dismissible fade show" role="alert">\n                        ${message}\n                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>\n                    </div>`;
+            };
+
+            const reloadPage = (redirectUrl) => {
+                if (redirectUrl) {
+                    window.location.href = redirectUrl;
+                } else {
+                    window.location.reload();
+                }
+            };
+
+            const submitAjaxForm = (form) => {
+                if (!form) return;
+                form.addEventListener('submit', async (evt) => {
+                    evt.preventDefault();
+                    const formData = new FormData(form);
+                    const response = await fetch(form.action, {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (!response.ok) {
+                        showAlert('Không thể xử lý yêu cầu, vui lòng thử lại.', 'danger');
+                        return;
+                    }
+
+                    const result = await response.json();
+                    if (result.success) {
+                        const modalRoot = form.closest('.modal');
+                        if (modalRoot) {
+                            const modalInstance = bootstrap.Modal.getInstance(modalRoot);
+                            modalInstance?.hide();
+                        }
+                        showAlert('Thao tác thành công, đang tải lại dữ liệu...');
+                        setTimeout(() => reloadPage(result.redirectUrl), 600);
+                    } else {
+                        showAlert(result.message || 'Có lỗi xảy ra', 'warning');
+                    }
+                });
+            };
+
+            const buildTableOptions = (select, data) => {
+                if (!select) return;
+                select.innerHTML = '';
+                if (!data || data.length === 0) {
+                    select.innerHTML = '<option value="">Không còn bàn trống</option>';
+                    return;
+                }
+
+                select.innerHTML = '<option value="">-- Chọn bàn --</option>';
+                data.forEach(item => {
+                    const option = document.createElement('option');
+                    option.value = item.id;
+                    option.textContent = `${item.name} • ${item.area || 'Khu vực ?'} • ${item.seats || '?'} ghế`;
+                    select.appendChild(option);
+                });
+            };
+
+            const fetchTables = async (params, select) => {
+                const query = new URLSearchParams({
+                    date: params.date,
+                    timeSlot: params.timeSlot,
+                    branchId: params.branchId || '',
+                    bookingId: params.bookingId || '',
+                    minSeats: params.minSeats || ''
+                });
+
+                select.innerHTML = '<option value="">Đang tải...</option>';
+                try {
+                    const res = await fetch(`${tablesApi}?${query.toString()}`);
+                    const data = await res.json();
+                    buildTableOptions(select, data);
+                } catch (err) {
+                    console.error(err);
+                    select.innerHTML = '<option value="">Không tải được dữ liệu</option>';
+                }
+            };
+
+            // Create modal table suggestions
+            const createModal = document.getElementById('bookingCreateModal');
+            if (createModal) {
+                const form = document.getElementById('bookingCreateForm');
+                const tableSelect = document.getElementById('createTableSelect');
+                const dateInput = form?.querySelector('[name="BookingDate"]');
+                const slotInput = form?.querySelector('[name="TimeSlot"]');
+                const branchSelect = form?.querySelector('[name="BranchId"]');
+                const guestsInput = form?.querySelector('[name="NumberGuests"]');
+
+                const triggerLoad = debounce(() => {
+                    if (!dateInput?.value || !slotInput?.value) return;
+                    fetchTables({
+                        date: dateInput.value,
+                        timeSlot: slotInput.value,
+                        branchId: branchSelect?.value,
+                        minSeats: guestsInput?.value
+                    }, tableSelect);
+                }, 400);
+
+                createModal.addEventListener('shown.bs.modal', triggerLoad);
+                dateInput?.addEventListener('change', triggerLoad);
+                slotInput?.addEventListener('input', triggerLoad);
+                branchSelect?.addEventListener('change', triggerLoad);
+                guestsInput?.addEventListener('input', triggerLoad);
+                submitAjaxForm(form);
+            }
+
+            // Assign table modal
+            const assignModal = document.getElementById('assignTableModal');
+            if (assignModal) {
+                const assignForm = document.getElementById('assignTableForm');
+                const tableSelect = document.getElementById('assignTableSelect');
+                submitAjaxForm(assignForm);
+
+                document.addEventListener('click', (evt) => {
+                    const target = evt.target.closest('[data-action="assign-table"]');
+                    if (!target) return;
+
+                    const bookingId = target.getAttribute('data-booking-id');
+                    const date = target.getAttribute('data-date');
+                    const slot = target.getAttribute('data-time-slot');
+                    const branch = target.getAttribute('data-branch-id');
+                    const minSeats = target.getAttribute('data-min-seats');
+
+                    assignForm.querySelector('[name="BookingId"]').value = bookingId;
+                    const modal = bootstrap.Modal.getOrCreateInstance(assignModal);
+                    modal.show();
+                    fetchTables({ date, timeSlot: slot, branchId: branch, bookingId, minSeats }, tableSelect);
+                });
+            }
+
+            // Menu modal
+            const menuModal = document.getElementById('bookingMenuModal');
+            if (menuModal) {
+                const menuForm = document.getElementById('bookingMenuForm');
+                submitAjaxForm(menuForm);
+
+                document.addEventListener('click', (evt) => {
+                    const target = evt.target.closest('[data-action="add-menu"]');
+                    if (!target) return;
+                    menuForm.querySelector('[name="BookingId"]').value = target.getAttribute('data-booking-id');
+                    bootstrap.Modal.getOrCreateInstance(menuModal).show();
+                });
+            }
+
+            // Cancel modal
+            const cancelModal = document.getElementById('bookingCancelModal');
+            if (cancelModal) {
+                const cancelForm = document.getElementById('bookingCancelForm');
+                submitAjaxForm(cancelForm);
+
+                document.addEventListener('click', (evt) => {
+                    const target = evt.target.closest('[data-action="cancel-booking"]');
+                    if (!target) return;
+                    cancelForm.querySelector('[name="BookingId"]').value = target.getAttribute('data-booking-id');
+                    bootstrap.Modal.getOrCreateInstance(cancelModal).show();
+                });
+            }
+
+            document.addEventListener('click', async evt => {
+                const checkInBtn = evt.target.closest('[data-action="check-in"]');
+                if (!checkInBtn) return;
+
+                if (checkInBtn.hasAttribute('disabled')) {
+                    alert('Hãy xếp bàn trước khi xác nhận khách nhận bàn.');
+                    return;
+                }
+
+                if (!confirm('Xác nhận khách đã nhận bàn và bắt đầu phục vụ?')) {
+                    return;
+                }
+
+                const bookingId = checkInBtn.getAttribute('data-booking-id');
+                const formData = new FormData();
+                formData.append('bookingId', bookingId);
+                const tokenValue = getAntiForgeryToken();
+                if (tokenValue) {
+                    formData.append('__RequestVerificationToken', tokenValue);
+                }
+
+                checkInBtn.disabled = true;
+
+                try {
+                    const response = await fetch(checkInUrl, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const result = await response.json();
+                    if (!result.success) {
+                        alert(result.message ?? 'Không thể cập nhật trạng thái.');
+                        checkInBtn.disabled = false;
+                        return;
+                    }
+
+                    if (result.redirectUrl) {
+                        window.location.href = result.redirectUrl;
+                    } else {
+                        window.location.reload();
+                    }
+                } catch (error) {
+                    console.error(error);
+                    alert('Không thể xác nhận khách nhận bàn.');
+                    checkInBtn.disabled = false;
+                }
+            });
+        })();
+    </script>
+}
+
+<style>
+    .booking-management-section {
+        background: linear-gradient(180deg, #f7f8fb 0%, #ffffff 35%);
+        border-radius: 24px;
+        padding: 24px;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    }
+
+    .status-widget {
+        border-radius: 22px;
+        padding: 20px;
+        min-height: 150px;
+        color: #fff;
+        box-shadow: 0 25px 45px rgba(15, 36, 67, 0.15);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .status-widget::after {
+        content: "";
+        position: absolute;
+        inset: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        border-radius: 16px;
+        pointer-events: none;
+    }
+
+    .gradient-graphite {
+        background: radial-gradient(circle at top left, #2c3e50, #1a1f2b);
+    }
+
+    .gradient-muted {
+        background: linear-gradient(135deg, #34495e, #3d7fff);
+    }
+
+    .gradient-emerald {
+        background: linear-gradient(135deg, #00b09b, #96c93d);
+    }
+
+    .status-label {
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        font-size: 0.78rem;
+        opacity: 0.85;
+    }
+
+    .status-value {
+        font-size: 2.6rem;
+        font-weight: 700;
+        margin: 6px 0 4px;
+    }
+
+    .status-note {
+        font-size: 0.85rem;
+        opacity: 0.9;
+    }
+
+    #bookingFilterForm {
+        background: #f8f9fb;
+        border-radius: 18px;
+        padding: 20px;
+    }
+
+    #bookingFilterForm .form-label {
+        font-weight: 600;
+        color: #4b5563;
+    }
+
+    .booking-card {
+        background: #fff;
+        border-radius: 24px;
+        padding: 22px;
+        height: 100%;
+        box-shadow: 0 25px 60px rgba(11, 53, 123, 0.08);
+        border: 1px solid rgba(13, 110, 253, 0.08);
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+    }
+
+    .booking-card__head {
+        display: flex;
+        justify-content: space-between;
+        gap: 14px;
+        align-items: flex-start;
+    }
+
+    .booking-card__body {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .info-row {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .info-label {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #94a3b8;
+    }
+
+    .info-value {
+        font-weight: 600;
+        color: #1f2937;
+    }
+
+    .booking-note {
+        background: #f8fafc;
+        border-radius: 14px;
+        padding: 14px;
+        border: 1px dashed #cbd5f5;
+        font-size: 0.9rem;
+    }
+
+    .order-chip {
+        background: linear-gradient(135deg, #eef2ff, #f8fbff);
+        border-radius: 18px;
+        padding: 16px;
+        border: 1px solid rgba(99, 102, 241, 0.25);
+    }
+
+    .order-chip__title {
+        font-weight: 600;
+        color: #3b358f;
+        margin-bottom: 10px;
+    }
+
+    .order-chip__list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .order-chip__list li {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto auto;
+        gap: 8px;
+        font-size: 0.9rem;
+        color: #1f2937;
+    }
+
+    .order-item__name {
+        font-weight: 600;
+    }
+
+    .order-item__qty {
+        color: #64748b;
+    }
+
+    .order-item__price {
+        font-weight: 700;
+        color: #2563eb;
+    }
+
+    .order-chip__total {
+        margin-top: 12px;
+        padding-top: 10px;
+        border-top: 1px dashed rgba(37, 99, 235, 0.3);
+        text-align: right;
+        font-size: 0.95rem;
+        color: #0f172a;
+    }
+
+    .booking-card__actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .booking-card__actions .btn {
+        flex: 1;
+        min-width: 120px;
+        border-radius: 999px;
+    }
+
+    .empty-state-card {
+        border: none;
+        border-radius: 28px;
+        background: linear-gradient(135deg, #ffffff, #f3f7ff);
+        box-shadow: 0 30px 80px rgba(15, 23, 42, 0.08);
+    }
+
+    #bookingCardGrid {
+        margin-top: 10px;
+    }
+
+    @@media (max-width: 991px) {
+        .booking-management-section {
+            padding: 16px;
+        }
+
+        .info-row {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .booking-card__actions {
+            flex-direction: column;
+        }
+    }
+
+    @@media (max-width: 575px) {
+        .status-widget {
+            min-height: auto;
+        }
+
+        .info-row {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>

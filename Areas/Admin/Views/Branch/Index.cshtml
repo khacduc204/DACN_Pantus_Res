@@ -1,0 +1,184 @@
+@model KD_Restaurant.ViewModels.BranchDashboardViewModel
+@{
+    ViewData["Title"] = "Thiết lập cơ sở";
+    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="branch-hero rounded-4 p-4 p-lg-5 mb-4 shadow-sm">
+    <div class="d-flex flex-column flex-lg-row justify-content-between gap-4 align-items-lg-end">
+        <div>
+            <p class="text-uppercase small fw-semibold text-white-50 mb-2">Restaurant Setup</p>
+            <h1 class="text-white fw-bold mb-3">Quản lý hệ thống cơ sở</h1>
+            <p class="text-white-50 mb-0">Theo dõi trạng thái từng chi nhánh, lịch đặt bàn và số lượng khu vực để chủ động vận hành.</p>
+        </div>
+        <div class="text-lg-end">
+            <a asp-area="Admin" asp-controller="Branch" asp-action="Create" class="btn btn-light btn-lg px-4">
+                <i class="bi bi-plus-lg me-2"></i>Thêm cơ sở
+            </a>
+            <p class="small text-white-50 mt-3 mb-0">Tổng cộng @Model.TotalBranches cơ sở đang quản lý</p>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card metric-card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <p class="text-muted text-uppercase small mb-1">Tổng cơ sở</p>
+                <h3 class="fw-bold mb-0">@Model.TotalBranches</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card metric-card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <p class="text-muted text-uppercase small mb-1">Đang hoạt động</p>
+                <h3 class="fw-bold text-success mb-0">@Model.ActiveBranches</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card metric-card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <p class="text-muted text-uppercase small mb-1">Tổng khu vực</p>
+                <h3 class="fw-bold mb-0">@Model.TotalAreas</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card metric-card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <p class="text-muted text-uppercase small mb-1">Đặt bàn sắp tới</p>
+                <h3 class="fw-bold text-primary mb-0">@Model.UpcomingBookings</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (Model.Branches == null || !Model.Branches.Any())
+{
+    <div class="card border-0 shadow-sm">
+        <div class="card-body text-center py-5">
+            <div class="empty-icon rounded-circle mx-auto mb-3">
+                <i class="bi bi-shop"></i>
+            </div>
+            <h4 class="fw-semibold mb-2">Chưa có cơ sở nào</h4>
+            <p class="text-muted mb-4">Hãy thêm cơ sở đầu tiên để thiết lập sơ đồ bàn và lịch đặt.</p>
+            <a asp-area="Admin" asp-controller="Branch" asp-action="Create" class="btn btn-primary">
+                <i class="bi bi-plus-lg me-2"></i>Thêm cơ sở
+            </a>
+        </div>
+    </div>
+}
+else
+{
+    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
+        @foreach (var branch in Model.Branches)
+        {
+            <div class="col">
+                <div class="card branch-card h-100 border-0 shadow-sm">
+                    <div class="card-body d-flex flex-column">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div>
+                                <h5 class="card-title mb-1">@branch.BranchName</h5>
+                                <p class="text-muted small mb-0">@branch.Address</p>
+                            </div>
+                            <span class="badge @(branch.IsActive ? "bg-success" : "bg-secondary")">@(branch.IsActive ? "Đang hoạt động" : "Tạm ngưng")</span>
+                        </div>
+                        <p class="text-muted small mb-3">@branch.Description</p>
+                        <div class="d-flex flex-wrap gap-3 mb-3 branch-stats">
+                            <div>
+                                <p class="text-muted text-uppercase small mb-1">Khu vực</p>
+                                <h6 class="mb-0">@branch.AreaCount</h6>
+                            </div>
+                            <div>
+                                <p class="text-muted text-uppercase small mb-1">Bàn</p>
+                                <h6 class="mb-0">@branch.TableCount</h6>
+                            </div>
+                            <div>
+                                <p class="text-muted text-uppercase small mb-1">Đặt bàn</p>
+                                <h6 class="mb-0">@branch.UpcomingBookings</h6>
+                            </div>
+                        </div>
+                        <div class="contact-block small text-muted mb-3">
+                            @if (!string.IsNullOrWhiteSpace(branch.PhoneNumber))
+                            {
+                                <div><i class="bi bi-telephone me-2"></i>@branch.PhoneNumber</div>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(branch.Email))
+                            {
+                                <div><i class="bi bi-envelope me-2"></i>@branch.Email</div>
+                            }
+                        </div>
+                        <div class="d-flex gap-2 mt-auto">
+                            <form asp-area="Admin" asp-controller="Branch" asp-action="ToggleStatus" method="post" class="flex-fill">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@branch.Id" />
+                                <button type="submit" class="btn btn-outline-secondary w-100">
+                                    <i class="bi @(branch.IsActive ? "bi-pause-circle" : "bi-play-circle") me-1"></i>@(branch.IsActive ? "Tạm ngưng" : "Kích hoạt")
+                                </button>
+                            </form>
+                            <a asp-area="Admin" asp-controller="Branch" asp-action="Edit" asp-route-id="@branch.Id" class="btn btn-primary flex-fill">
+                                <i class="bi bi-pencil-square me-1"></i>Sửa
+                            </a>
+                            <form asp-area="Admin" asp-controller="Branch" asp-action="Delete" method="post" class="flex-fill" onsubmit="return confirm('Bạn chắc chắn muốn xoá cơ sở này?');">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@branch.Id" />
+                                <button type="submit" class="btn btn-danger w-100">
+                                    <i class="bi bi-trash me-1"></i>Xoá
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@section Styles {
+    <style>
+        .branch-hero {
+            background: linear-gradient(120deg, #0ea5e9, #6366f1);
+        }
+
+        .metric-card {
+            border-radius: 1rem;
+        }
+
+        .branch-card {
+            border-radius: 1.25rem;
+            padding: 0.2rem;
+        }
+
+        .contact-block i {
+            color: #6366f1;
+        }
+
+        .empty-icon {
+            width: 80px;
+            height: 80px;
+            background: rgba(14, 165, 233, 0.1);
+            color: #0ea5e9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+        }
+    </style>
+}

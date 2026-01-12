@@ -1,0 +1,96 @@
+@model KD_Restaurant.ViewModels.EmployeeDetailsViewModel
+@{
+    ViewData["Title"] = "Chi tiết nhân viên";
+    var statusBadge = Model.IsActive ? "bg-success-subtle text-success" : "bg-secondary-subtle text-secondary";
+    var statusLabel = Model.IsActive ? "Đang hoạt động" : "Đã khoá";
+    var fallbackName = string.IsNullOrWhiteSpace(Model.FullName) ? Model.UserName : Model.FullName;
+    var avatarInitial = !string.IsNullOrWhiteSpace(fallbackName)
+      ? char.ToUpperInvariant(fallbackName.Trim()[0])
+      : '?';
+}
+
+<section class="section dashboard">
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div>
+      <h1 class="h3 mb-1">@Model.FullName</h1>
+      <p class="text-muted mb-0">Thông tin hồ sơ và quyền truy cập của nhân viên.</p>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+      <a asp-area="Admin" asp-controller="Employee" asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Danh sách
+      </a>
+      <a asp-area="Admin" asp-controller="Employee" asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+        <i class="bi bi-pencil me-1"></i>Chỉnh sửa
+      </a>
+      <form asp-area="Admin" asp-controller="Employee" asp-action="ToggleStatus" method="post" onsubmit="return confirm('Bạn chắc chắn muốn @(Model.IsActive ? "khoá" : "kích hoạt") tài khoản này?');">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="id" value="@Model.Id" />
+        <button type="submit" class="btn btn-@(Model.IsActive ? "outline-danger" : "outline-success")">
+          <i class="bi @(Model.IsActive ? "bi-lock" : "bi-unlock") me-1"></i>
+          @(Model.IsActive ? "Khoá tài khoản" : "Mở khoá")
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-4">
+      <div class="card shadow-sm h-100">
+        <div class="card-body text-center">
+          @if (!string.IsNullOrWhiteSpace(Model.AvatarUrl))
+          {
+              <img src="@Model.AvatarUrl" class="rounded-circle mb-3" width="120" height="120" alt="avatar" />
+          }
+          else
+          {
+              <div class="rounded-circle bg-light border d-flex align-items-center justify-content-center mx-auto mb-3" style="width:120px;height:120px;">
+                <span class="fs-1 text-muted fw-semibold">@avatarInitial</span>
+              </div>
+          }
+          <h5 class="mb-1">@Model.FullName</h5>
+          <p class="text-muted mb-3">@Model.UserName</p>
+          <span class="badge @Model.RoleBadgeClass px-3 py-2">@Model.RoleName</span>
+          <div class="mt-3">
+            <span class="badge @statusBadge px-3 py-2">@statusLabel</span>
+          </div>
+          <hr>
+          <div class="text-muted small">
+            <div class="mb-1">Lần đăng nhập cuối:</div>
+            <div class="fw-semibold">
+              @(Model.LastLogin.HasValue ? Model.LastLogin.Value.ToString("dd/MM/yyyy HH:mm") : "Chưa đăng nhập")
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-8">
+      <div class="card shadow-sm h-100">
+        <div class="card-body">
+          <h5 class="card-title mb-4">Thông tin chi tiết</h5>
+          <div class="row gy-3">
+            <div class="col-sm-6">
+              <p class="text-muted mb-1">Tên đăng nhập</p>
+              <p class="fw-semibold">@Model.UserName</p>
+            </div>
+            <div class="col-sm-6">
+              <p class="text-muted mb-1">Vai trò</p>
+              <p class="fw-semibold">@Model.RoleName</p>
+            </div>
+            <div class="col-sm-6">
+              <p class="text-muted mb-1">Số điện thoại</p>
+              <p class="fw-semibold">@(string.IsNullOrWhiteSpace(Model.PhoneNumber) ? "-" : Model.PhoneNumber)</p>
+            </div>
+            <div class="col-sm-6">
+              <p class="text-muted mb-1">Trạng thái</p>
+              <p class="fw-semibold">@statusLabel</p>
+            </div>
+            <div class="col-12">
+              <p class="text-muted mb-1">Ghi chú nội bộ</p>
+              <p class="fw-semibold">@(string.IsNullOrWhiteSpace(Model.Description) ? "Chưa có ghi chú" : Model.Description)</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

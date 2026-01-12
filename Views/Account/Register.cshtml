@@ -1,0 +1,203 @@
+@model KD_Restaurant.ViewModels.RegisterViewModel
+@{
+    ViewData["Title"] = "Đăng ký";
+}
+
+<section class="auth-wrapper">
+    <div class="auth-card shadow-lg">
+        <div class="auth-visual">
+            <div class="brand-pill">KD Restaurant Club</div>
+            <h2>Kết nối phong cách sống ẩm thực cao cấp</h2>
+            <div class="timeline">
+                <div>
+                    <span>01</span>
+                    <p>Đăng ký nhanh trong 60 giây</p>
+                </div>
+                <div>
+                    <span>02</span>
+                    <p>Nhận ưu đãi và quà tặng cá nhân hóa</p>
+                </div>
+                <div>
+                    <span>03</span>
+                    <p>Đồng bộ đặt bàn với mọi chi nhánh</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="auth-form">
+            <div class="auth-form-header">
+                <h3>Tạo tài khoản mới</h3>
+                <p>Trải nghiệm hệ sinh thái số hóa của KD Restaurant</p>
+            </div>
+
+            <form asp-action="Register" method="post">
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <input asp-for="LastName" class="form-control" placeholder="Họ" autocomplete="family-name" />
+                            <label asp-for="LastName"></label>
+                        </div>
+                        <span asp-validation-for="LastName" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <input asp-for="FirstName" class="form-control" placeholder="Tên" autocomplete="given-name" />
+                            <label asp-for="FirstName"></label>
+                        </div>
+                        <span asp-validation-for="FirstName" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="form-floating mt-3">
+                    <input asp-for="PhoneNumber" class="form-control" placeholder="Số điện thoại" autocomplete="tel" />
+                    <label asp-for="PhoneNumber"></label>
+                    <span asp-validation-for="PhoneNumber" class="text-danger small"></span>
+                </div>
+
+                <div class="form-floating mt-3">
+                    <input asp-for="UserName" class="form-control" placeholder="Tên đăng nhập" autocomplete="username" />
+                    <label asp-for="UserName"></label>
+                    <span asp-validation-for="UserName" class="text-danger small"></span>
+                </div>
+
+                <div class="row g-3 mt-1">
+                    <div class="col-md-6">
+                        <div class="form-floating mt-3 mt-md-0">
+                            <input asp-for="Password" class="form-control" placeholder="Mật khẩu" autocomplete="new-password" />
+                            <label asp-for="Password"></label>
+                        </div>
+                        <span asp-validation-for="Password" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-floating mt-3 mt-md-0">
+                            <input asp-for="ConfirmPassword" class="form-control" placeholder="Xác nhận mật khẩu" autocomplete="new-password" />
+                            <label asp-for="ConfirmPassword"></label>
+                        </div>
+                        <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-auth w-100 mt-4">Đăng ký thành viên</button>
+
+                <p class="text-center mt-4 mb-0">
+                    Đã có tài khoản?
+                    <a asp-action="Login" asp-controller="Account" class="link-highlight">Đăng nhập ngay</a>
+                </p>
+            </form>
+        </div>
+    </div>
+</section>
+
+<style>
+    .auth-wrapper {
+        min-height: 100vh;
+        background: radial-gradient(circle at bottom, rgba(138, 201, 255, 0.15), transparent 50%), linear-gradient(115deg, #182848, #4b6cb7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+    }
+
+    .auth-card {
+        width: min(1100px, 100%);
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 24px;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    }
+
+    .auth-visual {
+        background: linear-gradient(145deg, rgba(24, 40, 72, 0.8), rgba(75, 108, 183, 0.65)), url('/assets/img/slider/slider2.jpg') center/cover;
+        color: #fff;
+        padding: 3rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 2rem;
+    }
+
+    .brand-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.4rem 1rem;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 999px;
+        font-size: 0.8rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    .timeline {
+        display: grid;
+        gap: 1.2rem;
+    }
+
+    .timeline div {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        font-weight: 500;
+    }
+
+    .timeline span {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+    }
+
+    .auth-form {
+        background: #fff;
+        padding: 3rem;
+    }
+
+    .auth-form-header h3 {
+        font-weight: 600;
+        margin-bottom: 0.35rem;
+    }
+
+    .auth-form-header p {
+        color: #6c757d;
+        margin-bottom: 2rem;
+    }
+
+    .btn-auth {
+        background: linear-gradient(135deg, #43cea2, #185a9d);
+        border: none;
+        color: #fff;
+        font-weight: 600;
+        padding: 0.95rem 1.2rem;
+        border-radius: 999px;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .btn-auth:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 24px rgba(67, 206, 162, 0.35);
+    }
+
+    .link-highlight {
+        color: #185a9d;
+        font-weight: 600;
+    }
+
+    @@media (max-width: 768px) {
+        .auth-form, .auth-visual {
+            padding: 2rem;
+        }
+    }
+</style>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

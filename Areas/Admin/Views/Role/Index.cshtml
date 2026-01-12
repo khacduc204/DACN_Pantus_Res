@@ -1,0 +1,63 @@
+@model KD_Restaurant.ViewModels.RolePermissionManagementViewModel
+@using KD_Restaurant.Utilities
+@{
+    ViewData["Title"] = "Phân quyền vai trò";
+}
+
+<section class="section dashboard">
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div>
+      <h1 class="h3 mb-1">Phân quyền & vai trò</h1>
+      <p class="text-muted mb-0">Quản lý các module mà từng vai trò có thể truy cập trong trang quản trị.</p>
+    </div>
+  </div>
+
+  @if (!string.IsNullOrWhiteSpace(Model.SuccessMessage))
+  {
+      <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle me-2"></i>@Model.SuccessMessage
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+  }
+  else if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+  {
+      <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle me-2"></i>@Model.ErrorMessage
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+  }
+
+  <div class="row g-4">
+    @foreach (var role in Model.Roles)
+    {
+        <div class="col-xl-4 col-md-6">
+          <div class="card shadow-sm h-100">
+            <div class="card-body d-flex flex-column">
+              <div class="d-flex justify-content-between align-items-start mb-3">
+                <div>
+                  <h5 class="card-title mb-0">@role.RoleName</h5>
+                  <small class="text-muted">@role.Description</small>
+                </div>
+                <a asp-area="Admin" asp-controller="Role" asp-action="Edit" asp-route-id="@role.RoleId" class="btn btn-sm btn-outline-primary">
+                  <i class="bi bi-pencil me-1"></i>Sửa
+                </a>
+              </div>
+              <div class="flex-grow-1">
+                <p class="text-muted text-uppercase fs-12 mb-2">Quyền truy cập</p>
+                <ul class="list-unstyled mb-0">
+                  @foreach (var key in PermissionKeys.All)
+                  {
+                      var allowed = role.Permissions.TryGetValue(key, out var value) && value;
+                      <li class="d-flex align-items-center py-1">
+                        <i class="bi @(allowed ? "bi-check-circle-fill text-success" : "bi-dash-circle text-muted") me-2"></i>
+                        <span>@PermissionKeys.DisplayNames[key]</span>
+                      </li>
+                  }
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+    }
+  </div>
+</section>

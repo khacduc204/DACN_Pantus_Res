@@ -1,0 +1,311 @@
+@using KD_Restaurant.ViewModels
+@model BookingHistoryViewModel
+@{
+    var bookings = Model.Bookings ?? new List<BookingCardViewModel>();
+    var counters = Model.TabCounters ?? new Dictionary<string, int>();
+    var branches = Model.Branches ?? new List<SelectOption>();
+    var selectedBranchValue = Model.SelectedBranchId?.ToString() ?? string.Empty;
+    var selectedDateValue = Model.SelectedDate?.ToString("yyyy-MM-dd") ?? string.Empty;
+    string Count(string key) => counters.TryGetValue(key, out var value) ? value.ToString() : "0";
+    string FormatGuests(int? guests) => guests.HasValue ? $"{guests} khách" : "—";
+}
+
+<div class="pagetitle">
+    <h1>@Model.Title</h1>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-area="Admin" asp-controller="Home" asp-action="Index">Dashboard</a></li>
+            <li class="breadcrumb-item active">@Model.Title</li>
+        </ol>
+    </nav>
+</div>
+
+<section class="section">
+    <div class="card shadow-sm booking-history-card">
+        <div class="card-body">
+            <div class="d-flex flex-wrap justify-content-between gap-3 align-items-center mb-4">
+                <div>
+                    <h5 class="mb-1">@Model.Title</h5>
+                    <p class="text-muted mb-0">@Model.Description</p>
+                </div>
+                <div class="d-flex gap-2 flex-wrap">
+                    <a class="btn btn-outline-secondary" asp-area="Admin" asp-controller="Book" asp-action="History">
+                        <i class="bi bi-receipt"></i> Lịch sử hoá đơn
+                    </a>
+                    <a class="btn btn-primary" asp-area="Admin" asp-controller="Bookings" asp-action="Index">
+                        <i class="bi bi-calendar-event"></i> Lịch đặt bàn hôm nay
+                    </a>
+                </div>
+            </div>
+
+            <ul class="nav nav-pills history-tabs mb-4" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link @(Model.ActiveTab == "all" ? "active" : null)" data-booking-tab="all">Tất cả
+                        <span class="badge bg-light text-dark">@Count("all")</span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link @(Model.ActiveTab == "pending" ? "active" : null)" data-booking-tab="pending">Chờ nhận bàn
+                        <span class="badge bg-light text-dark">@Count("pending")</span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link @(Model.ActiveTab == "serving" ? "active" : null)" data-booking-tab="serving">Đang phục vụ
+                        <span class="badge bg-light text-dark">@Count("serving")</span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link @(Model.ActiveTab == "completed" ? "active" : null)" data-booking-tab="completed">Đã hoàn tất
+                        <span class="badge bg-light text-dark">@Count("completed")</span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link @(Model.ActiveTab == "cancelled" ? "active" : null)" data-booking-tab="cancelled">Đã huỷ
+                        <span class="badge bg-light text-dark">@Count("cancelled")</span>
+                    </button>
+                </li>
+            </ul>
+
+            <div class="row g-3 align-items-end mb-3">
+                <div class="col-sm-4 col-md-3">
+                    <label class="form-label text-muted">Chi nhánh</label>
+                    <select class="form-select" id="historyBranchFilter">
+                        <option value="">Tất cả</option>
+                        @foreach (var branch in branches)
+                        {
+                            <option value="@branch.Id" selected="@((selectedBranchValue == branch.Id.ToString()) ? "selected" : null)">@branch.Name</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-sm-4 col-md-3">
+                    <label class="form-label text-muted">Ngày phục vụ</label>
+                    <input type="date" class="form-control" id="historyDateFilter" value="@selectedDateValue" />
+                </div>
+                <div class="col-sm-4 col-md-2">
+                    <label class="form-label text-muted">Hiển thị</label>
+                    <select class="form-select" id="bookingPageSize">
+                        <option value="5" selected>5 dòng</option>
+                        <option value="10">10 dòng</option>
+                        <option value="25">25 dòng</option>
+                        <option value="50">50 dòng</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label text-muted">Tìm kiếm</label>
+                    <input type="search" class="form-control" id="bookingHistorySearch" value="@Model.SearchTerm" placeholder="Tìm khách, SĐT, ghi chú..." />
+                </div>
+                <div class="col-md-12 d-flex gap-2 justify-content-end">
+                    <button class="btn btn-light" type="button" data-action="history-reset">Làm mới</button>
+                    <button class="btn btn-outline-secondary" type="button" data-action="history-apply">Áp dụng bộ lọc</button>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table align-middle" id="bookingHistoryTable">
+                    <thead>
+                        <tr>
+                            <th>Thời gian</th>
+                            <th>Khách hàng</th>
+                            <th>Liên hệ</th>
+                            <th>Cơ sở & bàn</th>
+                            <th>Trạng thái</th>
+                            <th>Lý do huỷ</th>
+                            <th class="text-end">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (bookings.Any())
+                        {
+                            foreach (var booking in bookings)
+                            {
+                                var searchBlob = string.Join(" ", new[]
+                                {
+                                    booking.CustomerName,
+                                    booking.CustomerPhone,
+                                    booking.BranchName,
+                                    booking.TableName,
+                                    booking.Note,
+                                    booking.CancellationReason
+                                }.Where(s => !string.IsNullOrWhiteSpace(s))).ToLowerInvariant();
+                                var orderUrl = Url.Action("CurrentOrder", "Bookings", new { area = "Admin", bookingId = booking.Id });
+                                <tr data-booking-row
+                                    data-status="@booking.StatusKey"
+                                    data-branch="@(booking.BranchId?.ToString() ?? string.Empty)"
+                                    data-search="@searchBlob"
+                                    data-date="@booking.BookingDate.ToString("yyyy-MM-dd")">
+                                    <td>
+                                        <div class="fw-semibold">@booking.BookingDate.ToString("dd/MM/yyyy")</div>
+                                        <div class="text-muted small">@booking.TimeSlot</div>
+                                    </td>
+                                    <td>
+                                        <div class="fw-semibold">@booking.CustomerName</div>
+                                        <div class="text-muted small">@FormatGuests(booking.Guests)</div>
+                                    </td>
+                                    <td>
+                                        <div class="text-muted">@(!string.IsNullOrWhiteSpace(booking.CustomerPhone) ? booking.CustomerPhone : "—")</div>
+                                        @if (!string.IsNullOrWhiteSpace(booking.Note))
+                                        {
+                                            <div class="small">Ghi chú: @booking.Note</div>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div>@(booking.BranchName ?? "—")</div>
+                                        <div class="text-muted small">@(booking.TableName ?? "Chưa gán bàn")</div>
+                                    </td>
+                                    <td>
+                                        <span class="badge @booking.StatusBadgeClass">@booking.StatusName</span>
+                                        @if (booking.LastUpdateTime.HasValue)
+                                        {
+                                            <div class="text-muted small mt-1">Cập nhật @booking.LastUpdateTime?.ToString("dd/MM HH:mm")</div>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (booking.StatusKey == "cancelled")
+                                        {
+                                            <div class="text-muted small">
+                                                @if (booking.CancelledAt.HasValue)
+                                                {
+                                                    <div>@booking.CancelledAt?.ToString("dd/MM HH:mm")</div>
+                                                }
+                                                @if (!string.IsNullOrWhiteSpace(booking.CancelledByName))
+                                                {
+                                                    <div>Bởi @booking.CancelledByName</div>
+                                                }
+                                                @if (!string.IsNullOrWhiteSpace(booking.CancellationReason))
+                                                {
+                                                    <div>Lý do: @booking.CancellationReason</div>
+                                                }
+                                            </div>
+                                        }
+                                    </td>
+                                    <td class="text-end">
+                                        <a class="btn btn-sm btn-outline-primary" href="@orderUrl">
+                                            <i class="bi bi-eye"></i> Chi tiết
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="7" class="text-center text-muted py-4">Không có dữ liệu.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div class="text-center text-muted py-4 d-none" data-history-empty>
+                Không tìm thấy đặt bàn nào phù hợp với bộ lọc.
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        (() => {
+            const rows = Array.from(document.querySelectorAll('[data-booking-row]'));
+            const tabs = document.querySelectorAll('[data-booking-tab]');
+            const branchSelect = document.getElementById('historyBranchFilter');
+            const dateInput = document.getElementById('historyDateFilter');
+            const searchInput = document.getElementById('bookingHistorySearch');
+            const pageSizeSelect = document.getElementById('bookingPageSize');
+            const emptyState = document.querySelector('[data-history-empty]');
+            let activeTab = '@Model.ActiveTab';
+            let searchTimer;
+
+            const applyFilters = () => {
+                const selectedBranch = branchSelect?.value ?? '';
+                const selectedDate = dateInput?.value ?? '';
+                const searchTerm = (searchInput?.value ?? '').trim().toLowerCase();
+                const size = parseInt(pageSizeSelect?.value ?? rows.length, 10) || rows.length;
+                let visible = 0;
+
+                rows.forEach(row => {
+                    const matchesTab = activeTab === 'all' || (row.dataset.status ?? '') === activeTab;
+                    const matchesBranch = !selectedBranch || (row.dataset.branch ?? '') === selectedBranch;
+                    const matchesDate = !selectedDate || (row.dataset.date ?? '') === selectedDate;
+                    const matchesSearch = !searchTerm || (row.dataset.search ?? '').includes(searchTerm);
+
+                    if (matchesTab && matchesBranch && matchesDate && matchesSearch) {
+                        visible += 1;
+                        row.classList.toggle('d-none', visible > size);
+                    } else {
+                        row.classList.add('d-none');
+                    }
+                });
+
+                if (emptyState) {
+                    emptyState.classList.toggle('d-none', visible > 0);
+                }
+            };
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(btn => btn.classList.remove('active'));
+                    tab.classList.add('active');
+                    activeTab = tab.dataset.bookingTab ?? 'all';
+                    applyFilters();
+                });
+            });
+
+            branchSelect?.addEventListener('change', applyFilters);
+            dateInput?.addEventListener('change', applyFilters);
+            pageSizeSelect?.addEventListener('change', applyFilters);
+            searchInput?.addEventListener('input', () => {
+                clearTimeout(searchTimer);
+                searchTimer = setTimeout(applyFilters, 250);
+            });
+
+            document.querySelector('[data-action="history-reset"]')?.addEventListener('click', () => {
+                if (branchSelect) branchSelect.value = '';
+                if (dateInput) dateInput.value = '';
+                if (searchInput) searchInput.value = '';
+                if (pageSizeSelect) pageSizeSelect.value = '10';
+                activeTab = 'all';
+                tabs.forEach(btn => btn.classList.toggle('active', btn.dataset.bookingTab === 'all'));
+                applyFilters();
+            });
+
+            document.querySelector('[data-action="history-apply"]')?.addEventListener('click', () => applyFilters());
+
+            applyFilters();
+        })();
+    </script>
+}
+
+<style>
+    .booking-history-card {
+        border-radius: 24px;
+        border: none;
+    }
+
+    .booking-history-card table tbody tr td {
+        vertical-align: middle;
+    }
+
+    .history-tabs .nav-link {
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding-inline: 18px;
+        color: #475467;
+    }
+
+    .history-tabs .nav-link.active {
+        background: #2563eb;
+        color: #fff;
+    }
+
+    @@media (max-width: 767px) {
+        .history-tabs {
+            flex-wrap: wrap;
+        }
+
+        .booking-history-card .btn {
+            width: 100%;
+        }
+    }
+</style>

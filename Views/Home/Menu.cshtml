@@ -1,8 +1,10 @@
-@model List<KD_Restaurant.Models.tblMenuItem>
+@model KD_Restaurant.ViewModels.MenuPageViewModel
 @using KD_Restaurant.Models
 
 @{
+    var paginationModel = Model ?? new KD_Restaurant.ViewModels.MenuPageViewModel();
     var categories = ViewBag.Categories as List<tblMenuCategory>;
+    var pagedItems = paginationModel.Items ?? new List<tblMenuItem>();
 }
 
 <!-- Page Title -->
@@ -53,6 +55,30 @@
     color: #fff;
     font-weight: 600;
 }
+
+.menu-pagination {
+    margin-top: 2.5rem;
+}
+
+.menu-pagination .page-link {
+    color: #2c1c13;
+    border-radius: 50px;
+    margin: 0 4px;
+    min-width: 40px;
+    text-align: center;
+    border: 1px solid rgba(44, 28, 19, 0.2);
+}
+
+.menu-pagination .page-item.active .page-link {
+    background: #ffb03b;
+    border-color: #ffb03b;
+    color: #fff;
+}
+
+.menu-pagination .page-item.disabled .page-link {
+    color: #aaa;
+    border-color: rgba(0, 0, 0, 0.1);
+}
 </style>
 
 <section id="menu" class="menu section">
@@ -82,8 +108,61 @@
       </div>
     </div>
 
-    <div class="row isotope-container" data-aos="fade-up" data-aos-delay="200">
-      @await Component.InvokeAsync("MenuItem")
+        <div class="row isotope-container" data-aos="fade-up" data-aos-delay="200">
+            @if (pagedItems.Any())
+      {
+                    foreach (var item in pagedItems)
+          {
+              var alias = item.Category?.Alias ?? "misc";
+              string sUrl = $"/menu/{item.Alias}-{item.IdMenuItem}.html";
+              <div class="col-lg-6 menu-item isotope-item filter-@alias">
+                  <img src="@Url.Content(item.Image)" class="menu-img" alt="@item.Title">
+                  <div class="menu-content">
+                      <a href="@sUrl">@item.Title</a>
+                      <span>
+                          @if (item.PriceSale.HasValue && item.PriceSale.Value > 0 && item.PriceSale.Value < item.Price)
+                          {
+                              <span style="text-decoration:line-through; color:#888;">@item.Price.ToString("N0") VNĐ</span>
+                              <span style="color:#ff5722; font-weight:bold; margin-left:8px;">@item.PriceSale.Value.ToString("N0") VNĐ</span>
+                          }
+                          else
+                          {
+                              <span style="color:#ff5722; font-weight:bold;">@item.Price.ToString("N0") VNĐ</span>
+                          }
+                      </span>
+                  </div>
+                  <div class="menu-ingredients">
+                      @item.Description
+                  </div>
+              </div>
+          }
+      }
+      else
+      {
+          <div class="col-12 text-center py-5">
+              <p class="text-muted mb-0">Hiện chưa có món ăn nào trong danh sách.</p>
+          </div>
+      }
     </div>
+
+    @if (paginationModel.TotalPages > 1)
+    {
+        <nav class="menu-pagination" aria-label="Phân trang thực đơn">
+            <ul class="pagination justify-content-center flex-wrap">
+                <li class="page-item @(paginationModel.HasPreviousPage ? string.Empty : "disabled")">
+                    <a class="page-link" asp-action="Index" asp-route-page="@(paginationModel.HasPreviousPage ? paginationModel.CurrentPage - 1 : 1)" aria-label="Trang trước">&laquo;</a>
+                </li>
+                @for (var i = 1; i <= paginationModel.TotalPages; i++)
+                {
+                    <li class="page-item @(i == paginationModel.CurrentPage ? "active" : string.Empty)">
+                        <a class="page-link" asp-action="Index" asp-route-page="@i">@i</a>
+                    </li>
+                }
+                <li class="page-item @(paginationModel.HasNextPage ? string.Empty : "disabled")">
+                    <a class="page-link" asp-action="Index" asp-route-page="@(paginationModel.HasNextPage ? paginationModel.CurrentPage + 1 : paginationModel.TotalPages)" aria-label="Trang tiếp theo">&raquo;</a>
+                </li>
+            </ul>
+        </nav>
+    }
   </div>
 </section>

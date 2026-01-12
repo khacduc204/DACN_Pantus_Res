@@ -793,6 +793,8 @@ section,
 --------------------------------------------------------------*/
 .hero {
   padding: 0;
+  position: relative;
+  z-index: 1;
 }
 
 .hero .carousel {
@@ -802,6 +804,7 @@ section,
   margin: 0;
   background-color: var(--background-color);
   position: relative;
+  z-index: 1;
 }
 
 .hero img {
@@ -833,59 +836,95 @@ section,
 
 .hero .carousel-container {
   position: absolute;
-  inset: 90px 64px 64px 64px;
+  inset: 0;
   display: flex;
   justify-content: center;
   align-items: center;
+  text-align: center;
   flex-direction: column;
+  gap: 1rem;
+  max-width: 100%;
+  padding: 0 15px;
   z-index: 3;
 }
 
 .hero h2 {
-  margin-bottom: 30px;
-  font-size: 48px;
-  font-weight: 700;
+  margin-bottom: 10px;
+  font-size: clamp(2.5rem, 5vw, 4.5rem);
+  font-weight: 800;
+  font-family: 'Playfair Display', serif;
+  color: #ffc107;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.8), 0 2px 8px rgba(0, 0, 0, 0.6);
   animation: fadeInDown 1s both;
+  text-align: center;
+  max-width: 900px;
 }
 
 .hero h2 span {
-  color: var(--accent-color);
+  color: #ffc107;
 }
 
 @media (max-width: 768px) {
   .hero h2 {
-    font-size: 30px;
+    font-size: 2rem;
+  }
+
+  .hero .carousel-container {
+    padding: 0 20px;
+  }
+
+  .hero .btn-get-started {
+    width: auto;
+    text-align: center;
+    padding: 12px 32px;
+    font-size: 0.85rem;
   }
 }
 
 .hero p {
+  font-size: 1.15rem;
+  color: rgba(255, 255, 255, 0.98);
+  line-height: 1.6;
+  margin-bottom: 2rem;
+  max-width: 700px;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.8);
   animation: fadeInDown 1s both 0.2s;
+  text-align: center;
 }
 
 @media (min-width: 1024px) {
 
   .hero h2,
   .hero p {
-    max-width: 60%;
+    max-width: 100%;
   }
 }
 
 .hero .btn-get-started {
-  color: var(--contrast-color);
-  font-weight: 500;
-  font-size: 15px;
-  letter-spacing: 1px;
+  color: #ffc107;
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   display: inline-block;
-  padding: 8px 32px;
+  padding: 14px 40px;
   border-radius: 50px;
-  transition: 0.5s;
-  margin: 10px 5px;
+  transition: all 0.3s ease;
+  margin: 10px 8px 0 0;
   animation: fadeInUp 1s both 0.4s;
-  border: 2px solid var(--accent-color);
+  border: 2px solid #ffc107;
+  background: transparent;
+  box-shadow: 0 4px 15px rgba(255, 193, 7, 0.3);
+  text-decoration: none;
 }
 
 .hero .btn-get-started:hover {
-  background: var(--accent-color);
+  transform: translateY(-2px);
+  background: #ffc107;
+  color: #1e1e1e;
+  box-shadow: 0 8px 25px rgba(255, 193, 7, 0.5);
 }
 
 .hero .carousel-control-prev,
@@ -1664,6 +1703,68 @@ section,
 
 .contact .php-email-form button[type=submit]:hover {
   background: color-mix(in srgb, var(--accent-color) 90%, black 15%);
+}
+
+/*--------------------------------------------------------------
+# User Dropdown Styles
+--------------------------------------------------------------*/
+.user-hub {
+  position: relative;
+  z-index: 1000;
+}
+
+.btn-user {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 50px;
+  transition: all 0.3s ease;
+}
+
+.btn-user:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+.user-avatar-img {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ffc107, #ff9800);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: #fff;
+  font-size: 14px;
+}
+
+.dropdown-menu {
+  z-index: 1050 !important;
+  margin-top: 8px !important;
+  min-width: 220px;
+  animation: fadeInDown 0.3s ease;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /*--------------------------------------------------------------

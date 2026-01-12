@@ -1,11 +1,19 @@
+using System;
+using System.Linq;
 using KD_Restaurant.Models;
-using Microsoft.AspNetCore.Mvc;
+using KD_Restaurant.Security;
+using KD_Restaurant.Utilities;
+using KD_Restaurant.ViewModels;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 
 namespace KD_Restaurant.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [Authorize(Roles = RoleNames.AdminManagerStaff)]
+    [PermissionAuthorize(PermissionKeys.MenuCatalog)]
     public class MenuItemController : Controller
     {
         private readonly KDContext _context;
@@ -17,19 +25,84 @@ namespace KD_Restaurant.Areas.Admin.Controllers
             _logger = logger;
         }
 
-        // Hiển thị danh sách món ăn
-        public IActionResult Index(string search)
+        // Hiển thị dashboard quản lý thực đơn
+        public IActionResult Index(string? search, int? categoryId)
         {
-            var items = _context.tblMenuItem.AsQueryable();
-            if (!string.IsNullOrEmpty(search))
+            var categories = _context.tblMenuCategory
+                .OrderBy(c => c.Title)
+                .Select(c => new MenuCategorySummaryViewModel
+                {
+                    Id = c.IdCategory,
+                    Title = string.IsNullOrWhiteSpace(c.Title) ? $"Danh mục #{c.IdCategory}" : c.Title!,
+                    Alias = c.Alias,
+                    Description = c.Description,
+                    Image = c.Image,
+                    IsActive = c.IsActive,
+                    ItemCount = c.tblMenuItems.Count
+                })
+                .ToList();
+
+            var itemsQuery = _context.tblMenuItem
+                .Include(i => i.Category)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(search))
             {
-                items = items.Where(i =>
-                    (i.Title != null && i.Title.Contains(search)) ||
-                    (i.Alias != null && i.Alias.Contains(search))
-                );
+                var keyword = search.Trim();
+                itemsQuery = itemsQuery.Where(i =>
+                    (i.Title != null && i.Title.Contains(keyword)) ||
+                    (i.Description != null && i.Description.Contains(keyword)) ||
+                    (i.Alias != null && i.Alias.Contains(keyword)));
             }
-            items = items.OrderBy(i => i.IdMenuItem);
-            return View(items.ToList());
+
+            if (categoryId.HasValue)
+            {
+                itemsQuery = itemsQuery.Where(i => i.IdCategory == categoryId.Value);
+            }
+
+            var items = itemsQuery
+                .OrderByDescending(i => i.ModifiedDate ?? i.CreatedDate ?? DateTime.MinValue)
+                .ThenBy(i => i.Title)
+                .Select(i => new MenuItemRowViewModel
+                {
+                    Id = i.IdMenuItem,
+                    Title = i.Title ?? $"Món #{i.IdMenuItem}",
+                    Alias = i.Alias,
+                    Description = i.Description,
+                    CategoryName = i.Category != null && !string.IsNullOrWhiteSpace(i.Category.Title)
+                        ? i.Category.Title
+                        : "Chưa phân loại",
+                    CategoryId = i.IdCategory,
+                    Price = i.Price,
+                    PriceSale = i.PriceSale,
+                    Image = i.Image,
+                    IsActive = i.IsActive,
+                    Quantity = i.Quantity,
+                    Star = i.Star
+                })
+                .ToList();
+
+            var totalItems = _context.tblMenuItem.Count();
+            var activeItems = _context.tblMenuItem.Count(i => i.IsActive);
+
+            var viewModel = new MenuManagementViewModel
+            {
+                Categories = categories,
+                Items = items,
+                SearchTerm = search,
+                SelectedCategoryId = categoryId,
+                TotalItems = totalItems,
+                ActiveItems = activeItems,
+                TotalCategories = categories.Count
+            };
+
+            ViewBag.CategoryFilterOptions = new SelectList(
+                categories,
+                nameof(MenuCategorySummaryViewModel.Id),
+                nameof(MenuCategorySummaryViewModel.Title),
+                categoryId);
+
+            return View(viewModel);
         }
 
         // GET: Thêm mới món ăn
@@ -176,5 +249,6 @@ namespace KD_Restaurant.Areas.Admin.Controllers
             }
             return RedirectToAction("Index");
         }
+
     }
 }

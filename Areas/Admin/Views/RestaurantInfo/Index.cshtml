@@ -1,0 +1,170 @@
+@model KD_Restaurant.ViewModels.RestaurantInfoViewModel
+@{
+    ViewData["Title"] = "Thiết lập thông tin nhà hàng";
+    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+
+    string ResolveMedia(string? path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return Url.Content("~/assets/img/about.jpg");
+        }
+
+        return path.StartsWith("http", StringComparison.OrdinalIgnoreCase)
+            ? path
+            : Url.Content(path);
+    }
+
+    var previewImage = ResolveMedia(Model.Logo);
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="pagetitle">
+    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+        <div>
+            <p class="text-uppercase text-muted small mb-1">Restaurant Story</p>
+            <h1 class="mb-1">Thiết lập phần giới thiệu</h1>
+            <p class="text-muted mb-0">Đồng bộ thông tin thương hiệu, liên hệ và lịch hoạt động lên trang người dùng.</p>
+        </div>
+        <a asp-area="" asp-controller="About" asp-action="Index" class="btn btn-outline-secondary" target="_blank">
+            <i class="bi bi-eye me-1"></i>Xem trang người dùng
+        </a>
+    </div>
+</div>
+
+<form asp-area="Admin" asp-controller="RestaurantInfo" asp-action="Save" method="post" class="needs-validation" novalidate>
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+    <div class="row g-4">
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm rounded-4 mb-4 mb-lg-5">
+                <div class="card-header bg-white border-0 pb-0">
+                    <h5 class="mb-1">Thông tin thương hiệu</h5>
+                    <p class="text-muted small mb-0">Tên hiển thị và phần mô tả ngắn trong mục Giới thiệu.</p>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label asp-for="ResName" class="form-label"></label>
+                        <input asp-for="ResName" class="form-control form-control-lg" />
+                        <span asp-validation-for="ResName" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="SortDescription" class="form-label"></label>
+                        <textarea asp-for="SortDescription" class="form-control" rows="3" placeholder="Tầm nhìn, thông điệp hoặc lời hứa thương hiệu"></textarea>
+                        <span asp-validation-for="SortDescription" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Logo" class="form-label"></label>
+                        <input asp-for="Logo" class="form-control" placeholder="/uploads/about-cover.jpg hoặc https://..." />
+                        <span asp-validation-for="Logo" class="text-danger"></span>
+                        <small class="text-muted">Hỗ trợ đường dẫn tuyệt đối hoặc tương đối trong thư mục wwwroot.</small>
+                    </div>
+                    <div class="brand-preview mt-3 p-3 bg-light rounded-3 d-flex align-items-center gap-3">
+                        <img src="@previewImage" class="img-fluid rounded" style="max-width: 120px" alt="Preview" />
+                        <div>
+                            <p class="text-muted small mb-1">Ảnh preview</p>
+                            <p class="mb-0 fw-semibold">@(string.IsNullOrWhiteSpace(Model.ResName) ? "KD Restaurant" : Model.ResName)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-header bg-white border-0 pb-0">
+                    <h5 class="mb-1">Liên hệ & lịch hoạt động</h5>
+                    <p class="text-muted small mb-0">Thông tin sẽ xuất hiện trong khối About ở trang người dùng.</p>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <label asp-for="Hotline1" class="form-label"></label>
+                            <input asp-for="Hotline1" class="form-control" placeholder="0989 888 777" />
+                            <span asp-validation-for="Hotline1" class="text-danger"></span>
+                        </div>
+                        <div class="col-sm-6">
+                            <label asp-for="Hotline2" class="form-label"></label>
+                            <input asp-for="Hotline2" class="form-control" placeholder="Tuỳ chọn" />
+                            <span asp-validation-for="Hotline2" class="text-danger"></span>
+                        </div>
+                        <div class="col-sm-12">
+                            <label asp-for="Email" class="form-label"></label>
+                            <input asp-for="Email" class="form-control" placeholder="hello@restaurant.vn" />
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+                        <div class="col-sm-12">
+                            <label asp-for="OpeningDay" class="form-label"></label>
+                            <input asp-for="OpeningDay" class="form-control" placeholder="Thứ 2 - Chủ nhật" />
+                            <span asp-validation-for="OpeningDay" class="text-danger"></span>
+                        </div>
+                        <div class="col-sm-6">
+                            <label asp-for="OpenTime" class="form-label"></label>
+                            <input asp-for="OpenTime" class="form-control" type="time" value="@(Model.OpenTime.HasValue ? Model.OpenTime.Value.ToString(@"hh\:mm") : string.Empty)" />
+                            <span asp-validation-for="OpenTime" class="text-danger"></span>
+                        </div>
+                        <div class="col-sm-6">
+                            <label asp-for="CloseTime" class="form-label"></label>
+                            <input asp-for="CloseTime" class="form-control" type="time" value="@(Model.CloseTime.HasValue ? Model.CloseTime.Value.ToString(@"hh\:mm") : string.Empty)" />
+                            <span asp-validation-for="CloseTime" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-header bg-white border-0 pb-0">
+                    <h5 class="mb-1">Bài giới thiệu</h5>
+                    <p class="text-muted small mb-0">Viết nội dung với Tiny Cloud, hỗ trợ định dạng phong phú.</p>
+                </div>
+                <div class="card-body">
+                    <textarea asp-for="LogDescription" class="form-control tinymce-editor" id="editor" rows="20"></textarea>
+                    <span asp-validation-for="LogDescription" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 mt-4">
+        <div class="card-body d-flex flex-column flex-md-row justify-content-between gap-2 align-items-md-center">
+            <div class="text-muted small">Tiny Cloud sẽ lưu HTML vào cột LogDescription và hiển thị tại mục Giới thiệu trên website.</div>
+            <button type="submit" class="btn btn-primary px-4">
+                <i class="bi bi-save me-1"></i>Lưu cấu hình
+            </button>
+        </div>
+    </div>
+</form>
+
+@section Styles {
+    <style>
+        .tox .tox-notifications-container {
+            display: none;
+        }
+    </style>
+}
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+    <script src="https://cdn.tiny.cloud/1/d7chqy488l9bipext69mb6wn3a6znouyljw4wi660kj89lg8/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            tinymce.init({
+                selector: '#editor',
+                height: 500,
+                plugins: 'image link media table code fullscreen',
+                toolbar: 'undo redo | blocks | bold italic underline | alignleft aligncenter alignright | bullist numlist | image media | code fullscreen',
+                language: 'vi',
+                content_style: 'body { font-family: "Nunito", sans-serif; font-size: 15px; }',
+                branding: false
+            });
+        });
+    </script>
+}

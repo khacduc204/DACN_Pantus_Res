@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using KD_Restaurant.Models;
+using KD_Restaurant.ViewModels;
 
 namespace KD_Restaurant.Controllers
 {
@@ -13,12 +14,44 @@ namespace KD_Restaurant.Controllers
             _context = context;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index(int page = 1)
         {
-            // Hiển thị danh sách menu hoặc danh mục nếu cần
-            var categories = _context.tblMenuCategory.Where(c => c.IsActive).ToList();
+            const int PageSize = 6;
+            page = page < 1 ? 1 : page;
+
+            var categories = await _context.tblMenuCategory
+                .Where(c => c.IsActive)
+                .ToListAsync();
             ViewBag.Categories = categories;
-            return View();
+
+            var query = _context.tblMenuItem
+                .Include(m => m.Category)
+                .Where(m => m.IsActive)
+                .OrderByDescending(m => m.IdMenuItem);
+
+            var totalItems = await query.CountAsync();
+            var totalPages = Math.Max(1, (int)Math.Ceiling(totalItems / (double)PageSize));
+
+            if (page > totalPages)
+            {
+                page = totalPages;
+            }
+
+            var items = await query
+                .Skip((page - 1) * PageSize)
+                .Take(PageSize)
+                .ToListAsync();
+
+            var viewModel = new MenuPageViewModel
+            {
+                Items = items,
+                CurrentPage = page,
+                TotalPages = totalPages,
+                PageSize = PageSize,
+                TotalItems = totalItems
+            };
+
+            return View(viewModel);
         }
 
         [Route("/menu/{alias}-{id}.html")]

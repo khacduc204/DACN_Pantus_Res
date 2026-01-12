@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace KD_Restaurant.Models
@@ -26,7 +27,13 @@ namespace KD_Restaurant.Models
         [ForeignKey("IdCustomer")]
         public virtual tblCustomer Customer { get; set; } = null!;
 
+        [ForeignKey("IdUser")]
+        public virtual tblUser? User { get; set; }
+
         [InverseProperty("Order")]
         public virtual ICollection<tblOrder_detail> tblOrder_detail { get; set; } = new HashSet<tblOrder_detail>();
+
+        [InverseProperty(nameof(tblOrder_cancelled.Order))]
+        public virtual ICollection<tblOrder_cancelled> Cancellations { get; set; } = new HashSet<tblOrder_cancelled>();
     }
 }
