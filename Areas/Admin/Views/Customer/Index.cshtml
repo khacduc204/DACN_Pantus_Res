@@ -85,7 +85,7 @@
 <div class="card shadow-sm">
     <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
         <div>
-            <h5 class="mb-1">Danh sách khách hàng (@Model.Customers.Count)</h5>
+            <h5 class="mb-1">Danh sách khách hàng (@Model.TotalFilteredCustomers)</h5>
             <small class="text-muted">Sắp xếp theo thời gian hoạt động gần nhất.</small>
         </div>
         <a asp-area="Admin" asp-controller="Customer" asp-action="Create" class="btn btn-primary">
@@ -107,7 +107,7 @@
                     <tr>
                         <th>Khách hàng</th>
                         <th class="text-center">Lượt đặt bàn</th>
-                        <th>Số điện thoại</th>
+                        <th>Liên hệ</th>
                         <th>Địa chỉ</th>
                         <th>Đăng nhập cuối</th>
                         <th class="text-center">Trạng thái</th>
@@ -126,11 +126,19 @@
                                     <div>
                                         <div class="fw-semibold">@customer.DisplayName</div>
                                         <small class="text-muted">Mã #@customer.Id</small>
+                                            <div>
+                                                <span class="badge rounded-pill @(customer.HasAccount ? "bg-primary-subtle text-primary" : "bg-secondary-subtle text-secondary")">
+                                                    @(customer.HasAccount ? $"Account: {customer.AccountUserName}" : "Chưa liên kết tài khoản")
+                                                </span>
+                                            </div>
                                     </div>
                                 </div>
                             </td>
                             <td class="text-center fw-semibold">@customer.BookingCount</td>
-                            <td>@(string.IsNullOrWhiteSpace(customer.PhoneNumber) ? "Chưa cập nhật" : customer.PhoneNumber)</td>
+                                <td>
+                                    <div>@(string.IsNullOrWhiteSpace(customer.PhoneNumber) ? "Chưa cập nhật" : customer.PhoneNumber)</div>
+                                    <div class="text-muted small">@(!string.IsNullOrWhiteSpace(customer.Email) ? customer.Email : "Chưa có email")</div>
+                                </td>
                             <td>@(string.IsNullOrWhiteSpace(customer.Address) ? "--" : customer.Address)</td>
                             <td>
                                 @(customer.LastLogin.HasValue
@@ -163,6 +171,44 @@
                     }
                 </tbody>
             </table>
+        }
+    </div>
+    <div class="card-footer d-flex flex-wrap justify-content-between align-items-center gap-3">
+          @{ var firstItem = Model.TotalFilteredCustomers == 0 ? 0 : ((Model.CurrentPage - 1) * Model.PageSize) + 1;
+              var lastItem = Model.TotalFilteredCustomers == 0 ? 0 : firstItem + (Model.Customers?.Count ?? 0) - 1;
+           var startPage = Math.Max(1, Model.CurrentPage - 2);
+           var endPage = Math.Min(Model.TotalPages, startPage + 4);
+           startPage = Math.Max(1, endPage - 4);
+        }
+        <p class="mb-0 text-muted small">
+            @(Model.TotalFilteredCustomers == 0
+                ? "Không tìm thấy khách hàng nào phù hợp."
+                : $"Hiển thị {firstItem:N0} - {lastItem:N0} trong tổng {Model.TotalFilteredCustomers:N0} khách hàng")
+        </p>
+        @if (Model.TotalPages > 1)
+        {
+            <nav aria-label="Phân trang khách hàng">
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item @(Model.CurrentPage == 1 ? "disabled" : string.Empty)">
+                                <a class="page-link" asp-area="Admin" asp-controller="Customer" asp-action="Index"
+                                    asp-route-search="@(Model.SearchTerm ?? string.Empty)" asp-route-status="@Model.StatusFilter"
+                           asp-route-page="@(Model.CurrentPage - 1)" asp-route-pageSize="@Model.PageSize">«</a>
+                    </li>
+                    @for (var i = startPage; i <= endPage; i++)
+                    {
+                        <li class="page-item @(Model.CurrentPage == i ? "active" : string.Empty)">
+                                     <a class="page-link" asp-area="Admin" asp-controller="Customer" asp-action="Index"
+                                         asp-route-search="@(Model.SearchTerm ?? string.Empty)" asp-route-status="@Model.StatusFilter"
+                               asp-route-page="@i" asp-route-pageSize="@Model.PageSize">@i</a>
+                        </li>
+                    }
+                    <li class="page-item @(Model.CurrentPage == Model.TotalPages ? "disabled" : string.Empty)">
+                                <a class="page-link" asp-area="Admin" asp-controller="Customer" asp-action="Index"
+                                    asp-route-search="@(Model.SearchTerm ?? string.Empty)" asp-route-status="@Model.StatusFilter"
+                           asp-route-page="@(Model.CurrentPage + 1)" asp-route-pageSize="@Model.PageSize">»</a>
+                    </li>
+                </ul>
+            </nav>
         }
     </div>
 </div>

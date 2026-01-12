@@ -36,19 +36,14 @@
                         <span asp-validation-for="FullName" class="text-danger"></span>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label">Tên đăng nhập</label>
-                        <input asp-for="UserName" class="form-control" />
-                        <span asp-validation-for="UserName" class="text-danger"></span>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Đặt lại mật khẩu</label>
-                        <input asp-for="Password" class="form-control" placeholder="Để trống nếu không đổi" />
-                        <span asp-validation-for="Password" class="text-danger"></span>
-                    </div>
-                    <div class="col-md-6">
                         <label class="form-label">Số điện thoại</label>
                         <input asp-for="PhoneNumber" class="form-control" />
                         <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Email</label>
+                        <input asp-for="Email" class="form-control" />
+                        <span asp-validation-for="Email" class="text-danger"></span>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Avatar (URL)</label>
@@ -83,7 +78,7 @@
                 <ul class="list-unstyled small mb-0">
                     <li class="mb-2 d-flex gap-2">
                         <i class="bi bi-info-circle text-primary"></i>
-                        <span>Mật khẩu chỉ thay đổi khi nhập giá trị mới.</span>
+                        <span>Email được dùng để gửi xác nhận đặt bàn và ưu đãi.</span>
                     </li>
                     <li class="mb-2 d-flex gap-2">
                         <i class="bi bi-info-circle text-primary"></i>

@@ -27,6 +27,7 @@ namespace KD_Restaurant.Data
                 PermissionKeys.Dashboard,
                 PermissionKeys.MenuStructure,
                 PermissionKeys.MenuCatalog,
+                PermissionKeys.MenuReviewManagement,
                 PermissionKeys.BookingManagement,
                 PermissionKeys.OrderManagement,
                 PermissionKeys.TableManagement,
@@ -40,6 +41,8 @@ namespace KD_Restaurant.Data
                 PermissionKeys.Dashboard,
                 PermissionKeys.BookingManagement,
                 PermissionKeys.OrderManagement,
+                PermissionKeys.MenuReviewManagement,
+                PermissionKeys.ContactManagement,
                 PermissionKeys.TableManagement
             }
         };

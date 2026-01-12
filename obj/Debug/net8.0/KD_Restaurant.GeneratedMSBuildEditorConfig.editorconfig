@@ -32,6 +32,10 @@ build_property.EnableCodeStyleSeverity =
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcQm9va2luZ3NcQ3VycmVudE9yZGVyLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
+[D:/DACN/KD_Restaurant/KD_Restaurant/Areas/Admin/Views/Bookings/Details.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcQm9va2luZ3NcRGV0YWlscy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
 [D:/DACN/KD_Restaurant/KD_Restaurant/Areas/Admin/Views/Bookings/History.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcQm9va2luZ3NcSGlzdG9yeS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
@@ -62,6 +66,10 @@ build_metadata.AdditionalFiles.CssScope =
 
 [D:/DACN/KD_Restaurant/KD_Restaurant/Areas/Admin/Views/Branch/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcQnJhbmNoXEluZGV4LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/DACN/KD_Restaurant/KD_Restaurant/Areas/Admin/Views/Contact/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcQ29udGFjdFxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
 [D:/DACN/KD_Restaurant/KD_Restaurant/Areas/Admin/Views/Customer/Create.cshtml]
@@ -122,6 +130,10 @@ build_metadata.AdditionalFiles.CssScope =
 
 [D:/DACN/KD_Restaurant/KD_Restaurant/Areas/Admin/Views/MenuItem/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcTWVudUl0ZW1cSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/DACN/KD_Restaurant/KD_Restaurant/Areas/Admin/Views/MenuReview/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcTWVudVJldmlld1xJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
 [D:/DACN/KD_Restaurant/KD_Restaurant/Areas/Admin/Views/Menu/Create.cshtml]
@@ -208,6 +220,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2FydFxTdWNjZXNzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
+[D:/DACN/KD_Restaurant/KD_Restaurant/Views/Contact/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ29udGFjdFxJbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
 [D:/DACN/KD_Restaurant/KD_Restaurant/Views/Home/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
@@ -218,6 +234,10 @@ build_metadata.AdditionalFiles.CssScope =
 
 [D:/DACN/KD_Restaurant/KD_Restaurant/Views/Home/Privacy.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxQcml2YWN5LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/DACN/KD_Restaurant/KD_Restaurant/Views/Home/StoreLocator.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxTdG9yZUxvY2F0b3IuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
 [D:/DACN/KD_Restaurant/KD_Restaurant/Views/Menu/Details.cshtml]

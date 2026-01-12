@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Hosting;
 using System.Security.Claims;
 using System.Linq;
 using System.IO;
+using System.Collections.Generic;
 
 namespace KD_Restaurant.Controllers
 {
@@ -81,6 +82,8 @@ namespace KD_Restaurant.Controllers
             }
 
             user.LastLogin = DateTime.Now;
+            await SyncCustomerProfileAsync(user, updateLastLogin: true);
+            await SyncCustomerProfileAsync(user, updateLastLogin: false);
             await _context.SaveChangesAsync();
 
             var claims = new List<Claim>
@@ -109,7 +112,8 @@ namespace KD_Restaurant.Controllers
 
             var roleName = user.Role?.RoleName;
             var isBackOfficeUser = string.Equals(roleName, RoleNames.Admin, StringComparison.OrdinalIgnoreCase)
-                || string.Equals(roleName, RoleNames.Manager, StringComparison.OrdinalIgnoreCase);
+                || string.Equals(roleName, RoleNames.Manager, StringComparison.OrdinalIgnoreCase)
+                || string.Equals(roleName, RoleNames.Staff, StringComparison.OrdinalIgnoreCase);
 
             if (isBackOfficeUser)
             {
@@ -160,6 +164,9 @@ namespace KD_Restaurant.Controllers
             user.Password = _passwordHasher.HashPassword(user, model.Password);
 
             _context.tblUser.Add(user);
+            await _context.SaveChangesAsync();
+
+            await SyncCustomerProfileAsync(user, updateLastLogin: false);
             await _context.SaveChangesAsync();
 
             TempData["RegisterSuccess"] = "Đăng ký thành công! Bạn có thể đăng nhập ngay bây giờ.";
@@ -355,6 +362,52 @@ namespace KD_Restaurant.Controllers
             }
 
             return await _context.tblUser.FirstOrDefaultAsync(u => u.IdUser == userId && u.IsActive);
+        }
+
+        private async Task SyncCustomerProfileAsync(tblUser user, bool updateLastLogin)
+        {
+            var customer = await _context.tblCustomer.FirstOrDefaultAsync(c => c.IdUser == user.IdUser);
+            if (customer == null)
+            {
+                customer = new tblCustomer
+                {
+                    IdUser = user.IdUser,
+                    IsActive = user.IsActive
+                };
+                _context.tblCustomer.Add(customer);
+            }
+
+            var fullName = ComposeFullName(user);
+            if (!string.IsNullOrWhiteSpace(fullName))
+            {
+                customer.FullName = fullName;
+            }
+
+            if (!string.IsNullOrWhiteSpace(user.PhoneNumber))
+            {
+                customer.PhoneNumber = user.PhoneNumber;
+            }
+
+            customer.IsActive = user.IsActive;
+            if (updateLastLogin)
+            {
+                customer.LastLogin = DateTime.Now;
+            }
+        }
+
+        private static string? ComposeFullName(tblUser user)
+        {
+            var parts = new List<string>();
+            if (!string.IsNullOrWhiteSpace(user.LastName))
+            {
+                parts.Add(user.LastName.Trim());
+            }
+            if (!string.IsNullOrWhiteSpace(user.FirstName))
+            {
+                parts.Add(user.FirstName.Trim());
+            }
+
+            return parts.Count > 0 ? string.Join(" ", parts).Trim() : null;
         }
 
         private ProfileViewModel BuildProfileViewModel(tblUser user)

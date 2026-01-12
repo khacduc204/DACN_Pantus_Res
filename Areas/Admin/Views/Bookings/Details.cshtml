@@ -1,0 +1,412 @@
+@using KD_Restaurant.ViewModels
+@using System.Net
+@model BookingDetailViewModel
+@{
+    var booking = Model.Booking;
+    var customer = Model.Customer;
+    var branch = Model.Branch;
+    var table = Model.Table;
+    var payment = Model.Payment;
+    var safeReturnUrl = !string.IsNullOrWhiteSpace(Model.ReturnUrl)
+        ? Model.ReturnUrl
+        : Url.Action("Index", "Bookings", new { area = "Admin" });
+    string FormatMoney(int value) => value > 0 ? $"{value:N0} ₫" : "—";
+    string FormatNullableMoney(int? value) => value.HasValue && value.Value > 0 ? $"{value.Value:N0} ₫" : "—";
+    var noteHtml = string.IsNullOrWhiteSpace(booking.Note)
+        ? null
+        : WebUtility.HtmlEncode(booking.Note!).Replace("\n", "<br />");
+    ViewData["Title"] = $"Chi tiết đặt bàn #{booking.Id}";
+}
+
+<div class="pagetitle">
+    <h1>@ViewData["Title"]</h1>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-area="Admin" asp-controller="Home" asp-action="Index">Dashboard</a></li>
+            <li class="breadcrumb-item"><a asp-area="Admin" asp-controller="Bookings" asp-action="Index">Đặt bàn</a></li>
+            <li class="breadcrumb-item active">Chi tiết</li>
+        </ol>
+    </nav>
+</div>
+
+<section class="section booking-detail-section">
+    <div class="d-flex flex-wrap gap-2 mb-4">
+        <a class="btn btn-light" href="@safeReturnUrl">
+            <i class="bi bi-arrow-left"></i>
+            Quay lại
+        </a>
+        <a class="btn btn-outline-secondary" asp-area="Admin" asp-controller="Bookings" asp-action="CurrentOrder" asp-route-bookingId="@booking.Id">
+            <i class="bi bi-pencil-square"></i>
+            Quản lý phục vụ
+        </a>
+        <a class="btn btn-outline-primary" asp-area="Admin" asp-controller="Bookings" asp-action="Invoice" asp-route-bookingId="@booking.Id">
+            <i class="bi bi-printer"></i>
+            In hoá đơn
+        </a>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-xl-8">
+            <div class="card booking-overview-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
+                        <div>
+                            <div class="eyebrow-label text-uppercase text-muted">Khung giờ phục vụ</div>
+                            <h3 class="mb-1">@(!string.IsNullOrWhiteSpace(booking.TimeSlot) ? booking.TimeSlot : "Chưa xác định")</h3>
+                            <p class="text-muted mb-0">@booking.BookingDate.ToString("dddd, dd/MM/yyyy")</p>
+                        </div>
+                        <span class="badge @booking.StatusBadgeClass px-3 py-2 fs-6">@booking.StatusName</span>
+                    </div>
+                    <div class="row row-cols-2 row-cols-md-4 g-3 mt-4">
+                        <div>
+                            <div class="label text-muted">Số khách</div>
+                            <div class="value fw-semibold">@(booking.Guests ?? 0)</div>
+                        </div>
+                        <div>
+                            <div class="label text-muted">Cơ sở</div>
+                            <div class="value fw-semibold">@(!string.IsNullOrWhiteSpace(booking.BranchName) ? booking.BranchName : "Chưa gán")</div>
+                        </div>
+                        <div>
+                            <div class="label text-muted">Bàn</div>
+                            <div class="value fw-semibold">@(!string.IsNullOrWhiteSpace(booking.TableName) ? booking.TableName : "Chưa xếp")</div>
+                        </div>
+                        <div>
+                            <div class="label text-muted">Trạng thái</div>
+                            <div class="value fw-semibold text-capitalize">@booking.StatusKey</div>
+                        </div>
+                    </div>
+                    @if (!string.IsNullOrWhiteSpace(noteHtml))
+                    {
+                        <div class="booking-note mt-4">
+                            <strong>Ghi chú của khách</strong>
+                            <p class="mb-0">@Html.Raw(noteHtml)</p>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="card timeline-card mb-4">
+                <div class="card-header border-0 bg-transparent">
+                    <h5 class="card-title mb-0">Dòng thời gian</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.Timeline.Any())
+                    {
+                        <ul class="timeline-list list-unstyled mb-0">
+                            @foreach (var entry in Model.Timeline)
+                            {
+                                <li class="timeline-item">
+                                    <div class="timeline-icon @entry.StatusClass">
+                                        <i class="bi @entry.Icon"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-semibold">@entry.Title</div>
+                                        @if (!string.IsNullOrWhiteSpace(entry.Description))
+                                        {
+                                            <div class="text-muted small">@entry.Description</div>
+                                        }
+                                        @if (entry.Time.HasValue)
+                                        {
+                                            <div class="text-muted small">@entry.Time?.ToString("dd/MM/yyyy HH:mm")</div>
+                                        }
+                                    </div>
+                                </li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <div class="text-muted">Chưa có sự kiện nào được ghi nhận.</div>
+                    }
+                </div>
+            </div>
+
+            <div class="card order-card mb-4">
+                <div class="card-header border-0 bg-transparent d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title mb-0">Món đã chọn</h5>
+                        <p class="text-muted mb-0">Tổng cộng: @payment.Subtotal.ToString("N0") ₫</p>
+                    </div>
+                    <a class="btn btn-sm btn-outline-secondary" asp-area="Admin" asp-controller="Bookings" asp-action="CurrentOrder" asp-route-bookingId="@booking.Id">
+                        <i class="bi bi-receipt-cutoff"></i> Chỉnh sửa
+                    </a>
+                </div>
+                <div class="card-body">
+                    @if (Model.OrderItems.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Món</th>
+                                        <th class="text-center">SL</th>
+                                        <th class="text-end">Đơn giá</th>
+                                        <th class="text-end">Thành tiền</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model.OrderItems)
+                                    {
+                                        var unitPrice = item.Price ?? 0;
+                                        var lineTotal = unitPrice * item.Quantity;
+                                        <tr>
+                                            <td>@item.ItemName</td>
+                                            <td class="text-center">@item.Quantity</td>
+                                            <td class="text-end">@unitPrice.ToString("N0") ₫</td>
+                                            <td class="text-end fw-semibold">@lineTotal.ToString("N0") ₫</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <th colspan="3" class="text-end">Tổng tạm tính</th>
+                                        <th class="text-end">@payment.Subtotal.ToString("N0") ₫</th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="empty-state text-center py-4 text-muted">
+                            Chưa có món nào được chọn trước cho đặt bàn này.
+                        </div>
+                    }
+                </div>
+            </div>
+
+            @if (Model.Cancellations.Any())
+            {
+                <div class="card cancellation-card">
+                    <div class="card-header border-0 bg-transparent">
+                        <h5 class="card-title mb-0">Lịch sử huỷ</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group list-group-flush">
+                            @foreach (var cancel in Model.Cancellations)
+                            {
+                                <div class="list-group-item px-0">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <div class="fw-semibold">@(!string.IsNullOrWhiteSpace(cancel.CancelledBy) ? cancel.CancelledBy : "Hệ thống")</div>
+                                            <div class="text-muted small">@(!string.IsNullOrWhiteSpace(cancel.Reason) ? cancel.Reason : "Không ghi lý do")</div>
+                                        </div>
+                                        <div class="text-muted small">@cancel.CancelledAt?.ToString("dd/MM/yyyy HH:mm")</div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="col-xl-4">
+            <div class="card info-card">
+                <div class="card-header border-0 bg-transparent">
+                    <h5 class="card-title mb-0">Khách hàng</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="text-muted small">Họ tên</div>
+                        <div class="fw-semibold">@customer.Name</div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="text-muted small">Điện thoại</div>
+                        <div class="fw-semibold">@(customer.Phone ?? "—")</div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="text-muted small">Email</div>
+                        <div class="fw-semibold">@(customer.Email ?? "—")</div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="text-muted small">Địa chỉ</div>
+                        <div>@(customer.Address ?? "—")</div>
+                    </div>
+                    <div class="d-flex justify-content-between text-muted small">
+                        <span>Tổng lượt đặt</span>
+                        <span class="fw-semibold">@customer.TotalBookings</span>
+                    </div>
+                    <div class="d-flex justify-content-between text-muted small">
+                        <span>Lần gần nhất</span>
+                        <span class="fw-semibold">@(customer.LastBookingDate?.ToString("dd/MM/yyyy") ?? "—")</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card info-card">
+                <div class="card-header border-0 bg-transparent">
+                    <h5 class="card-title mb-0">Chi nhánh</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="text-muted small">Tên chi nhánh</div>
+                        <div class="fw-semibold">@(branch.Name ?? "Chưa gán")</div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="text-muted small">Địa chỉ</div>
+                        <div>@(branch.Address ?? "—")</div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="text-muted small">Số điện thoại</div>
+                        <div>@(branch.Phone ?? "—")</div>
+                    </div>
+                    <div class="text-muted small">
+                        <div class="text-muted small">Email</div>
+                        <div>@(branch.Email ?? "—")</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card info-card">
+                <div class="card-header border-0 bg-transparent">
+                    <h5 class="card-title mb-0">Thông tin bàn</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="text-muted small">Bàn</div>
+                        <div class="fw-semibold">@(table.Name ?? "Chưa xếp")</div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="text-muted small">Khu vực</div>
+                        <div>@(table.Area ?? "—")</div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="text-muted small">Loại bàn</div>
+                        <div>@(table.Type ?? "—")</div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="text-muted small">Số ghế tối đa</div>
+                        <div>@(table.MaxSeats?.ToString() ?? "—")</div>
+                    </div>
+                    <div class="text-muted small">
+                        <div class="text-muted small">Trạng thái hiện tại</div>
+                        <div>@(table.StatusName ?? "—")</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card info-card">
+                <div class="card-header border-0 bg-transparent">
+                    <h5 class="card-title mb-0">Thanh toán</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="text-muted small">Tổng tiền</div>
+                        <div class="fw-semibold">@FormatMoney(payment.Subtotal)</div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="text-muted small">Đã thu</div>
+                        <div>@FormatNullableMoney(payment.AmountPaid)</div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="text-muted small">Phương thức</div>
+                        <div>@(string.IsNullOrWhiteSpace(payment.PaymentMethod) ? "—" : payment.PaymentMethod)</div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="text-muted small">Thời gian nhận bàn</div>
+                        <div>@(payment.TimeIn?.ToString("dd/MM/yyyy HH:mm") ?? "—")</div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="text-muted small">Thời gian trả bàn</div>
+                        <div>@(payment.TimeOut?.ToString("dd/MM/yyyy HH:mm") ?? "—")</div>
+                    </div>
+                    <div>
+                        <div class="text-muted small">Thời gian thanh toán</div>
+                        <div>@(payment.PaymentTime?.ToString("dd/MM/yyyy HH:mm") ?? "—")</div>
+                    </div>
+                    @if (!string.IsNullOrWhiteSpace(payment.Notes))
+                    {
+                        <div class="mt-3 text-muted small">
+                            <div>Ghi chú thu ngân</div>
+                            <div>@payment.Notes</div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .booking-detail-section .card {
+        border: none;
+        border-radius: 20px;
+        box-shadow: 0 12px 40px rgba(15, 23, 42, 0.08);
+    }
+
+    .booking-overview-card .label {
+        font-size: 0.85rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
+
+    .booking-note {
+        background: #f5f5f7;
+        border-radius: 16px;
+        padding: 16px;
+    }
+
+    .timeline-list {
+        position: relative;
+        padding-left: 30px;
+    }
+
+    .timeline-list::before {
+        content: "";
+        position: absolute;
+        left: 12px;
+        top: 4px;
+        bottom: 4px;
+        width: 2px;
+        background: #e5e7eb;
+    }
+
+    .timeline-item {
+        position: relative;
+        display: flex;
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+
+    .timeline-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .timeline-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: #fff;
+        border: 2px solid currentColor;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        left: -40px;
+        top: 2px;
+    }
+
+    .info-card .card-body > div {
+        font-size: 0.95rem;
+    }
+
+    .order-card table {
+        border-radius: 16px;
+    }
+
+    .empty-state {
+        border: 1px dashed #d1d5db;
+        border-radius: 12px;
+    }
+
+    @@media (max-width: 991px) {
+        .timeline-list::before {
+            left: 6px;
+        }
+
+        .timeline-icon {
+            left: -26px;
+        }
+    }
+</style>

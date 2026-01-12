@@ -3509,6 +3509,10 @@
       "PackagePath": "staticwebassets\\assets\\img\\reservation.jpg"
     },
     {
+      "Id": "D:\\DACN\\KD_Restaurant\\KD_Restaurant\\wwwroot\\assets\\img\\slider\\sl1.png",
+      "PackagePath": "staticwebassets\\assets\\img\\slider\\sl1.png"
+    },
+    {
       "Id": "D:\\DACN\\KD_Restaurant\\KD_Restaurant\\wwwroot\\assets\\img\\slider\\slider1.jpg",
       "PackagePath": "staticwebassets\\assets\\img\\slider\\slider1.jpg"
     },
@@ -3563,6 +3567,10 @@
     {
       "Id": "D:\\DACN\\KD_Restaurant\\KD_Restaurant\\wwwroot\\assets\\img\\testimonials\\testimonials-5.jpg",
       "PackagePath": "staticwebassets\\assets\\img\\testimonials\\testimonials-5.jpg"
+    },
+    {
+      "Id": "D:\\DACN\\KD_Restaurant\\KD_Restaurant\\wwwroot\\assets\\img\\zalo-icon.svg",
+      "PackagePath": "staticwebassets\\assets\\img\\zalo-icon.svg"
     },
     {
       "Id": "D:\\DACN\\KD_Restaurant\\KD_Restaurant\\wwwroot\\assets\\js\\main.js",

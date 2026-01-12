@@ -4,6 +4,12 @@
     bool hasAboutLink = Model?.Any(item =>
         !string.IsNullOrWhiteSpace(item.UrlPath) &&
         item.UrlPath.Equals("/About/Index", System.StringComparison.OrdinalIgnoreCase)) ?? false;
+    bool hasLocatorLink = Model?.Any(item =>
+        !string.IsNullOrWhiteSpace(item.UrlPath) &&
+        item.UrlPath.Equals("/Home/StoreLocator", System.StringComparison.OrdinalIgnoreCase)) ?? false;
+    bool hasContactLink = Model?.Any(item =>
+        !string.IsNullOrWhiteSpace(item.UrlPath) &&
+        item.UrlPath.Equals("/Contact", System.StringComparison.OrdinalIgnoreCase)) ?? false;
 }
 
 <nav>
@@ -23,5 +29,17 @@
                 <a asp-controller="About" asp-action="Index" class="nav-link">Giới thiệu</a>
             </li>
         }
+        @if (!hasLocatorLink)
+        {
+            <li>
+                <a asp-controller="Home" asp-action="StoreLocator" class="nav-link">Tìm nhà hàng</a>
+            </li>
+        }
+        @* @if (!hasContactLink)
+        {
+            <li>
+                <a asp-controller="Contact" asp-action="Index" class="nav-link">Liên hệ</a>
+            </li>
+        } *@
     </ul>
 </nav>

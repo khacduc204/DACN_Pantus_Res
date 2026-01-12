@@ -1,5 +1,6 @@
 ﻿@using System.Linq
 @using Microsoft.EntityFrameworkCore
+@using KD_Restaurant.Utilities
 @inject KD_Restaurant.Models.KDContext DbContext
 <!DOCTYPE html>
 <html lang="en">
@@ -129,7 +130,7 @@
                                         <i class="bi bi-person-lines-fill me-2"></i>Thông tin cá nhân
                                     </a>
                                 </li>
-                                @if (User.IsInRole("Admin"))
+                                @if (User.IsInRole(RoleNames.Admin) || User.IsInRole(RoleNames.Manager) || User.IsInRole(RoleNames.Staff))
                                 {
                                     <li>
                                         <a class="dropdown-item py-2" asp-area="Admin" asp-controller="Home" asp-action="Index">
@@ -190,6 +191,25 @@
                     @await Component.InvokeAsync("Slider")
                 }
         @RenderBody()
+
+        @if (action == "Index" && controller == "Home")
+        {
+            <div class="floating-contact">
+                <span class="floating-contact__heading">Liên hệ nhanh</span>
+                <div class="floating-contact__stack">
+                    <a class="floating-contact__item floating-contact__item--phone" href="tel:0978843662" aria-label="Gọi ngay">
+                        <i class="bi bi-telephone"></i>
+                    </a>
+                    <a class="floating-contact__item floating-contact__item--messenger" href="https://m.me/khacduc204" target="_blank" rel="noopener" aria-label="Messenger">
+                        <img src="https://cdn-icons-png.flaticon.com/128/5968/5968771.png" alt="Messenger" class="floating-contact__icon" loading="lazy" />
+                    </a>
+                    <a class="floating-contact__item floating-contact__item--zalo" href="https://zalo.me/0978843662" target="_blank" rel="noopener" aria-label="Zalo">
+                        <img src="https://stc-zaloprofile.zdn.vn/pc/v2/images/zalo_sharelogo.png" alt="Zalo" class="floating-contact__icon" loading="lazy" />
+                        <span class="floating-contact__badge">Chat ngay</span>
+                    </a>
+                </div>
+            </div>
+        }
 
     </main>
 
@@ -351,6 +371,153 @@
             margin-top: 1.5rem;
             margin-bottom: 0.75rem;
             font-size: 1rem;
+        }
+
+        .floating-contact {
+            position: fixed;
+            bottom: 2.5rem;
+            right: 1.75rem;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 0.75rem;
+            z-index: 1050;
+            pointer-events: none;
+        }
+
+        .floating-contact__heading {
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: rgba(255,255,255,0.96);
+            padding: 0.35rem 0.85rem;
+            border-radius: 999px;
+            background: rgba(15,23,42,0.85);
+            box-shadow: 0 10px 25px rgba(2,6,23,0.45);
+            pointer-events: auto;
+        }
+
+        .floating-contact__stack {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            position: relative;
+            pointer-events: auto;
+        }
+
+        .floating-contact__stack::before,
+        .floating-contact__stack::after {
+            content: "";
+            position: absolute;
+            inset: -18px;
+            border-radius: 50%;
+            border: 1px solid rgba(255,255,255,0.15);
+            animation: pulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        .floating-contact__stack::after {
+            inset: -32px;
+            animation-delay: 0.8s;
+        }
+
+        .floating-contact__item {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 1.3rem;
+            box-shadow: 0 14px 35px rgba(15, 23, 42, 0.35);
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .floating-contact__item:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 18px 40px rgba(15, 23, 42, 0.45);
+        }
+
+        .floating-contact__item::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 30% 20%, rgba(255,255,255,0.65), transparent 55%);
+            opacity: 0.6;
+        }
+
+        .floating-contact__icon {
+            width: 24px;
+            height: 24px;
+            object-fit: contain;
+            position: relative;
+            z-index: 1;
+        }
+
+        .floating-contact__item--phone {
+            background: linear-gradient(160deg, #f71d32, #ff7a18);
+        }
+
+        .floating-contact__item--messenger {
+            background: linear-gradient(145deg, #0068ff, #00c0ff);
+        }
+
+        .floating-contact__item--zalo {
+            background: linear-gradient(145deg, #015bff, #00a8ff);
+        }
+
+        .floating-contact__badge {
+            position: absolute;
+            left: -8.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #fff;
+            color: #0f172a;
+            font-weight: 700;
+            padding: 0.35rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.85rem;
+            box-shadow: 0 10px 25px rgba(2,6,23,0.25);
+            transition: opacity 0.2s ease, transform 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .floating-contact__item--zalo:not(:hover) .floating-contact__badge {
+            opacity: 0.85;
+        }
+
+        .floating-contact__item--zalo:hover .floating-contact__badge {
+            transform: translate(-4px, -50%);
+        }
+
+        @@keyframes pulse {
+            0% { opacity: 0; transform: scale(0.85); }
+            50% { opacity: 0.4; }
+            100% { opacity: 0; transform: scale(1.15); }
+        }
+
+        @@media (max-width: 767.98px) {
+            .floating-contact {
+                right: 1rem;
+                bottom: 1.5rem;
+            }
+
+            .floating-contact__heading {
+                font-size: 0.72rem;
+                padding: 0.3rem 0.7rem;
+            }
+
+            .floating-contact__item {
+                width: 50px;
+                height: 50px;
+            }
+
+            .floating-contact__badge {
+                display: none;
+            }
         }
     </style>
 

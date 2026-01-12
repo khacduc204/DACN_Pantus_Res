@@ -15,6 +15,7 @@
     var selectedDateDisplay = Model.SelectedDate == default ? DateTime.Today.ToString("dd/MM/yyyy") : Model.SelectedDate.ToString("dd/MM/yyyy");
     var selectedBranchValue = Model.SelectedBranchId?.ToString() ?? string.Empty;
     var selectedStatusValue = Model.SelectedStatusId?.ToString() ?? string.Empty;
+    var detailReturnUrl = Url.Action("Index", "Bookings", new { area = "Admin", date = selectedDateValue, branchId = Model.SelectedBranchId, statusId = Model.SelectedStatusId }) ?? string.Empty;
     Func<BookingCardViewModel, int> calculateBookingTotal = booking =>
     {
         if (booking?.OrderItems == null || !booking.OrderItems.Any())
@@ -215,6 +216,14 @@
                                     data-customer="@booking.CustomerName">
                                 <i class="bi bi-x-circle me-1"></i>Huỷ
                             </button>
+                            <a class="btn btn-outline-dark btn-sm"
+                               asp-area="Admin"
+                               asp-controller="Bookings"
+                               asp-action="Details"
+                               asp-route-id="@booking.Id"
+                               asp-route-returnUrl="@detailReturnUrl">
+                                <i class="bi bi-eye me-1"></i>Xem chi tiết
+                            </a>
                         </div>
                     </div>
                 </div>

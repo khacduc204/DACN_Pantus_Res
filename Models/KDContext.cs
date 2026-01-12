@@ -35,6 +35,7 @@ namespace KD_Restaurant.Models
         public DbSet<tblBooking_status> tblBooking_status { get; set; }
         public DbSet<tblOrder_cancelled> tblOrder_cancelled { get; set; }
         public DbSet<tblRestaurantInfo> tblRestaurantInfo { get; set; }
+        public DbSet<tblContact> tblContact { get; set; }
 
 
 
@@ -166,8 +167,11 @@ namespace KD_Restaurant.Models
             
             modelBuilder.Entity<tblCustomer>(entity =>
             {
-                entity.HasKey(e => e.IdCustomer); // 👈 Khai báo khóa chính
-            
+                entity.HasKey(e => e.IdCustomer);
+                entity.HasOne(e => e.User)
+                    .WithOne()
+                    .HasForeignKey<tblCustomer>(e => e.IdUser)
+                    .OnDelete(DeleteBehavior.SetNull);
             });
 
             modelBuilder.Entity<tblBranch>(entity =>
@@ -264,6 +268,17 @@ namespace KD_Restaurant.Models
                     .WithMany(b => b.Areas)
                     .HasForeignKey(e => e.IdBranch)
                     .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<tblContact>(entity =>
+            {
+                entity.HasKey(e => e.IdContact);
+                entity.Property(e => e.Name).HasMaxLength(150);
+                entity.Property(e => e.Phone).HasMaxLength(20);
+                entity.Property(e => e.Email).HasMaxLength(255);
+                entity.Property(e => e.Message).HasMaxLength(1000);
+                entity.Property(e => e.CreatedDate).HasColumnType("datetime");
+                entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
             });
 
             modelBuilder.Entity<tblRestaurantInfo>(entity =>

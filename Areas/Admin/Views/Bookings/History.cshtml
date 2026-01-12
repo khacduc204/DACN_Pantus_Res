@@ -6,6 +6,7 @@
     var branches = Model.Branches ?? new List<SelectOption>();
     var selectedBranchValue = Model.SelectedBranchId?.ToString() ?? string.Empty;
     var selectedDateValue = Model.SelectedDate?.ToString("yyyy-MM-dd") ?? string.Empty;
+    var historyReturnUrl = Url.Action("History", "Bookings", new { area = "Admin", tab = Model.ActiveTab, branchId = Model.SelectedBranchId, search = Model.SearchTerm, date = Model.SelectedDate?.ToString("yyyy-MM-dd") }) ?? string.Empty;
     string Count(string key) => counters.TryGetValue(key, out var value) ? value.ToString() : "0";
     string FormatGuests(int? guests) => guests.HasValue ? $"{guests} khách" : "—";
 }
@@ -127,7 +128,7 @@
                                     booking.Note,
                                     booking.CancellationReason
                                 }.Where(s => !string.IsNullOrWhiteSpace(s))).ToLowerInvariant();
-                                var orderUrl = Url.Action("CurrentOrder", "Bookings", new { area = "Admin", bookingId = booking.Id });
+                                var detailUrl = Url.Action("Details", "Bookings", new { area = "Admin", id = booking.Id, returnUrl = historyReturnUrl });
                                 <tr data-booking-row
                                     data-status="@booking.StatusKey"
                                     data-branch="@(booking.BranchId?.ToString() ?? string.Empty)"
@@ -179,7 +180,7 @@
                                         }
                                     </td>
                                     <td class="text-end">
-                                        <a class="btn btn-sm btn-outline-primary" href="@orderUrl">
+                                        <a class="btn btn-sm btn-outline-primary" href="@detailUrl">
                                             <i class="bi bi-eye"></i> Chi tiết
                                         </a>
                                     </td>

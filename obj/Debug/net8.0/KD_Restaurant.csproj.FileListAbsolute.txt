@@ -1,3 +1,13 @@
+D:\DACN\KD_Restaurant\KD_Restaurant\obj\Debug\net8.0\KD_Restaurant.csproj.AssemblyReference.cache
+D:\DACN\KD_Restaurant\KD_Restaurant\obj\Debug\net8.0\KD_Restaurant.GeneratedMSBuildEditorConfig.editorconfig
+D:\DACN\KD_Restaurant\KD_Restaurant\obj\Debug\net8.0\KD_Restaurant.AssemblyInfoInputs.cache
+D:\DACN\KD_Restaurant\KD_Restaurant\obj\Debug\net8.0\KD_Restaurant.AssemblyInfo.cs
+D:\DACN\KD_Restaurant\KD_Restaurant\obj\Debug\net8.0\KD_Restaurant.csproj.CoreCompileInputs.cache
+D:\DACN\KD_Restaurant\KD_Restaurant\obj\Debug\net8.0\KD_Restaurant.MvcApplicationPartsAssemblyInfo.cs
+D:\DACN\KD_Restaurant\KD_Restaurant\obj\Debug\net8.0\KD_Restaurant.MvcApplicationPartsAssemblyInfo.cache
+D:\DACN\KD_Restaurant\KD_Restaurant\obj\Debug\net8.0\KD_Restaurant.RazorAssemblyInfo.cache
+D:\DACN\KD_Restaurant\KD_Restaurant\obj\Debug\net8.0\KD_Restaurant.RazorAssemblyInfo.cs
+D:\DACN\KD_Restaurant\KD_Restaurant\obj\Debug\net8.0\KD_Restaurant.sourcelink.json
 D:\DACN\KD_Restaurant\KD_Restaurant\bin\Debug\net8.0\appsettings.Development.json
 D:\DACN\KD_Restaurant\KD_Restaurant\bin\Debug\net8.0\appsettings.json
 D:\DACN\KD_Restaurant\KD_Restaurant\bin\Debug\net8.0\KD_Restaurant.staticwebassets.runtime.json
@@ -549,15 +559,6 @@ D:\DACN\KD_Restaurant\KD_Restaurant\bin\Debug\net8.0\runtimes\win\lib\net6.0\Sys
 D:\DACN\KD_Restaurant\KD_Restaurant\bin\Debug\net8.0\runtimes\win\lib\net7.0\System.Security.Cryptography.ProtectedData.dll
 D:\DACN\KD_Restaurant\KD_Restaurant\bin\Debug\net8.0\runtimes\browser\lib\net8.0\System.Text.Encodings.Web.dll
 D:\DACN\KD_Restaurant\KD_Restaurant\bin\Debug\net8.0\runtimes\win\lib\net7.0\System.Windows.Extensions.dll
-D:\DACN\KD_Restaurant\KD_Restaurant\obj\Debug\net8.0\KD_Restaurant.csproj.AssemblyReference.cache
-D:\DACN\KD_Restaurant\KD_Restaurant\obj\Debug\net8.0\KD_Restaurant.GeneratedMSBuildEditorConfig.editorconfig
-D:\DACN\KD_Restaurant\KD_Restaurant\obj\Debug\net8.0\KD_Restaurant.AssemblyInfoInputs.cache
-D:\DACN\KD_Restaurant\KD_Restaurant\obj\Debug\net8.0\KD_Restaurant.AssemblyInfo.cs
-D:\DACN\KD_Restaurant\KD_Restaurant\obj\Debug\net8.0\KD_Restaurant.csproj.CoreCompileInputs.cache
-D:\DACN\KD_Restaurant\KD_Restaurant\obj\Debug\net8.0\KD_Restaurant.MvcApplicationPartsAssemblyInfo.cs
-D:\DACN\KD_Restaurant\KD_Restaurant\obj\Debug\net8.0\KD_Restaurant.MvcApplicationPartsAssemblyInfo.cache
-D:\DACN\KD_Restaurant\KD_Restaurant\obj\Debug\net8.0\KD_Restaurant.RazorAssemblyInfo.cache
-D:\DACN\KD_Restaurant\KD_Restaurant\obj\Debug\net8.0\KD_Restaurant.RazorAssemblyInfo.cs
 D:\DACN\KD_Restaurant\KD_Restaurant\obj\Debug\net8.0\scopedcss\Views\Shared\_Layout.cshtml.rz.scp.css
 D:\DACN\KD_Restaurant\KD_Restaurant\obj\Debug\net8.0\scopedcss\bundle\KD_Restaurant.styles.css
 D:\DACN\KD_Restaurant\KD_Restaurant\obj\Debug\net8.0\scopedcss\projectbundle\KD_Restaurant.bundle.scp.css
@@ -576,4 +577,3 @@ D:\DACN\KD_Restaurant\KD_Restaurant\obj\Debug\net8.0\refint\KD_Restaurant.dll
 D:\DACN\KD_Restaurant\KD_Restaurant\obj\Debug\net8.0\KD_Restaurant.pdb
 D:\DACN\KD_Restaurant\KD_Restaurant\obj\Debug\net8.0\KD_Restaurant.genruntimeconfig.cache
 D:\DACN\KD_Restaurant\KD_Restaurant\obj\Debug\net8.0\ref\KD_Restaurant.dll
-D:\DACN\KD_Restaurant\KD_Restaurant\obj\Debug\net8.0\KD_Restaurant.sourcelink.json

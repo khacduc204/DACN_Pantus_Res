@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "oau2zW72o1eHXwGJzIOxkpU2YUuljQ5zgEf3qnZflME=",
+  "Hash": "tDUs8f+V72mWO29T2xi/53O+FrA4eJgWbGUQUIPZ080=",
   "Source": "KD_Restaurant",
   "BasePath": "_content/KD_Restaurant",
   "Mode": "Default",
@@ -17692,8 +17692,8 @@
       "RelatedAsset": "",
       "AssetTraitName": "",
       "AssetTraitValue": "",
-      "Fingerprint": "dfsujaynon",
-      "Integrity": "l9lc9gMP8rWGktGXMnAePpktkzBb3bG/k8JSm7Nd0yo=",
+      "Fingerprint": "eh9zkqi5qf",
+      "Integrity": "wra6JT0qimM1le12mmJZZJeSVqEztBUgQax5jlDJmWg=",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\assets\\css\\main.css"
@@ -18455,6 +18455,27 @@
       "OriginalItemSpec": "wwwroot\\assets\\img\\reservation.jpg"
     },
     {
+      "Identity": "D:\\DACN\\KD_Restaurant\\KD_Restaurant\\wwwroot\\assets\\img\\slider\\sl1.png",
+      "SourceId": "KD_Restaurant",
+      "SourceType": "Discovered",
+      "ContentRoot": "D:\\DACN\\KD_Restaurant\\KD_Restaurant\\wwwroot\\",
+      "BasePath": "_content/KD_Restaurant",
+      "RelativePath": "assets/img/slider/sl1#[.{fingerprint}]?.png",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "Fingerprint": "gh9imbvlem",
+      "Integrity": "fO31p8S4Yy/GmtBlAwkOuyg2kl/jukjCQ5tl/+Myk2E=",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\assets\\img\\slider\\sl1.png"
+    },
+    {
       "Identity": "D:\\DACN\\KD_Restaurant\\KD_Restaurant\\wwwroot\\assets\\img\\slider\\slider1.jpg",
       "SourceId": "KD_Restaurant",
       "SourceType": "Discovered",
@@ -18747,6 +18768,27 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\assets\\img\\testimonials\\testimonials-5.jpg"
+    },
+    {
+      "Identity": "D:\\DACN\\KD_Restaurant\\KD_Restaurant\\wwwroot\\assets\\img\\zalo-icon.svg",
+      "SourceId": "KD_Restaurant",
+      "SourceType": "Discovered",
+      "ContentRoot": "D:\\DACN\\KD_Restaurant\\KD_Restaurant\\wwwroot\\",
+      "BasePath": "_content/KD_Restaurant",
+      "RelativePath": "assets/img/zalo-icon#[.{fingerprint}]?.svg",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "Fingerprint": "fpihtsisb7",
+      "Integrity": "DTqN3p9nY4Kc0CrR5mK+3/GPFoyw2nS7a/0hzoM7yJQ=",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\assets\\img\\zalo-icon.svg"
     },
     {
       "Identity": "D:\\DACN\\KD_Restaurant\\KD_Restaurant\\wwwroot\\assets\\js\\main.js",
@@ -89155,7 +89197,7 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "37304"
+          "Value": "38540"
         },
         {
           "Name": "Content-Type",
@@ -89163,11 +89205,11 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"l9lc9gMP8rWGktGXMnAePpktkzBb3bG/k8JSm7Nd0yo=\""
+          "Value": "\"wra6JT0qimM1le12mmJZZJeSVqEztBUgQax5jlDJmWg=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sun, 11 Jan 2026 13:02:26 GMT"
+          "Value": "Sun, 11 Jan 2026 13:20:11 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -89177,12 +89219,12 @@
       "EndpointProperties": [
         {
           "Name": "integrity",
-          "Value": "sha256-l9lc9gMP8rWGktGXMnAePpktkzBb3bG/k8JSm7Nd0yo="
+          "Value": "sha256-wra6JT0qimM1le12mmJZZJeSVqEztBUgQax5jlDJmWg="
         }
       ]
     },
     {
-      "Route": "assets/css/main.dfsujaynon.css",
+      "Route": "assets/css/main.eh9zkqi5qf.css",
       "AssetFile": "D:\\DACN\\KD_Restaurant\\KD_Restaurant\\wwwroot\\assets\\css\\main.css",
       "Selectors": [],
       "ResponseHeaders": [
@@ -89192,7 +89234,7 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "37304"
+          "Value": "38540"
         },
         {
           "Name": "Content-Type",
@@ -89200,11 +89242,11 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"l9lc9gMP8rWGktGXMnAePpktkzBb3bG/k8JSm7Nd0yo=\""
+          "Value": "\"wra6JT0qimM1le12mmJZZJeSVqEztBUgQax5jlDJmWg=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sun, 11 Jan 2026 13:02:26 GMT"
+          "Value": "Sun, 11 Jan 2026 13:20:11 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -89214,7 +89256,7 @@
       "EndpointProperties": [
         {
           "Name": "fingerprint",
-          "Value": "dfsujaynon"
+          "Value": "eh9zkqi5qf"
         },
         {
           "Name": "label",
@@ -89222,7 +89264,7 @@
         },
         {
           "Name": "integrity",
-          "Value": "sha256-l9lc9gMP8rWGktGXMnAePpktkzBb3bG/k8JSm7Nd0yo="
+          "Value": "sha256-wra6JT0qimM1le12mmJZZJeSVqEztBUgQax5jlDJmWg="
         }
       ]
     },
@@ -92179,6 +92221,88 @@
       ]
     },
     {
+      "Route": "assets/img/slider/sl1.gh9imbvlem.png",
+      "AssetFile": "D:\\DACN\\KD_Restaurant\\KD_Restaurant\\wwwroot\\assets\\img\\slider\\sl1.png",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "3289436"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/png"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"fO31p8S4Yy/GmtBlAwkOuyg2kl/jukjCQ5tl/+Myk2E=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Mon, 12 Jan 2026 19:41:26 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "gh9imbvlem"
+        },
+        {
+          "Name": "label",
+          "Value": "assets/img/slider/sl1.png"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-fO31p8S4Yy/GmtBlAwkOuyg2kl/jukjCQ5tl/+Myk2E="
+        }
+      ]
+    },
+    {
+      "Route": "assets/img/slider/sl1.png",
+      "AssetFile": "D:\\DACN\\KD_Restaurant\\KD_Restaurant\\wwwroot\\assets\\img\\slider\\sl1.png",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "3289436"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/png"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"fO31p8S4Yy/GmtBlAwkOuyg2kl/jukjCQ5tl/+Myk2E=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Mon, 12 Jan 2026 19:41:26 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=3600, must-revalidate"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-fO31p8S4Yy/GmtBlAwkOuyg2kl/jukjCQ5tl/+Myk2E="
+        }
+      ]
+    },
+    {
       "Route": "assets/img/slider/slider1.8wmasoyplf.jpg",
       "AssetFile": "D:\\DACN\\KD_Restaurant\\KD_Restaurant\\wwwroot\\assets\\img\\slider\\slider1.jpg",
       "Selectors": [],
@@ -93323,6 +93447,88 @@
         {
           "Name": "integrity",
           "Value": "sha256-OVUM9eXbltYAfSedmVxQYAPVGnacfNrq5nT82Q0ZfCI="
+        }
+      ]
+    },
+    {
+      "Route": "assets/img/zalo-icon.fpihtsisb7.svg",
+      "AssetFile": "D:\\DACN\\KD_Restaurant\\KD_Restaurant\\wwwroot\\assets\\img\\zalo-icon.svg",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "527"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/svg+xml"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"DTqN3p9nY4Kc0CrR5mK+3/GPFoyw2nS7a/0hzoM7yJQ=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Mon, 12 Jan 2026 12:38:04 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "fpihtsisb7"
+        },
+        {
+          "Name": "label",
+          "Value": "assets/img/zalo-icon.svg"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-DTqN3p9nY4Kc0CrR5mK+3/GPFoyw2nS7a/0hzoM7yJQ="
+        }
+      ]
+    },
+    {
+      "Route": "assets/img/zalo-icon.svg",
+      "AssetFile": "D:\\DACN\\KD_Restaurant\\KD_Restaurant\\wwwroot\\assets\\img\\zalo-icon.svg",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "527"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/svg+xml"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"DTqN3p9nY4Kc0CrR5mK+3/GPFoyw2nS7a/0hzoM7yJQ=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Mon, 12 Jan 2026 12:38:04 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=3600, must-revalidate"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-DTqN3p9nY4Kc0CrR5mK+3/GPFoyw2nS7a/0hzoM7yJQ="
         }
       ]
     },
@@ -99007,7 +99213,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Mon, 09 Jun 2025 15:20:27 GMT"
+          "Value": "Mon, 12 Jan 2026 20:40:50 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -99044,7 +99250,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Mon, 09 Jun 2025 15:20:27 GMT"
+          "Value": "Mon, 12 Jan 2026 20:40:50 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -99081,7 +99287,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Mon, 09 Jun 2025 15:20:27 GMT"
+          "Value": "Mon, 12 Jan 2026 20:40:50 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -99126,7 +99332,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Mon, 09 Jun 2025 15:20:27 GMT"
+          "Value": "Mon, 12 Jan 2026 20:40:50 GMT"
         },
         {
           "Name": "Cache-Control",

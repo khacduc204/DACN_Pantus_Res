@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using KD_Restaurant.Models;
@@ -71,21 +73,68 @@ namespace KD_Restaurant.Controllers
                 return NotFound();
             }
 
-            ViewBag.MenuReviews = _context.tblMenuReview
-                .Where(r => r.IdMenuItem == id && r.IsActive)
-                .ToList();
+            var categories = await _context.tblMenuCategory
+                .Where(c => c.IsActive)
+                .ToListAsync();
 
-            ViewBag.MenuRelated = _context.tblMenuItem
+            var relatedItems = await _context.tblMenuItem
                 .Where(i => i.IdMenuItem != id && i.IdCategory == menuItem.IdCategory && i.IsActive)
                 .OrderByDescending(i => i.IdMenuItem)
                 .Take(5)
+                .ToListAsync();
+
+            var reviews = await _context.tblMenuReview
+                .Where(r => r.IdMenuItem == id && r.IsActive)
+                .OrderByDescending(r => r.CreatedDate ?? DateTime.MinValue)
+                .ToListAsync();
+
+            var reviewModels = reviews
+                .Select(r => new MenuReviewViewModel
+                {
+                    Id = r.IdMenuReview,
+                    Name = r.Name,
+                    Phone = r.Phone,
+                    Detail = r.Detail,
+                    Rating = r.Rating.GetValueOrDefault(),
+                    CreatedDate = r.CreatedDate,
+                    Image = r.Image,
+                    IsActive = r.IsActive
+                })
                 .ToList();
 
-            ViewBag.MenuCategories = _context.tblMenuCategory
-                .Where(c => c.IsActive)
+            var totalReviews = reviewModels.Count;
+            var averageRating = totalReviews == 0
+                ? 0
+                : Math.Round(reviewModels.Average(r => r.Rating), 1);
+
+            var ratingBreakdown = Enumerable.Range(1, 5)
+                .Select(star => new RatingBucketViewModel
+                {
+                    Star = star,
+                    Count = reviewModels.Count(r => r.Rating == star),
+                    Percentage = totalReviews == 0
+                        ? 0
+                        : Math.Round(reviewModels.Count(r => r.Rating == star) / (double)totalReviews * 100, 1)
+                })
+                .OrderByDescending(r => r.Star)
                 .ToList();
 
-            return View(menuItem);
+            var viewModel = new MenuDetailViewModel
+            {
+                Item = menuItem,
+                Categories = categories,
+                RelatedItems = relatedItems,
+                Reviews = reviewModels,
+                AverageRating = averageRating,
+                ReviewCount = totalReviews,
+                RatingBreakdown = ratingBreakdown,
+                SpotlightReview = reviewModels
+                    .OrderByDescending(r => r.Rating)
+                    .ThenByDescending(r => r.CreatedDate)
+                    .FirstOrDefault()
+            };
+
+            return View(viewModel);
         }
 
         [HttpPost]
@@ -93,6 +142,24 @@ namespace KD_Restaurant.Controllers
         {
             try
             {
+                if (menuid <= 0)
+                {
+                    return Json(new { status = false, message = "Món ăn không hợp lệ." });
+                }
+
+                var trimmedName = name?.Trim();
+                var trimmedPhone = phone?.Trim();
+                var trimmedMessage = message?.Trim();
+
+                if (string.IsNullOrWhiteSpace(trimmedName) ||
+                    string.IsNullOrWhiteSpace(trimmedPhone) ||
+                    string.IsNullOrWhiteSpace(trimmedMessage))
+                {
+                    return Json(new { status = false, message = "Vui lòng điền đầy đủ thông tin đánh giá." });
+                }
+
+                var normalizedRating = Math.Max(1, Math.Min(5, rating));
+
                 var menu = await _context.tblMenuItem.FirstOrDefaultAsync(b => b.IdMenuItem == menuid);
                 if (menu == null)
                 {
@@ -102,23 +169,28 @@ namespace KD_Restaurant.Controllers
                 var review = new tblMenuReview
                 {
                     IdMenuItem = menuid,
-                    Name = name,
-                    Phone = phone,
-                    Rating = rating,
-                    Detail = message,
+                    Name = trimmedName,
+                    Phone = trimmedPhone,
+                    Rating = normalizedRating,
+                    Detail = trimmedMessage,
                     CreatedDate = DateTime.Now,
-                    IsActive = true,
-                    Image = ""
+                    CreatedBy = trimmedName,
+                    IsActive = false,
+                    Image = string.Empty
                 };
 
                 _context.Add(review);
                 await _context.SaveChangesAsync();
 
-                return Json(new { status = true });
+                return Json(new
+                {
+                    status = true,
+                    message = "Đánh giá của bạn đã được gửi và sẽ hiển thị sau khi được quản trị viên phê duyệt."
+                });
             }
             catch
             {
-                return Json(new { status = false });
+                return Json(new { status = false, message = "Có lỗi xảy ra, vui lòng thử lại." });
             }
         }
     }

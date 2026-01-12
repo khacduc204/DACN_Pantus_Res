@@ -36,13 +36,14 @@
                     }
                 </div>
                 <h4 class="mb-1">@Model.DisplayName</h4>
-                <p class="text-muted">@Model.UserName</p>
+                <p class="text-muted">@(!string.IsNullOrWhiteSpace(Model.AccountUserName) ? $"Account: {Model.AccountUserName}" : "Chưa liên kết tài khoản")</p>
                 <span class="badge @(Model.IsActive ? "bg-success" : "bg-secondary")">
                     @(Model.IsActive ? "Đang hoạt động" : "Tạm khoá")
                 </span>
                 <hr />
                 <div class="text-start small">
                     <p class="mb-2"><i class="bi bi-telephone me-2 text-primary"></i>@(string.IsNullOrWhiteSpace(Model.PhoneNumber) ? "Chưa cập nhật" : Model.PhoneNumber)</p>
+                    <p class="mb-2"><i class="bi bi-envelope me-2 text-primary"></i>@(string.IsNullOrWhiteSpace(Model.Email) ? "Chưa có email" : Model.Email)</p>
                     <p class="mb-2"><i class="bi bi-geo-alt me-2 text-primary"></i>@(string.IsNullOrWhiteSpace(Model.Address) ? "Chưa có địa chỉ" : Model.Address)</p>
                     <p class="mb-0"><i class="bi bi-clock-history me-2 text-primary"></i>
                         @(Model.LastLogin.HasValue ? $"Đăng nhập {Model.LastLogin:dd/MM/yyyy HH:mm}" : "Chưa từng đăng nhập")

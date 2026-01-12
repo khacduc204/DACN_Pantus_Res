@@ -62,6 +62,9 @@ namespace KD_Restaurant.Migrations
                     b.Property<DateTime>("BookingDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("Email")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int?>("IdBranch")
                         .HasColumnType("int");
 
@@ -169,6 +172,9 @@ namespace KD_Restaurant.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Avatar")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Email")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("FullName")
@@ -331,6 +337,11 @@ namespace KD_Restaurant.Migrations
 
                     b.Property<int>("Price")
                         .HasColumnType("int");
+
+                    b.Property<int>("PriceCost")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
 
                     b.Property<int?>("PriceSale")
                         .ValueGeneratedOnAdd()
@@ -540,40 +551,55 @@ namespace KD_Restaurant.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Heading")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                    b.Property<TimeSpan?>("CloseTime")
+                        .HasColumnType("time");
 
-                    b.Property<string>("HeroImageUrl")
+                    b.Property<string>("Email")
+                        .HasMaxLength(255)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(255)")
+                        .HasColumnName("Emai");
+
+                    b.Property<string>("Hotline1")
+                        .HasMaxLength(15)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(15)");
+
+                    b.Property<string>("Hotline2")
+                        .HasMaxLength(15)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(15)");
+
+                    b.Property<string>("LogDescription")
+                        .HasColumnType("ntext");
+
+                    b.Property<string>("Logo")
+                        .HasMaxLength(255)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<TimeSpan?>("OpenTime")
+                        .HasColumnType("time");
+
+                    b.Property<string>("OpeningDay")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("ResName")
+                        .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
-                    b.Property<string>("Highlights")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.Property<string>("IntroContent")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Subheading")
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("getutcdate()");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("VideoUrl")
+                    b.Property<string>("SortDescription")
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("tblRestaurantInfo");
+                    b.ToTable("tblRestaurant_info", null, t =>
+                        {
+                            t.ExcludeFromMigrations();
+                        });
                 });
 
             modelBuilder.Entity("KD_Restaurant.Models.tblRole", b =>

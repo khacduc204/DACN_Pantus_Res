@@ -7,6 +7,8 @@ namespace KD_Restaurant.Utilities
         public const string Dashboard = "dashboard.view";
         public const string MenuStructure = "menu.structure";
         public const string MenuCatalog = "menu.catalog";
+        public const string MenuReviewManagement = "menu.review";
+        public const string ContactManagement = "contact.manage";
         public const string BookingManagement = "booking.manage";
         public const string OrderManagement = "order.manage";
         public const string TableManagement = "table.manage";
@@ -22,6 +24,8 @@ namespace KD_Restaurant.Utilities
             Dashboard,
             MenuStructure,
             MenuCatalog,
+            MenuReviewManagement,
+            ContactManagement,
             BookingManagement,
             OrderManagement,
             TableManagement,
@@ -38,6 +42,8 @@ namespace KD_Restaurant.Utilities
             [Dashboard] = "Bảng điều khiển",
             [MenuStructure] = "Menu điều hướng",
             [MenuCatalog] = "Món ăn & danh mục",
+            [MenuReviewManagement] = "Đánh giá món ăn",
+            [ContactManagement] = "Liên hệ khách hàng",
             [BookingManagement] = "Quản lý đặt bàn",
             [OrderManagement] = "Quản lý hoá đơn",
             [TableManagement] = "Quản lý bàn",

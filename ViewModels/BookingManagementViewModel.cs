@@ -241,4 +241,74 @@ namespace KD_Restaurant.ViewModels
         public string Title { get; set; } = "Lịch sử đặt bàn";
         public string Description { get; set; } = "Theo dõi các đặt bàn đã hoàn tất hoặc huỷ bỏ.";
     }
+
+    public class BookingDetailViewModel
+    {
+        public BookingCardViewModel Booking { get; set; } = new();
+        public BookingCustomerSnapshot Customer { get; set; } = new();
+        public BookingBranchSnapshot Branch { get; set; } = new();
+        public BookingTableSnapshot Table { get; set; } = new();
+        public List<BookingOrderItemViewModel> OrderItems { get; set; } = new();
+        public BookingPaymentSummary Payment { get; set; } = new();
+        public List<BookingTimelineEntry> Timeline { get; set; } = new();
+        public List<BookingCancellationViewModel> Cancellations { get; set; } = new();
+        public string? ReturnUrl { get; set; }
+    }
+
+    public class BookingCustomerSnapshot
+    {
+        public string Name { get; set; } = "Khách lẻ";
+        public string? Phone { get; set; }
+        public string? Email { get; set; }
+        public string? Address { get; set; }
+        public DateTime? LastBookingDate { get; set; }
+        public int TotalBookings { get; set; }
+    }
+
+    public class BookingBranchSnapshot
+    {
+        public int? Id { get; set; }
+        public string? Name { get; set; }
+        public string? Address { get; set; }
+        public string? Phone { get; set; }
+        public string? Email { get; set; }
+    }
+
+    public class BookingTableSnapshot
+    {
+        public int? Id { get; set; }
+        public string? Name { get; set; }
+        public string? Area { get; set; }
+        public string? Type { get; set; }
+        public int? MaxSeats { get; set; }
+        public string? StatusName { get; set; }
+    }
+
+    public class BookingPaymentSummary
+    {
+        public int? OrderId { get; set; }
+        public int Subtotal { get; set; }
+        public string? PaymentMethod { get; set; }
+        public DateTime? PaymentTime { get; set; }
+        public DateTime? TimeIn { get; set; }
+        public DateTime? TimeOut { get; set; }
+        public string? Notes { get; set; }
+        public int? AmountPaid { get; set; }
+    }
+
+    public class BookingTimelineEntry
+    {
+        public string Title { get; set; } = string.Empty;
+        public string? Description { get; set; }
+        public DateTime? Time { get; set; }
+        public string Icon { get; set; } = "bi-clock-history";
+        public string StatusClass { get; set; } = "text-muted";
+    }
+
+    public class BookingCancellationViewModel
+    {
+        public DateTime? CancelledAt { get; set; }
+        public string? Reason { get; set; }
+        public string? CancelledBy { get; set; }
+    }
 }

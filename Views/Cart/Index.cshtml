@@ -15,6 +15,10 @@
 {
     <div class="alert alert-success text-center">@TempData["Success"]</div>
 }
+@if (TempData["BookingError"] != null)
+{
+    <div class="alert alert-danger text-center">@TempData["BookingError"]</div>
+}
 <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet" />
 
 <!-- Page Title -->
@@ -429,6 +433,10 @@
                         <div class="col-md-6">
                             <label class="form-label">Số điện thoại *</label>
                             <input name="PhoneNumber" class="form-control" value="@Model?.DefaultPhoneNumber" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Email *</label>
+                            <input name="Email" type="email" class="form-control" value="@Model?.DefaultEmail" autocomplete="email" required />
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Ngày đến *</label>

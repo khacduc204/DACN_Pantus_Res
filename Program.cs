@@ -15,7 +15,10 @@ builder.Services.AddDbContext<KDContext>(options =>
 });
 builder.Services.AddScoped<IPasswordHasher<tblUser>, PasswordHasher<tblUser>>();
 builder.Services.Configure<MomoOptions>(builder.Configuration.GetSection("MomoPayment"));
+builder.Services.Configure<SmtpOptions>(builder.Configuration.GetSection("Smtp"));
 builder.Services.AddHttpClient<IMomoPaymentService, MomoPaymentService>();
+builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
+builder.Services.AddScoped<IBookingNotificationService, BookingNotificationService>();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>

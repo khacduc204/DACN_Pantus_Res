@@ -11,6 +11,7 @@ namespace KD_Restaurant.ViewModels
         public IReadOnlyList<string> TimeSlots { get; set; } = Array.Empty<string>();
         public string? DefaultFullName { get; set; }
         public string? DefaultPhoneNumber { get; set; }
+        public string? DefaultEmail { get; set; }
         public bool IsAuthenticated { get; set; }
     }
 }

@@ -1,6 +1,7 @@
 using System;
 using System.Data.SqlTypes;
 using System.Linq;
+using System.Net.Mail;
 using System.Threading.Tasks;
 using KD_Restaurant.Models;
 using KD_Restaurant.Security;
@@ -27,11 +28,15 @@ namespace KD_Restaurant.Areas.Admin.Controllers
             _logger = logger;
         }
 
-        public async Task<IActionResult> Index(string? search, string status = "all")
+        public async Task<IActionResult> Index(string? search, string status = "all", int page = 1, int pageSize = 10)
         {
             status = string.IsNullOrWhiteSpace(status) ? "all" : status.ToLowerInvariant();
+            pageSize = Math.Clamp(pageSize, 5, 50);
+            page = Math.Max(1, page);
 
-            var query = _context.tblCustomer.AsQueryable();
+            var query = _context.tblCustomer
+                .Include(c => c.User)
+                .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(search))
             {
@@ -49,20 +54,28 @@ namespace KD_Restaurant.Areas.Admin.Controllers
                 _ => query
             };
 
+            var totalFiltered = await query.CountAsync();
+
             var customers = await query
                 .OrderByDescending(c => c.LastLogin ?? SqlDateTime.MinValue.Value)
                 .ThenBy(c => c.FullName)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .Select(c => new CustomerListItemViewModel
                 {
                     Id = c.IdCustomer,
                     DisplayName = !string.IsNullOrWhiteSpace(c.FullName)
                         ? c.FullName!
-                        : (!string.IsNullOrWhiteSpace(c.UserName) ? c.UserName! : $"Khách #{c.IdCustomer}"),
+                        : (c.User != null && !string.IsNullOrWhiteSpace(c.User.UserName)
+                            ? c.User.UserName!
+                            : $"Khách #{c.IdCustomer}"),
                     PhoneNumber = c.PhoneNumber,
+                    Email = c.Email,
                     Address = c.Address,
                     LastLogin = c.LastLogin,
                     BookingCount = c.tblBooking.Count(),
-                    IsActive = c.IsActive
+                    IsActive = c.IsActive,
+                    AccountUserName = c.User != null ? c.User.UserName : null
                 })
                 .ToListAsync();
 
@@ -75,7 +88,10 @@ namespace KD_Restaurant.Areas.Admin.Controllers
                 StatusFilter = status,
                 TotalCustomers = await _context.tblCustomer.CountAsync(),
                 ActiveCustomers = await _context.tblCustomer.CountAsync(c => c.IsActive),
-                NewCustomersThisWeek = await _context.tblCustomer.CountAsync(c => c.LastLogin != null && c.LastLogin >= weekAgo)
+                NewCustomersThisWeek = await _context.tblCustomer.CountAsync(c => c.LastLogin != null && c.LastLogin >= weekAgo),
+                CurrentPage = page,
+                PageSize = pageSize,
+                TotalFilteredCustomers = totalFiltered
             };
 
             return View(viewModel);
@@ -98,9 +114,8 @@ namespace KD_Restaurant.Areas.Admin.Controllers
             var entity = new tblCustomer
             {
                 FullName = model.FullName.Trim(),
-                UserName = NormalizeString(model.UserName),
-                Password = NormalizeString(model.Password),
                 PhoneNumber = NormalizeString(model.PhoneNumber),
+                Email = NormalizeEmail(model.Email),
                 Address = NormalizeString(model.Address),
                 Avatar = NormalizeString(model.Avatar),
                 IsActive = model.IsActive,
@@ -126,8 +141,8 @@ namespace KD_Restaurant.Areas.Admin.Controllers
             {
                 Id = customer.IdCustomer,
                 FullName = customer.FullName ?? string.Empty,
-                UserName = customer.UserName,
                 PhoneNumber = customer.PhoneNumber,
+                Email = customer.Email,
                 Address = customer.Address,
                 Avatar = customer.Avatar,
                 IsActive = customer.IsActive
@@ -157,16 +172,11 @@ namespace KD_Restaurant.Areas.Admin.Controllers
             }
 
             customer.FullName = model.FullName.Trim();
-            customer.UserName = NormalizeString(model.UserName);
             customer.PhoneNumber = NormalizeString(model.PhoneNumber);
+            customer.Email = NormalizeEmail(model.Email);
             customer.Address = NormalizeString(model.Address);
             customer.Avatar = NormalizeString(model.Avatar);
             customer.IsActive = model.IsActive;
-
-            if (!string.IsNullOrWhiteSpace(model.Password))
-            {
-                customer.Password = model.Password.Trim();
-            }
 
             await _context.SaveChangesAsync();
 
@@ -176,7 +186,9 @@ namespace KD_Restaurant.Areas.Admin.Controllers
 
         public async Task<IActionResult> Details(int id)
         {
-            var customer = await _context.tblCustomer.FirstOrDefaultAsync(c => c.IdCustomer == id);
+            var customer = await _context.tblCustomer
+                .Include(c => c.User)
+                .FirstOrDefaultAsync(c => c.IdCustomer == id);
             if (customer == null)
             {
                 return NotFound();
@@ -203,9 +215,10 @@ namespace KD_Restaurant.Areas.Admin.Controllers
                 Id = customer.IdCustomer,
                 DisplayName = !string.IsNullOrWhiteSpace(customer.FullName)
                     ? customer.FullName!
-                    : (!string.IsNullOrWhiteSpace(customer.UserName) ? customer.UserName! : $"Khách #{customer.IdCustomer}"),
-                UserName = customer.UserName,
+                    : (!string.IsNullOrWhiteSpace(customer.User?.UserName) ? customer.User!.UserName : $"Khách #{customer.IdCustomer}"),
+                AccountUserName = customer.User?.UserName,
                 PhoneNumber = customer.PhoneNumber,
+                Email = customer.Email,
                 Address = customer.Address,
                 Avatar = customer.Avatar,
                 LastLogin = customer.LastLogin,
@@ -236,6 +249,25 @@ namespace KD_Restaurant.Areas.Admin.Controllers
                 : "Đã tạm khoá khách hàng.";
 
             return RedirectToAction(nameof(Index));
+        }
+
+        private static string? NormalizeEmail(string? value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return null;
+            }
+
+            var trimmed = value.Trim();
+            try
+            {
+                var address = new MailAddress(trimmed);
+                return address.Address.ToLowerInvariant();
+            }
+            catch
+            {
+                return trimmed.ToLowerInvariant();
+            }
         }
 
         private static string? NormalizeString(string? value)

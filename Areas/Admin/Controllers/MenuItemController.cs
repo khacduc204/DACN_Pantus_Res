@@ -124,6 +124,7 @@ namespace KD_Restaurant.Areas.Admin.Controllers
 
             if (ModelState.IsValid)
             {
+                item.PriceCost = Math.Max(0, item.PriceCost);
                 if (imageFile != null && imageFile.Length > 0)
                 {
                     var fileName = Path.GetFileName(imageFile.FileName);
@@ -190,6 +191,7 @@ namespace KD_Restaurant.Areas.Admin.Controllers
             dbItem.Alias = item.Alias;
             dbItem.Description = item.Description;
             dbItem.Price = item.Price;
+            dbItem.PriceCost = Math.Max(0, item.PriceCost);
             dbItem.PriceSale = item.PriceSale;
             dbItem.IdCategory = item.IdCategory;
             dbItem.Quantity = item.Quantity;

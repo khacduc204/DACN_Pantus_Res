@@ -12,6 +12,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
+using System.Net.Mail;
 
 namespace KD_Restaurant.Controllers
 {
@@ -41,6 +42,7 @@ namespace KD_Restaurant.Controllers
 
             string? defaultName = null;
             string? defaultPhone = null;
+            string? defaultEmail = null;
 
             if (User.Identity?.IsAuthenticated == true)
             {
@@ -53,12 +55,41 @@ namespace KD_Restaurant.Controllers
 
                     if (currentUser != null)
                     {
+                        var linkedCustomer = await _context.tblCustomer
+                            .AsNoTracking()
+                            .FirstOrDefaultAsync(c => c.IdUser == currentUser.IdUser);
+
                         var parts = new[] { currentUser.LastName, currentUser.FirstName }
                             .Where(part => !string.IsNullOrWhiteSpace(part))
                             .ToArray();
 
-                        defaultName = parts.Length > 0 ? string.Join(" ", parts) : currentUser.UserName;
-                        defaultPhone = currentUser.PhoneNumber;
+                        var fallbackName = parts.Length > 0 ? string.Join(" ", parts) : currentUser.UserName;
+                        var fallbackEmail = NormalizeEmail(currentUser.UserName);
+
+                        if (linkedCustomer != null)
+                        {
+                            defaultName = !string.IsNullOrWhiteSpace(linkedCustomer.FullName)
+                                ? linkedCustomer.FullName
+                                : fallbackName;
+
+                            defaultPhone = !string.IsNullOrWhiteSpace(linkedCustomer.PhoneNumber)
+                                ? linkedCustomer.PhoneNumber
+                                : currentUser.PhoneNumber;
+
+                            var customerEmail = NormalizeEmail(linkedCustomer.Email);
+                            defaultEmail = !string.IsNullOrWhiteSpace(customerEmail)
+                                ? customerEmail
+                                : fallbackEmail;
+                        }
+                        else
+                        {
+                            defaultName = fallbackName;
+                            defaultPhone = currentUser.PhoneNumber;
+                            if (!string.IsNullOrWhiteSpace(fallbackEmail))
+                            {
+                                defaultEmail = fallbackEmail;
+                            }
+                        }
                     }
                 }
             }
@@ -70,6 +101,7 @@ namespace KD_Restaurant.Controllers
                 TimeSlots = BookingTimeSlotProvider.GetDefaultSlots(),
                 DefaultFullName = defaultName,
                 DefaultPhoneNumber = defaultPhone,
+                DefaultEmail = defaultEmail,
                 IsAuthenticated = User.Identity?.IsAuthenticated == true
             };
 
@@ -142,7 +174,8 @@ namespace KD_Restaurant.Controllers
             int NumberGuests,
             string Note,
             string FullName,
-            string PhoneNumber)
+            string PhoneNumber,
+            string Email)
         {
             var cart = HttpContext.Session.GetObjectFromJson<List<CartItem>>("Cart") ?? new List<CartItem>();
             if (!cart.Any())
@@ -151,17 +184,80 @@ namespace KD_Restaurant.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            var customer = await _context.tblCustomer.FirstOrDefaultAsync(x => x.PhoneNumber == PhoneNumber);
+            var normalizedEmail = NormalizeEmail(Email);
+            if (string.IsNullOrWhiteSpace(normalizedEmail))
+            {
+                TempData["BookingError"] = "Vui lòng nhập email hợp lệ để nhận thông báo đặt bàn.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            var trimmedPhone = string.IsNullOrWhiteSpace(PhoneNumber) ? null : PhoneNumber.Trim();
+            var trimmedName = string.IsNullOrWhiteSpace(FullName) ? null : FullName.Trim();
+
+            int? currentUserId = null;
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                var userIdValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (int.TryParse(userIdValue, out var parsedUserId))
+                {
+                    currentUserId = parsedUserId;
+                }
+            }
+
+            tblCustomer? customer = null;
+            if (currentUserId.HasValue)
+            {
+                customer = await _context.tblCustomer.FirstOrDefaultAsync(c => c.IdUser == currentUserId.Value);
+            }
+
+            if (customer == null && !string.IsNullOrWhiteSpace(trimmedPhone))
+            {
+                customer = await _context.tblCustomer.FirstOrDefaultAsync(x => x.PhoneNumber == trimmedPhone);
+            }
+
             if (customer == null)
             {
                 customer = new tblCustomer
                 {
-                    FullName = FullName,
-                    PhoneNumber = PhoneNumber
+                    IdUser = currentUserId,
+                    FullName = trimmedName,
+                    PhoneNumber = trimmedPhone,
+                    Email = normalizedEmail,
+                    IsActive = true
                 };
                 _context.tblCustomer.Add(customer);
                 await _context.SaveChangesAsync();
             }
+            else
+            {
+                if (currentUserId.HasValue && customer.IdUser != currentUserId)
+                {
+                    customer.IdUser = currentUserId.Value;
+                }
+
+                if (!string.IsNullOrWhiteSpace(trimmedName))
+                {
+                    customer.FullName = trimmedName;
+                }
+
+                if (!string.IsNullOrWhiteSpace(trimmedPhone))
+                {
+                    customer.PhoneNumber = trimmedPhone;
+                }
+
+                if (string.IsNullOrWhiteSpace(customer.Email) ||
+                    !string.Equals(customer.Email, normalizedEmail, StringComparison.OrdinalIgnoreCase))
+                {
+                    customer.Email = normalizedEmail;
+                }
+
+                if (!customer.IsActive)
+                {
+                    customer.IsActive = true;
+                }
+            }
+
+            var persistedCustomer = customer!;
 
             var trimmedSlot = TimeSlot?.Trim() ?? string.Empty;
             var booking = new tblBooking
@@ -172,8 +268,9 @@ namespace KD_Restaurant.Controllers
                 NumberGuests = Math.Max(1, NumberGuests),
                 Note = string.IsNullOrWhiteSpace(Note) ? "Khách chưa để lại ghi chú" : Note.Trim(),
                 isActive = true,
-                IdCustomer = customer.IdCustomer,
-                IdStatus = 1
+                IdCustomer = persistedCustomer.IdCustomer,
+                IdStatus = 1,
+                Email = normalizedEmail
             };
             _context.tblBooking.Add(booking);
             await _context.SaveChangesAsync();
@@ -211,6 +308,7 @@ namespace KD_Restaurant.Controllers
             await _context.SaveChangesAsync();
 
             HttpContext.Session.Remove("Cart");
+            TempData.Remove("BookingError");
 
             return RedirectToAction(nameof(Checkout), new { id = order.IdOrder });
         }
@@ -454,6 +552,24 @@ namespace KD_Restaurant.Controllers
             }
 
             return null;
+        }
+
+        private static string? NormalizeEmail(string? value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return null;
+            }
+
+            try
+            {
+                var address = new MailAddress(value.Trim());
+                return address.Address;
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         public class MomoCallbackModel

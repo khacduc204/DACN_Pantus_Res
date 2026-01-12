@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using KD_Restaurant.Models;
+using KD_Restaurant.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KD_Restaurant.Controllers
@@ -36,6 +37,28 @@ namespace KD_Restaurant.Controllers
             return RedirectToAction(nameof(MenuController.Index), "Menu");
         }
 
+        public IActionResult StoreLocator()
+        {
+            var branches = _context.tblBranch
+                .Where(b => b.IsActive)
+                .OrderBy(b => b.BranchName)
+                .Select(b => new StoreBranchViewModel
+                {
+                    Id = b.IdBranch,
+                    Name = string.IsNullOrWhiteSpace(b.BranchName) ? $"Chi nhánh #{b.IdBranch}" : b.BranchName!,
+                    Address = b.Address ?? "Đang cập nhật",
+                    Phone = b.PhoneNumber,
+                    Description = b.Description
+                })
+                .ToList();
+
+            var model = new StoreLocatorViewModel
+            {
+                Branches = branches
+            };
+
+            return View(model);
+        }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()

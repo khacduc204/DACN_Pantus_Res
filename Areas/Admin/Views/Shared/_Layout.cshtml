@@ -253,6 +253,8 @@
               var canDashboard = HasPermission(KD_Restaurant.Utilities.PermissionKeys.Dashboard);
               var canMenuStructure = HasPermission(KD_Restaurant.Utilities.PermissionKeys.MenuStructure);
               var canMenuCatalog = HasPermission(KD_Restaurant.Utilities.PermissionKeys.MenuCatalog);
+              var canMenuReview = HasPermission(KD_Restaurant.Utilities.PermissionKeys.MenuReviewManagement);
+              var canContact = HasPermission(KD_Restaurant.Utilities.PermissionKeys.ContactManagement);
               var canBooking = HasPermission(KD_Restaurant.Utilities.PermissionKeys.BookingManagement);
               var canOrders = HasPermission(KD_Restaurant.Utilities.PermissionKeys.OrderManagement);
               var canTables = HasPermission(KD_Restaurant.Utilities.PermissionKeys.TableManagement);
@@ -387,25 +389,34 @@
        </li>
      }
 
-     @if (canMenuCatalog)
+     @if (canMenuCatalog || canMenuReview)
      {
        <li class="nav-item">
        <button class="accordion-button collapsed nav-link" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false">
          <i class="fa-solid fa-feather fs-5 me-2"></i> Quản lý thực đơn
        </button>
        <ul id="collapseFour" class="nav-item accordion-collapse collapse" data-bs-parent="#accordionExample">
-         <li class="nav-item">
-           <a class="ps-0 nav-link collapsed" href="/Admin/MenuItem"><i class="me-2"></i>Danh sách món ăn</a>
-         </li>
-         <li class="nav-item">
-           <a class="ps-0 nav-link collapsed" href="/Admin/MenuItem/Create"><i class="me-2"></i>Thêm món ăn</a>
-         </li>
-         <li class="nav-item">
-           <a class="ps-0 nav-link collapsed" href="/Admin/MenuCategory"><i class="me-2"></i>Danh mục món ăn</a>
-         </li>
-         <li class="nav-item">
-           <a class="ps-0 nav-link collapsed" href="/Admin/MenuCategory#category-create"><i class="me-2"></i>Thêm danh mục</a>
-         </li>
+         @if (canMenuCatalog)
+         {
+           <li class="nav-item">
+             <a class="ps-0 nav-link collapsed" href="/Admin/MenuItem"><i class="me-2"></i>Danh sách món ăn</a>
+           </li>
+           <li class="nav-item">
+             <a class="ps-0 nav-link collapsed" href="/Admin/MenuItem/Create"><i class="me-2"></i>Thêm món ăn</a>
+           </li>
+           <li class="nav-item">
+             <a class="ps-0 nav-link collapsed" href="/Admin/MenuCategory"><i class="me-2"></i>Danh mục món ăn</a>
+           </li>
+           <li class="nav-item">
+             <a class="ps-0 nav-link collapsed" href="/Admin/MenuCategory#category-create"><i class="me-2"></i>Thêm danh mục</a>
+           </li>
+         }
+         @if (canMenuReview)
+         {
+           <li class="nav-item">
+             <a class="ps-0 nav-link collapsed" href="/Admin/MenuReview"><i class="me-2"></i>Đánh giá món ăn</a>
+           </li>
+         }
        </ul>
        </li>
      }
@@ -473,6 +484,15 @@
            <a class="ps-0 nav-link collapsed" href="/Admin/Customer/Create"><i class="me-2"></i>Thêm khách hàng</a>
          </li>
        </ul>
+       </li>
+     }
+
+     @if (canContact)
+     {
+       <li class="nav-item">
+         <a class="nav-link collapsed" href="/Admin/Contact">
+           <i class="fa-solid fa-envelope-open-text me-2 fs-5"></i> Liên hệ khách hàng
+         </a>
        </li>
      }
 

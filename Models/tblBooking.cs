@@ -9,6 +9,8 @@ namespace KD_Restaurant.Models
         public int? IdCustomer { get; set; }
         public int? IdBranch { get; set; }
 
+        public string? Email { get; set; }
+
         public int? IdTable { get; set; }
         public DateTime BookingDate { get; set; }
         public string? TimeSlot { get; set; }

@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using KD_Restaurant.Services;
 
 namespace KD_Restaurant.Areas.Admin.Controllers
 {
@@ -21,15 +22,17 @@ namespace KD_Restaurant.Areas.Admin.Controllers
     {
         private readonly KDContext _context;
         private readonly ILogger<BookingsController> _logger;
+        private readonly IBookingNotificationService _bookingNotificationService;
         private int? _reservedTableStatusId;
         private int? _availableTableStatusId;
         private int? _servingTableStatusId;
         private int? _servingBookingStatusId;
 
-        public BookingsController(KDContext context, ILogger<BookingsController> logger)
+        public BookingsController(KDContext context, ILogger<BookingsController> logger, IBookingNotificationService bookingNotificationService)
         {
             _context = context;
             _logger = logger;
+            _bookingNotificationService = bookingNotificationService;
         }
 
         public async Task<IActionResult> Index(DateTime? date = null, int? branchId = null, int? statusId = null)
@@ -264,7 +267,10 @@ namespace KD_Restaurant.Areas.Admin.Controllers
                 return Json(new { success = false, message = "Thông tin gắn bàn không hợp lệ." });
             }
 
-            var booking = await _context.tblBooking.FirstOrDefaultAsync(b => b.IdBooking == request.BookingId);
+            var booking = await _context.tblBooking
+                .Include(b => b.Customer)
+                .Include(b => b.Branch)
+                .FirstOrDefaultAsync(b => b.IdBooking == request.BookingId);
             if (booking == null)
             {
                 return Json(new { success = false, message = "Không tìm thấy đặt bàn." });
@@ -272,6 +278,7 @@ namespace KD_Restaurant.Areas.Admin.Controllers
 
             var table = await _context.tblTables
                 .Include(t => t.Area)
+                    .ThenInclude(a => a!.Branch)
                 .FirstOrDefaultAsync(t => t.IdTable == request.TableId && t.isActive);
 
             if (table == null)
@@ -317,6 +324,8 @@ namespace KD_Restaurant.Areas.Admin.Controllers
                 _logger.LogError(ex, "Không thể gắn bàn cho đặt bàn {BookingId}", request.BookingId);
                 return Json(new { success = false, message = "Không thể lưu thay đổi. Vui lòng thử lại." });
             }
+
+            await _bookingNotificationService.SendTableAssignmentEmailAsync(booking, table);
 
             return Json(new
             {
@@ -630,7 +639,11 @@ namespace KD_Restaurant.Areas.Admin.Controllers
                 return Json(new { success = false, message = "Thông tin huỷ không hợp lệ." });
             }
 
-            var booking = await _context.tblBooking.Include(b => b.Table).FirstOrDefaultAsync(b => b.IdBooking == request.BookingId);
+            var booking = await _context.tblBooking
+                .Include(b => b.Table)
+                .Include(b => b.Customer)
+                .Include(b => b.Branch)
+                .FirstOrDefaultAsync(b => b.IdBooking == request.BookingId);
             if (booking == null)
             {
                 return Json(new { success = false, message = "Không tìm thấy đặt bàn." });
@@ -645,12 +658,14 @@ namespace KD_Restaurant.Areas.Admin.Controllers
                 booking.Table.IdStatus = availableStatusId.Value;
             }
 
-            if (!string.IsNullOrWhiteSpace(request.Reason))
+                var cancellationReason = string.IsNullOrWhiteSpace(request.Reason) ? null : request.Reason.Trim();
+
+                if (!string.IsNullOrWhiteSpace(cancellationReason))
             {
                 var note = booking.Note ?? string.Empty;
                 booking.Note = string.IsNullOrWhiteSpace(note)
-                    ? $"Huỷ: {request.Reason}"
-                    : $"{note}\nHuỷ: {request.Reason}";
+                    ? $"Huỷ: {cancellationReason}"
+                    : $"{note}\nHuỷ: {cancellationReason}";
             }
 
             var order = await _context.tblOrder
@@ -661,7 +676,7 @@ namespace KD_Restaurant.Areas.Admin.Controllers
             var cancellation = new tblOrder_cancelled
             {
                 IdOrder = order?.IdOrder,
-                Description = string.IsNullOrWhiteSpace(request.Reason) ? null : request.Reason.Trim(),
+                Description = cancellationReason,
                 CancelledTime = DateTime.Now
             };
 
@@ -682,6 +697,8 @@ namespace KD_Restaurant.Areas.Admin.Controllers
                 _logger.LogError(ex, "Không thể huỷ đặt bàn {BookingId}", request.BookingId);
                 return Json(new { success = false, message = "Không thể huỷ đặt bàn. Vui lòng thử lại." });
             }
+
+            await _bookingNotificationService.SendBookingCancelledEmailAsync(booking, cancellationReason);
 
             return Json(new { success = true });
         }
@@ -840,6 +857,239 @@ namespace KD_Restaurant.Areas.Admin.Controllers
             };
 
             return View(model);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Details(int id, string? returnUrl = null)
+        {
+            var booking = await _context.tblBooking
+                .Include(b => b.Customer)
+                .Include(b => b.Branch)
+                .Include(b => b.Table)
+                    .ThenInclude(t => t!.Area)
+                .Include(b => b.Table)
+                    .ThenInclude(t => t!.Type)
+                .Include(b => b.Table)
+                    .ThenInclude(t => t!.Status)
+                .Include(b => b.Status)
+                .Include(b => b.tblOrder)
+                    .ThenInclude(o => o.tblOrder_detail)
+                        .ThenInclude(d => d.MenuItem)
+                .Include(b => b.tblOrder)
+                    .ThenInclude(o => o.Cancellations)
+                        .ThenInclude(c => c.CancelledByUser)
+                .FirstOrDefaultAsync(b => b.IdBooking == id);
+
+            if (booking == null)
+            {
+                TempData["BookingMessage"] = "Không tìm thấy đặt bàn cần xem.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            var latestOrder = booking.tblOrder?
+                .OrderByDescending(o => o.PaymentTime ?? o.TimeOut ?? o.TimeIn ?? o.OrderDate)
+                .FirstOrDefault();
+
+            var orderItems = latestOrder?.tblOrder_detail?
+                .Select(d => new BookingOrderItemViewModel
+                {
+                    Id = d.Id,
+                    ItemName = d.MenuItem?.Title ?? $"Món #{d.IdMenuItem}",
+                    Quantity = d.Quantity ?? 0,
+                    Price = d.PriceSale ?? d.MenuItem?.Price
+                })
+                .ToList() ?? new List<BookingOrderItemViewModel>();
+
+            var cancellations = booking.tblOrder?
+                .SelectMany(o => o.Cancellations ?? Enumerable.Empty<tblOrder_cancelled>())
+                .OrderByDescending(c => c.CancelledTime ?? DateTime.MinValue)
+                .ToList() ?? new List<tblOrder_cancelled>();
+
+            var latestCancellation = cancellations.FirstOrDefault();
+            var latestCancellationBy = GetUserDisplayName(latestCancellation?.CancelledByUser);
+
+            var statusId = booking.IdStatus ?? 1;
+            var statusName = booking.Status?.StatusName ?? BookingStatusHelper.GetStatusName(statusId);
+
+            var bookingCard = new BookingCardViewModel
+            {
+                Id = booking.IdBooking,
+                CustomerName = booking.Customer?.FullName ?? "Khách lẻ",
+                CustomerPhone = booking.Customer?.PhoneNumber ?? booking.Email ?? string.Empty,
+                BranchId = booking.IdBranch,
+                BranchName = booking.Branch?.BranchName,
+                TableName = booking.Table?.TableName,
+                TableId = booking.IdTable,
+                BookingDate = booking.BookingDate,
+                TimeSlot = booking.TimeSlot ?? string.Empty,
+                Guests = booking.NumberGuests,
+                Note = booking.Note,
+                StatusId = statusId,
+                StatusName = statusName,
+                StatusBadgeClass = BookingStatusHelper.GetBadgeClass(statusName),
+                StatusKey = BookingStatusHelper.GetStatusKey(statusId),
+                HasOrder = orderItems.Any(),
+                OrderItems = orderItems,
+                CancelledAt = latestCancellation?.CancelledTime,
+                CancellationReason = latestCancellation?.Description,
+                CancelledByName = latestCancellationBy,
+                LastUpdateTime = latestOrder?.PaymentTime ?? latestOrder?.TimeOut ?? latestOrder?.TimeIn ?? booking.BookingDate
+            };
+
+            var timeline = new List<BookingTimelineEntry>
+            {
+                new()
+                {
+                    Title = "Đặt bàn",
+                    Description = $"{(booking.NumberGuests ?? 0)} khách · {booking.TimeSlot ?? "Không rõ khung giờ"}",
+                    Time = booking.BookingDate,
+                    Icon = "bi-calendar-event",
+                    StatusClass = "text-primary"
+                }
+            };
+
+            if (booking.IdTable.HasValue)
+            {
+                timeline.Add(new BookingTimelineEntry
+                {
+                    Title = "Xếp bàn",
+                    Description = booking.Table?.TableName ?? $"Bàn #{booking.IdTable}",
+                    Time = booking.BookingDate,
+                    Icon = "bi-diagram-3",
+                    StatusClass = "text-info"
+                });
+            }
+
+            if (latestOrder?.TimeIn.HasValue == true)
+            {
+                timeline.Add(new BookingTimelineEntry
+                {
+                    Title = "Khách nhận bàn",
+                    Description = $"Vào lúc {latestOrder.TimeIn:HH:mm}",
+                    Time = latestOrder.TimeIn,
+                    Icon = "bi-person-check",
+                    StatusClass = "text-success"
+                });
+            }
+
+            if (latestOrder?.TimeOut.HasValue == true)
+            {
+                timeline.Add(new BookingTimelineEntry
+                {
+                    Title = "Khách trả bàn",
+                    Description = $"Rời lúc {latestOrder.TimeOut:HH:mm}",
+                    Time = latestOrder.TimeOut,
+                    Icon = "bi-door-open",
+                    StatusClass = "text-muted"
+                });
+            }
+
+            if (latestOrder?.PaymentTime.HasValue == true)
+            {
+                timeline.Add(new BookingTimelineEntry
+                {
+                    Title = "Hoàn tất thanh toán",
+                    Description = latestOrder.TotalAmount.HasValue
+                        ? $"Đã thu {latestOrder.TotalAmount.Value:N0} ₫"
+                        : "Đã ghi nhận thanh toán",
+                    Time = latestOrder.PaymentTime,
+                    Icon = "bi-credit-card",
+                    StatusClass = "text-success"
+                });
+            }
+
+            foreach (var cancellation in cancellations)
+            {
+                timeline.Add(new BookingTimelineEntry
+                {
+                    Title = "Huỷ đặt bàn",
+                    Description = string.IsNullOrWhiteSpace(cancellation.Description)
+                        ? "Không ghi nhận lý do"
+                        : cancellation.Description,
+                    Time = cancellation.CancelledTime,
+                    Icon = "bi-x-circle",
+                    StatusClass = "text-danger"
+                });
+            }
+
+            timeline = timeline
+                .OrderBy(t => t.Time ?? DateTime.MinValue)
+                .ToList();
+
+            var payment = new BookingPaymentSummary
+            {
+                OrderId = latestOrder?.IdOrder,
+                Subtotal = orderItems.Sum(i => (i.Price ?? 0) * i.Quantity),
+                PaymentMethod = latestOrder?.PaymentMethod,
+                PaymentTime = latestOrder?.PaymentTime,
+                TimeIn = latestOrder?.TimeIn,
+                TimeOut = latestOrder?.TimeOut,
+                Notes = latestOrder?.Notes,
+                AmountPaid = latestOrder?.TotalAmount
+            };
+
+            var customerSnapshot = new BookingCustomerSnapshot
+            {
+                Name = booking.Customer?.FullName ?? "Khách lẻ",
+                Phone = booking.Customer?.PhoneNumber ?? booking.Email,
+                Email = booking.Customer?.Email ?? booking.Email,
+                Address = booking.Customer?.Address
+            };
+
+            if (booking.IdCustomer.HasValue)
+            {
+                customerSnapshot.TotalBookings = await _context.tblBooking
+                    .CountAsync(b => b.IdCustomer == booking.IdCustomer);
+
+                customerSnapshot.LastBookingDate = await _context.tblBooking
+                    .Where(b => b.IdCustomer == booking.IdCustomer && b.IdBooking != booking.IdBooking)
+                    .OrderByDescending(b => b.BookingDate)
+                    .Select(b => (DateTime?)b.BookingDate)
+                    .FirstOrDefaultAsync();
+            }
+
+            var branchSnapshot = new BookingBranchSnapshot
+            {
+                Id = booking.IdBranch,
+                Name = booking.Branch?.BranchName,
+                Address = booking.Branch?.Address,
+                Phone = booking.Branch?.PhoneNumber,
+                Email = booking.Branch?.Email
+            };
+
+            var tableSnapshot = new BookingTableSnapshot
+            {
+                Id = booking.Table?.IdTable,
+                Name = booking.Table?.TableName,
+                Area = booking.Table?.Area?.AreaName,
+                Type = booking.Table?.Type?.TypeName,
+                MaxSeats = booking.Table?.Type?.MaxSeats,
+                StatusName = booking.Table?.Status?.StatusName
+            };
+
+            var safeReturnUrl = Url.IsLocalUrl(returnUrl) ? returnUrl : Url.Action(nameof(Index));
+
+            var viewModel = new BookingDetailViewModel
+            {
+                Booking = bookingCard,
+                Customer = customerSnapshot,
+                Branch = branchSnapshot,
+                Table = tableSnapshot,
+                OrderItems = orderItems,
+                Payment = payment,
+                Timeline = timeline,
+                Cancellations = cancellations
+                    .Select(c => new BookingCancellationViewModel
+                    {
+                        CancelledAt = c.CancelledTime,
+                        Reason = c.Description,
+                        CancelledBy = GetUserDisplayName(c.CancelledByUser)
+                    })
+                    .ToList(),
+                ReturnUrl = safeReturnUrl
+            };
+
+            return View(viewModel);
         }
 
         [HttpGet]
@@ -1054,6 +1304,25 @@ namespace KD_Restaurant.Areas.Admin.Controllers
             ViewBag.AutoPrint = autoPrint;
 
             return View(viewModel);
+        }
+
+        private static string? GetUserDisplayName(tblUser? user)
+        {
+            if (user == null)
+            {
+                return null;
+            }
+
+            var parts = new[] { user.LastName, user.FirstName }
+                .Where(part => !string.IsNullOrWhiteSpace(part))
+                .ToList();
+
+            if (parts.Any())
+            {
+                return string.Join(" ", parts);
+            }
+
+            return string.IsNullOrWhiteSpace(user.UserName) ? null : user.UserName;
         }
 
         private async Task<int> CalculateOrderTotalAsync(int bookingId)

@@ -1,0 +1,144 @@
+@model KD_Restaurant.ViewModels.ContactFormViewModel
+
+@{
+    ViewData["Title"] = "Liên hệ";
+    var success = TempData["ContactSuccess"] as string;
+    var error = TempData["ContactError"] as string;
+}
+
+<section class="contact-hero text-center text-white" style="margin-top: 100px;">
+    <div class="container">
+        <p class="eyebrow">KD RESTAURANT</p>
+        <h1>Chúng tôi luôn sẵn sàng lắng nghe</h1>
+        <p class="lead">Hãy gửi tin nhắn nếu bạn cần hỗ trợ đặt bàn, đóng góp ý kiến hay muốn hợp tác cùng KD Restaurant.</p>
+    </div>
+</section>
+
+<section class="container py-5 contact-grid">
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="card contact-card h-100 shadow-sm">
+                <div class="card-body p-4">
+                    <h2 class="h4 mb-3">Gửi thông tin</h2>
+                    <p class="text-muted mb-4">Nhập đầy đủ thông tin để đội ngũ KD hỗ trợ bạn nhanh nhất có thể.</p>
+
+                    @if (!string.IsNullOrWhiteSpace(success))
+                    {
+                        <div class="alert alert-success">@success</div>
+                    }
+                    else if (!string.IsNullOrWhiteSpace(error))
+                    {
+                        <div class="alert alert-danger">@error</div>
+                    }
+
+                    <form asp-action="Index" method="post" class="row g-3">
+                        @Html.AntiForgeryToken()
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                        <div class="col-12">
+                            <label asp-for="Name" class="form-label fw-semibold"></label>
+                            <input asp-for="Name" class="form-control" placeholder="Nguyễn Văn A" />
+                            <span asp-validation-for="Name" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Phone" class="form-label fw-semibold"></label>
+                            <input asp-for="Phone" class="form-control" placeholder="090 xxxx xxx" />
+                            <span asp-validation-for="Phone" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Email" class="form-label fw-semibold"></label>
+                            <input asp-for="Email" class="form-control" placeholder="email@example.com" />
+                            <span asp-validation-for="Email" class="text-danger small"></span>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="Message" class="form-label fw-semibold"></label>
+                            <textarea asp-for="Message" rows="5" class="form-control" placeholder="Nội dung liên hệ..."></textarea>
+                            <span asp-validation-for="Message" class="text-danger small"></span>
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary w-100 py-2">Gửi liên hệ</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card info-card shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <h2 class="h4 mb-3">Thông tin KD Restaurant</h2>
+                    <div class="d-flex align-items-start gap-3 mb-3">
+                        <div class="icon-circle bg-primary-subtle text-primary"><i class="fa-solid fa-location-dot"></i></div>
+                        <div>
+                            <p class="fw-semibold mb-1">Địa chỉ</p>
+                            <p class="mb-0 text-muted">CS1: 27 Phạm Thị Tảo, Trường Vinh, Nghệ An</p>
+                            <p class="mb-0 text-muted">CS2: 184 Lê Duẫn, Trường Vinh, Nghệ An</p>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-start gap-3 mb-3">
+                        <div class="icon-circle bg-success-subtle text-success"><i class="fa-solid fa-phone-volume"></i></div>
+                        <div>
+                            <p class="fw-semibold mb-1">Hotline</p>
+                            <p class="mb-0 text-muted">0978 843 662 (9:00 - 22:00)</p>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="icon-circle bg-warning-subtle text-warning"><i class="fa-solid fa-envelope-open-text"></i></div>
+                        <div>
+                            <p class="fw-semibold mb-1">Email</p>
+                            <p class="mb-0 text-muted">khacduc@gmail.com</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ratio ratio-4x3 rounded overflow-hidden shadow-sm">
+                <iframe title="KD Restaurant Map" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3919.451558017491!2d106.70042307604909!3d10.776888359197712!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31752f3f5b1b5c65%3A0x23c5e1e5d0cbe6ef!2zTmjDoCBow6BuZyBOZ3V54buFbiBI4buaiwgUGhvbmcgS2h1w6NuZywgSOG7kyBDaMOtbmggTWluaCwgVmnhu4duIE5hbQ!5e0!3m2!1svi!2svi!4v1685612000000!5m2!1svi!2svi" allowfullscreen="" loading="lazy"></iframe>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Styles {
+    <style>
+        .contact-hero {
+            background: linear-gradient(110deg, #1f1b2c, #443658);
+            padding: 4rem 0 3rem;
+        }
+
+        .contact-hero .eyebrow {
+            letter-spacing: 0.3rem;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.7);
+        }
+
+        .contact-hero h1 {
+            font-size: clamp(2rem, 4vw, 3.5rem);
+            margin-bottom: 1rem;
+        }
+
+        .contact-hero .lead {
+            max-width: 700px;
+            margin: 0 auto;
+            color: rgba(255,255,255,0.8);
+        }
+
+        .contact-card .form-control {
+            border-radius: 0.85rem;
+        }
+
+        .icon-circle {
+            width: 48px;
+            height: 48px;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+    </style>
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

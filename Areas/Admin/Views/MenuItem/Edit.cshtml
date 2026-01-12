@@ -71,6 +71,11 @@
                         <span asp-validation-for="Price" class="text-danger"></span>
                     </div>
                     <div class="col-md-6">
+                        <label class="form-label">Giá vốn</label>
+                        <input asp-for="PriceCost" class="form-control" type="number" min="0" />
+                        <span asp-validation-for="PriceCost" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
                         <label class="form-label">Giá khuyến mãi</label>
                         <input asp-for="PriceSale" class="form-control" type="number" min="0" />
                         <span asp-validation-for="PriceSale" class="text-danger"></span>
