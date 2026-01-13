@@ -108,6 +108,7 @@
                         <th>Khách hàng</th>
                         <th class="text-center">Lượt đặt bàn</th>
                         <th>Liên hệ</th>
+                        <th>Thành viên</th>
                         <th>Địa chỉ</th>
                         <th>Đăng nhập cuối</th>
                         <th class="text-center">Trạng thái</th>
@@ -138,6 +139,17 @@
                                 <td>
                                     <div>@(string.IsNullOrWhiteSpace(customer.PhoneNumber) ? "Chưa cập nhật" : customer.PhoneNumber)</div>
                                     <div class="text-muted small">@(!string.IsNullOrWhiteSpace(customer.Email) ? customer.Email : "Chưa có email")</div>
+                                </td>
+                                <td>
+                                    @if (customer.HasMembershipCard && !string.IsNullOrWhiteSpace(customer.MembershipCardNumber))
+                                    {
+                                        <div class="badge bg-amber-soft text-dark mb-1">#@customer.MembershipCardNumber</div>
+                                        <div class="text-muted small fw-semibold">@customer.MembershipPoints.ToString("N0") điểm</div>
+                                    }
+                                    else
+                                    {
+                                        <div class="text-muted small">Chưa tham gia</div>
+                                    }
                                 </td>
                             <td>@(string.IsNullOrWhiteSpace(customer.Address) ? "--" : customer.Address)</td>
                             <td>
@@ -236,6 +248,11 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
+        }
+
+        .badge.bg-amber-soft {
+            background: rgba(255, 193, 7, .2);
+            color: #8a6d1d;
         }
 
         .admin-page-title h1 {

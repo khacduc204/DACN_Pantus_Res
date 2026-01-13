@@ -29,8 +29,11 @@
     var booking = order?.Booking;
     var customer = booking?.Customer;
     var details = ViewBag.OrderDetails as List<KD_Restaurant.Models.tblOrder_detail>;
+    var membership = ViewBag.MembershipInfo as KD_Restaurant.ViewModels.MembershipCheckoutViewModel;
     var total = order?.TotalAmount ?? 0;
-    var grandTotal = total;
+    var redeemAmount = membership?.RedeemAmount ?? (order?.RedeemAmount ?? 0);
+    var payable = membership?.PayableAmount ?? Math.Max(total - redeemAmount, 0);
+    var paymentError = ViewBag.PaymentError as string;
 }
 
 <style>
@@ -216,6 +219,47 @@
         margin-top: 0.75rem;
         text-align: center;
     }
+    .alert-modern {
+        border-radius: 16px;
+        padding: 1rem 1.25rem;
+        font-weight: 500;
+    }
+    .loyalty-panel {
+        border: 1px dashed #d8b590;
+        border-radius: 16px;
+        padding: 1.25rem;
+        background: #fff7ef;
+        margin-bottom: 1.5rem;
+    }
+    .loyalty-panel.disabled {
+        border-style: solid;
+        border-color: #f1d7c3;
+        background: #fffdfa;
+    }
+    .loyalty-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+    .loyalty-badge {
+        border-radius: 999px;
+        background: #1c140f;
+        color: #f8e2cc;
+        padding: 0.35rem 1rem;
+        font-size: 0.85rem;
+        letter-spacing: 0.05rem;
+    }
+    .loyalty-input {
+        display: flex;
+        gap: 0.75rem;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+    .loyalty-input input {
+        flex: 1;
+        min-width: 160px;
+    }
     @@media (max-width: 991px) {
         .checkout-shell {
             padding: 1.5rem;
@@ -231,6 +275,10 @@
 </style>
 
 <div class="checkout-shell mb-5">
+    @if (!string.IsNullOrWhiteSpace(paymentError))
+    {
+        <div class="alert alert-danger alert-modern mb-4">@paymentError</div>
+    }
     <div class="d-flex justify-content-between flex-wrap gap-3 align-items-center mb-4">
         <span class="badge-chip">Mã đặt bàn #@booking?.IdBooking</span>
         <span class="badge-chip">Trạng thái hiện tại: <strong>@booking?.Status?.StatusName ?? "Chưa nhận bàn"</strong></span>
@@ -297,6 +345,51 @@
                 <form asp-action="ConfirmPayment" asp-controller="Cart" method="post" id="paymentForm">
                     <input type="hidden" name="id" value="@order?.IdOrder" />
 
+                    @if (membership?.IsMember == true)
+                    {
+                        <div class="loyalty-panel">
+                            <div class="d-flex justify-content-between flex-wrap gap-2 align-items-center mb-2">
+                                <h6 class="mb-0">Thẻ thành viên KD Loyalty</h6>
+                                <small class="text-muted">#@membership.CardNumber</small>
+                            </div>
+                            <div class="loyalty-badges">
+                                <span class="loyalty-badge">@membership.AvailablePoints điểm khả dụng</span>
+                                <span class="loyalty-badge">1 điểm = @membership.RedeemUnit.ToString("N0") đ</span>
+                                <span class="loyalty-badge">Tích 1 điểm / @(membership.EarnUnit.ToString("N0")) đ</span>
+                            </div>
+                            @if (membership.CanRedeem && membership.MaxRedeemPoints > 0)
+                            {
+                                <label class="form-label fw-semibold">Nhập số điểm muốn quy đổi</label>
+                                <div class="loyalty-input">
+                                    <input type="number"
+                                           class="form-control form-control-lg"
+                                           name="redeemPoints"
+                                           id="redeemPoints"
+                                           value="@membership.CurrentRedeemPoints"
+                                           min="0"
+                                           max="@membership.MaxRedeemPoints"
+                                           data-redeem-unit="@membership.RedeemUnit"
+                                           data-available="@membership.AvailablePoints">
+                                    <span class="text-muted small">Tối đa @membership.MaxRedeemPoints điểm (@((membership.MaxRedeemPoints * membership.RedeemUnit).ToString("N0")) đ)</span>
+                                </div>
+                            }
+                            else
+                            {
+                                <p class="mb-0 text-muted">@membership.Message</p>
+                                <input type="hidden" name="redeemPoints" value="@membership.CurrentRedeemPoints" />
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="loyalty-panel disabled">
+                            <h6 class="mb-1">Chưa có thẻ thành viên?</h6>
+                            <p class="mb-2">Đăng nhập và truy cập <a href="/Account/Profile" class="fw-semibold">Hồ sơ cá nhân</a> để kích hoạt KD Loyalty và dùng điểm cho các hóa đơn sau.</p>
+                            <small class="text-muted">Thẻ đang tạm khóa hoặc bạn chưa đăng nhập.</small>
+                            <input type="hidden" name="redeemPoints" value="0" />
+                        </div>
+                    }
+
                     <p class="text-uppercase text-muted fw-semibold mb-2" style="letter-spacing:0.15rem;">Thanh toán trực tiếp</p>
                     <label class="payment-card active">
                         <input type="radio" name="paymentMethod" value="IN_STORE" checked>
@@ -357,11 +450,15 @@
                 <h5 class="fw-semibold mb-4">Tóm tắt chi phí</h5>
                 <div class="summary-row">
                     <span>Tạm tính</span>
-                    <strong>@(total.ToString("N0")) đ</strong>
+                    <strong id="summarySubtotal" data-subtotal="@total">@(total.ToString("N0")) đ</strong>
+                </div>
+                <div class="summary-row">
+                    <span>Ưu đãi KD Loyalty</span>
+                    <strong id="summaryDiscount" data-discount="@redeemAmount">-@((redeemAmount).ToString("N0")) đ</strong>
                 </div>
                 <div class="summary-row total">
-                    <span>Tổng thanh toán</span>
-                    <strong>@(grandTotal.ToString("N0")) đ</strong>
+                    <span>Thành tiền sau ưu đãi</span>
+                    <strong id="summaryGrandTotal" data-payable="@payable">@(payable.ToString("N0")) đ</strong>
                 </div>
                 <p class="support-note">Sau khi hoàn tất, bạn sẽ nhận email xác nhận cùng mã QR nhận bàn.</p>
             </div>
@@ -378,5 +475,39 @@
                 card.classList.add('active');
             });
         });
+
+        const pointsInput = document.getElementById('redeemPoints');
+        const subtotalEl = document.getElementById('summarySubtotal');
+        const discountEl = document.getElementById('summaryDiscount');
+        const totalEl = document.getElementById('summaryGrandTotal');
+
+        const formatCurrency = (value) => value.toLocaleString('vi-VN');
+
+        if (pointsInput && subtotalEl && discountEl && totalEl) {
+            const subtotal = parseInt(subtotalEl.dataset.subtotal || '0', 10);
+            const redeemUnit = parseInt(pointsInput.dataset.redeemUnit || '1000', 10);
+            const maxPoints = parseInt(pointsInput.getAttribute('max') || '0', 10);
+
+            const recalc = () => {
+                let current = parseInt(pointsInput.value || '0', 10);
+                if (Number.isNaN(current) || current < 0) {
+                    current = 0;
+                }
+                if (current > maxPoints) {
+                    current = maxPoints;
+                    pointsInput.value = maxPoints;
+                }
+
+                const discount = Math.min(current * redeemUnit, subtotal);
+                const payable = Math.max(subtotal - discount, 0);
+                discountEl.dataset.discount = discount;
+                discountEl.textContent = `-${formatCurrency(discount)} đ`;
+                totalEl.dataset.payable = payable;
+                totalEl.textContent = `${formatCurrency(payable)} đ`;
+            };
+
+            pointsInput.addEventListener('input', recalc);
+            recalc();
+        }
     });
 </script>

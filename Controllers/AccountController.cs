@@ -1,6 +1,7 @@
 using KD_Restaurant.Models;
 using KD_Restaurant.Utilities;
 using KD_Restaurant.ViewModels;
+using KD_Restaurant.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
@@ -20,12 +21,14 @@ namespace KD_Restaurant.Controllers
         private readonly KDContext _context;
         private readonly IPasswordHasher<tblUser> _passwordHasher;
         private readonly IWebHostEnvironment _environment;
+        private readonly IMembershipService _membershipService;
 
-        public AccountController(KDContext context, IPasswordHasher<tblUser> passwordHasher, IWebHostEnvironment environment)
+        public AccountController(KDContext context, IPasswordHasher<tblUser> passwordHasher, IWebHostEnvironment environment, IMembershipService membershipService)
         {
             _context = context;
             _passwordHasher = passwordHasher;
             _environment = environment;
+            _membershipService = membershipService;
         }
 
         [HttpGet]
@@ -83,7 +86,6 @@ namespace KD_Restaurant.Controllers
 
             user.LastLogin = DateTime.Now;
             await SyncCustomerProfileAsync(user, updateLastLogin: true);
-            await SyncCustomerProfileAsync(user, updateLastLogin: false);
             await _context.SaveChangesAsync();
 
             var claims = new List<Claim>
@@ -183,12 +185,30 @@ namespace KD_Restaurant.Controllers
                 return RedirectToAction(nameof(Login));
             }
 
-            var model = BuildProfileViewModel(user);
+            var model = await BuildProfileViewModelAsync(user);
             model.SuccessMessage = TempData["ProfileSuccess"] as string;
             model.PasswordSuccess = TempData["PasswordSuccess"] as string;
             model.PasswordError = TempData["PasswordError"] as string;
+            model.MembershipMessage = TempData["MembershipMessage"] as string;
 
             return View(model);
+        }
+
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EnrollMembership()
+        {
+            var user = await LoadCurrentUserAsync();
+            if (user == null)
+            {
+                return RedirectToAction(nameof(Login));
+            }
+
+            var customer = await SyncCustomerProfileAsync(user, updateLastLogin: false);
+            var card = await _membershipService.EnrollCustomerAsync(customer);
+            TempData["MembershipMessage"] = $"Đã kích hoạt thẻ thành viên #{card.CardNumber}.";
+            return RedirectToAction(nameof(Profile));
         }
 
         [Authorize]
@@ -219,7 +239,7 @@ namespace KD_Restaurant.Controllers
 
             if (!ModelState.IsValid)
             {
-                var invalidModel = BuildProfileViewModel(user);
+                var invalidModel = await BuildProfileViewModelAsync(user);
                 invalidModel.LastName = model.LastName;
                 invalidModel.FirstName = model.FirstName;
                 invalidModel.PhoneNumber = model.PhoneNumber;
@@ -261,6 +281,7 @@ namespace KD_Restaurant.Controllers
                 user.Avatar = $"/uploads/avatars/{fileName}";
             }
 
+            await SyncCustomerProfileAsync(user, updateLastLogin: false);
             await _context.SaveChangesAsync();
 
             TempData["ProfileSuccess"] = "Cập nhật thông tin cá nhân thành công.";
@@ -295,7 +316,7 @@ namespace KD_Restaurant.Controllers
 
             if (!ModelState.IsValid)
             {
-                var invalidModel = BuildProfileViewModel(user);
+                var invalidModel = await BuildProfileViewModelAsync(user);
                 invalidModel.PasswordError = "Không thể đổi mật khẩu. Vui lòng kiểm tra lại.";
                 return View("Profile", invalidModel);
             }
@@ -321,7 +342,7 @@ namespace KD_Restaurant.Controllers
             if (verify == PasswordVerificationResult.Failed)
             {
                 ModelState.AddModelError(nameof(model.CurrentPassword), "Mật khẩu hiện tại không đúng");
-                var invalidModel = BuildProfileViewModel(user);
+                var invalidModel = await BuildProfileViewModelAsync(user);
                 invalidModel.PasswordError = "Không thể đổi mật khẩu. Vui lòng kiểm tra lại.";
                 return View("Profile", invalidModel);
             }
@@ -364,7 +385,7 @@ namespace KD_Restaurant.Controllers
             return await _context.tblUser.FirstOrDefaultAsync(u => u.IdUser == userId && u.IsActive);
         }
 
-        private async Task SyncCustomerProfileAsync(tblUser user, bool updateLastLogin)
+        private async Task<tblCustomer> SyncCustomerProfileAsync(tblUser user, bool updateLastLogin)
         {
             var customer = await _context.tblCustomer.FirstOrDefaultAsync(c => c.IdUser == user.IdUser);
             if (customer == null)
@@ -393,6 +414,8 @@ namespace KD_Restaurant.Controllers
             {
                 customer.LastLogin = DateTime.Now;
             }
+
+            return customer;
         }
 
         private static string? ComposeFullName(tblUser user)
@@ -410,9 +433,9 @@ namespace KD_Restaurant.Controllers
             return parts.Count > 0 ? string.Join(" ", parts).Trim() : null;
         }
 
-        private ProfileViewModel BuildProfileViewModel(tblUser user)
+        private async Task<ProfileViewModel> BuildProfileViewModelAsync(tblUser user)
         {
-            return new ProfileViewModel
+            var model = new ProfileViewModel
             {
                 IdUser = user.IdUser,
                 UserName = user.UserName,
@@ -422,6 +445,37 @@ namespace KD_Restaurant.Controllers
                 Description = user.Description,
                 AvatarUrl = user.Avatar
             };
+
+            var customer = await _context.tblCustomer
+                .Include(c => c.MembershipCard)
+                .FirstOrDefaultAsync(c => c.IdUser == user.IdUser);
+
+            if (customer?.MembershipCard != null)
+            {
+                var card = customer.MembershipCard;
+                model.HasMembershipCard = true;
+                model.MembershipCardNumber = card.CardNumber;
+                model.MembershipPoints = card.Points;
+                model.MembershipStatus = card.Status;
+                model.MembershipCreatedDate = card.CreatedDate;
+
+                var recentHistory = await _context.tblPointHistory
+                    .Where(h => h.IdCard == card.IdCard)
+                    .OrderByDescending(h => h.CreatedDate)
+                    .Take(5)
+                    .Select(h => new ProfileViewModel.PointHistoryItem
+                    {
+                        CreatedDate = h.CreatedDate,
+                        ChangeType = h.ChangeType,
+                        Points = h.Points,
+                        ReferenceId = h.ReferenceId
+                    })
+                    .ToListAsync();
+
+                model.MembershipHistory = recentHistory;
+            }
+
+            return model;
         }
     }
 }

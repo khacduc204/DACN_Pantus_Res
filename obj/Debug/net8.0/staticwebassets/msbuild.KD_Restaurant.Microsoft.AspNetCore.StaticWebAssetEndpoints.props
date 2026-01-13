@@ -11536,13 +11536,13 @@
       <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\KD_Restaurant.zojps49gtf.bundle.scp.css'))</AssetFile>
       <Selectors><![CDATA[[]]]></Selectors>
       <EndpointProperties><![CDATA[[{"Name":"integrity","Value":"sha256-DRRhBtsVfbmHd2oRWd\u002BzVoQ4ahv93lp4iWTW6UkOWvk="}]]]></EndpointProperties>
-      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"no-cache"},{"Name":"Content-Length","Value":"1135"},{"Name":"Content-Type","Value":"text/css"},{"Name":"ETag","Value":"\u0022DRRhBtsVfbmHd2oRWd\u002BzVoQ4ahv93lp4iWTW6UkOWvk=\u0022"},{"Name":"Last-Modified","Value":"Mon, 12 Jan 2026 20:40:50 GMT"}]]]></ResponseHeaders>
+      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"no-cache"},{"Name":"Content-Length","Value":"1135"},{"Name":"Content-Type","Value":"text/css"},{"Name":"ETag","Value":"\u0022DRRhBtsVfbmHd2oRWd\u002BzVoQ4ahv93lp4iWTW6UkOWvk=\u0022"},{"Name":"Last-Modified","Value":"Mon, 12 Jan 2026 21:47:24 GMT"}]]]></ResponseHeaders>
     </StaticWebAssetEndpoint>
     <StaticWebAssetEndpoint Include="_content/KD_Restaurant/KD_Restaurant.zojps49gtf.bundle.scp.css">
       <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\KD_Restaurant.zojps49gtf.bundle.scp.css'))</AssetFile>
       <Selectors><![CDATA[[]]]></Selectors>
       <EndpointProperties><![CDATA[[{"Name":"fingerprint","Value":"zojps49gtf"},{"Name":"integrity","Value":"sha256-DRRhBtsVfbmHd2oRWd\u002BzVoQ4ahv93lp4iWTW6UkOWvk="},{"Name":"label","Value":"_content/KD_Restaurant/KD_Restaurant.bundle.scp.css"}]]]></EndpointProperties>
-      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"max-age=31536000, immutable"},{"Name":"Content-Length","Value":"1135"},{"Name":"Content-Type","Value":"text/css"},{"Name":"ETag","Value":"\u0022DRRhBtsVfbmHd2oRWd\u002BzVoQ4ahv93lp4iWTW6UkOWvk=\u0022"},{"Name":"Last-Modified","Value":"Mon, 12 Jan 2026 20:40:50 GMT"}]]]></ResponseHeaders>
+      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"max-age=31536000, immutable"},{"Name":"Content-Length","Value":"1135"},{"Name":"Content-Type","Value":"text/css"},{"Name":"ETag","Value":"\u0022DRRhBtsVfbmHd2oRWd\u002BzVoQ4ahv93lp4iWTW6UkOWvk=\u0022"},{"Name":"Last-Modified","Value":"Mon, 12 Jan 2026 21:47:24 GMT"}]]]></ResponseHeaders>
     </StaticWebAssetEndpoint>
     <StaticWebAssetEndpoint Include="_content/KD_Restaurant/uploads/avatars/0ae3349b-b395-41db-80e6-3ab62a97f9ec.e02ykcvanl.jpg">
       <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\avatars\0ae3349b-b395-41db-80e6-3ab62a97f9ec.jpg'))</AssetFile>

@@ -36,6 +36,7 @@ namespace KD_Restaurant.Areas.Admin.Controllers
 
             var query = _context.tblCustomer
                 .Include(c => c.User)
+                .Include(c => c.MembershipCard)
                 .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(search))
@@ -75,7 +76,11 @@ namespace KD_Restaurant.Areas.Admin.Controllers
                     LastLogin = c.LastLogin,
                     BookingCount = c.tblBooking.Count(),
                     IsActive = c.IsActive,
-                    AccountUserName = c.User != null ? c.User.UserName : null
+                    AccountUserName = c.User != null ? c.User.UserName : null,
+                    HasMembershipCard = c.MembershipCard != null,
+                    MembershipCardNumber = c.MembershipCard != null ? c.MembershipCard.CardNumber : null,
+                    MembershipPoints = c.MembershipCard != null ? c.MembershipCard.Points : 0,
+                    MembershipCreatedDate = c.MembershipCard != null ? c.MembershipCard.CreatedDate : null
                 })
                 .ToListAsync();
 
@@ -188,6 +193,7 @@ namespace KD_Restaurant.Areas.Admin.Controllers
         {
             var customer = await _context.tblCustomer
                 .Include(c => c.User)
+                .Include(c => c.MembershipCard)
                 .FirstOrDefaultAsync(c => c.IdCustomer == id);
             if (customer == null)
             {
@@ -227,6 +233,32 @@ namespace KD_Restaurant.Areas.Admin.Controllers
                 OrderCount = await _context.tblOrder.CountAsync(o => o.IdCustomer == id),
                 RecentBookings = bookings
             };
+
+            if (customer.MembershipCard != null)
+            {
+                var card = customer.MembershipCard;
+                detailModel.HasMembershipCard = true;
+                detailModel.MembershipCardNumber = card.CardNumber;
+                detailModel.MembershipPoints = card.Points;
+                detailModel.MembershipStatus = card.Status;
+                detailModel.MembershipCreatedDate = card.CreatedDate;
+
+                var history = await _context.tblPointHistory
+                    .Where(p => p.IdCard == card.IdCard)
+                    .OrderByDescending(p => p.CreatedDate)
+                    .Take(10)
+                    .Select(p => new CustomerPointHistoryItem
+                    {
+                        CreatedDate = p.CreatedDate,
+                        ChangeType = p.ChangeType,
+                        Points = p.Points,
+                        ReferenceId = p.ReferenceId
+                    })
+                    .ToListAsync();
+
+                detailModel.MembershipHistory = history;
+                detailModel.LastPointActivity = history.FirstOrDefault()?.CreatedDate;
+            }
 
             return View(detailModel);
         }

@@ -36,6 +36,8 @@ namespace KD_Restaurant.Models
         public DbSet<tblOrder_cancelled> tblOrder_cancelled { get; set; }
         public DbSet<tblRestaurantInfo> tblRestaurantInfo { get; set; }
         public DbSet<tblContact> tblContact { get; set; }
+        public DbSet<tblMembershipCard> tblMembershipCard { get; set; }
+        public DbSet<tblPointHistory> tblPointHistory { get; set; }
 
 
 
@@ -136,7 +138,10 @@ namespace KD_Restaurant.Models
             modelBuilder.Entity<tblOrder>(entity =>
             {
                 entity.HasKey(e => e.IdOrder); // 👈 Khai báo khóa chính
-
+                entity.Property(e => e.OriginalAmount).HasDefaultValue(0);
+                entity.Property(e => e.RedeemAmount).HasDefaultValue(0);
+                entity.Property(e => e.PointsRedeemed).HasDefaultValue(0);
+                entity.Property(e => e.PointsEarned).HasDefaultValue(0);
             });
 
             modelBuilder.Entity<tblOrder_cancelled>(entity =>
@@ -172,6 +177,30 @@ namespace KD_Restaurant.Models
                     .WithOne()
                     .HasForeignKey<tblCustomer>(e => e.IdUser)
                     .OnDelete(DeleteBehavior.SetNull);
+            });
+
+            modelBuilder.Entity<tblMembershipCard>(entity =>
+            {
+                entity.HasKey(e => e.IdCard);
+                entity.Property(e => e.CardNumber).IsRequired().HasMaxLength(20);
+                entity.HasIndex(e => e.CardNumber).IsUnique();
+                entity.Property(e => e.Status).IsRequired().HasMaxLength(20).HasDefaultValue("Active");
+                entity.Property(e => e.CreatedDate).HasDefaultValueSql("getdate()");
+                entity.HasOne(e => e.Customer)
+                    .WithOne(c => c.MembershipCard)
+                    .HasForeignKey<tblMembershipCard>(e => e.IdCustomer)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<tblPointHistory>(entity =>
+            {
+                entity.HasKey(e => e.IdHistory);
+                entity.Property(e => e.ChangeType).IsRequired().HasMaxLength(10);
+                entity.Property(e => e.CreatedDate).HasDefaultValueSql("getdate()");
+                entity.HasOne(e => e.MembershipCard)
+                    .WithMany(c => c.PointHistories)
+                    .HasForeignKey(e => e.IdCard)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
 
             modelBuilder.Entity<tblBranch>(entity =>

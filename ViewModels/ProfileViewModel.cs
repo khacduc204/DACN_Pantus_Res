@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Http;
+using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace KD_Restaurant.ViewModels
@@ -47,5 +49,21 @@ namespace KD_Restaurant.ViewModels
         public string? SuccessMessage { get; set; }
         public string? PasswordSuccess { get; set; }
         public string? PasswordError { get; set; }
+        public string? MembershipMessage { get; set; }
+        public bool HasMembershipCard { get; set; }
+        public string? MembershipCardNumber { get; set; }
+        public int MembershipPoints { get; set; }
+        public string? MembershipStatus { get; set; }
+        public DateTime? MembershipCreatedDate { get; set; }
+        public List<PointHistoryItem> MembershipHistory { get; set; } = new();
+
+        public class PointHistoryItem
+        {
+            public DateTime CreatedDate { get; set; }
+            public string ChangeType { get; set; } = string.Empty;
+            public int Points { get; set; }
+            public int? ReferenceId { get; set; }
+            public string? Description { get; set; }
+        }
     }
 }

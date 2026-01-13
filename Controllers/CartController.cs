@@ -7,6 +7,7 @@ using KD_Restaurant.ViewModels;
 using KD_Restaurant.Utilities;
 using KD_Restaurant.Services;
 using KD_Restaurant.Services.Models;
+using System;
 using System.IO;
 using System.Linq;
 using System.Security.Claims;
@@ -20,12 +21,18 @@ namespace KD_Restaurant.Controllers
     {
         private readonly KDContext _context;
         private readonly IMomoPaymentService _momoPaymentService;
+        private readonly IMembershipService _membershipService;
         private readonly ILogger<CartController> _logger;
 
-        public CartController(KDContext context, IMomoPaymentService momoPaymentService, ILogger<CartController> logger)
+        public CartController(
+            KDContext context,
+            IMomoPaymentService momoPaymentService,
+            IMembershipService membershipService,
+            ILogger<CartController> logger)
         {
             _context = context;
             _momoPaymentService = momoPaymentService;
+            _membershipService = membershipService;
             _logger = logger;
         }
 
@@ -278,8 +285,13 @@ namespace KD_Restaurant.Controllers
             var order = new tblOrder
             {
                 IdBooking = booking.IdBooking,
+                IdCustomer = persistedCustomer.IdCustomer,
                 OrderDate = DateTime.Now,
+                OriginalAmount = 0,
                 TotalAmount = 0,
+                RedeemAmount = 0,
+                PointsRedeemed = 0,
+                PointsEarned = 0,
                 Status = 1,
                 PaymentMethod = "Chưa xác định",
                 Notes = booking.Note
@@ -304,6 +316,7 @@ namespace KD_Restaurant.Controllers
                 _context.tblOrder_detail.Add(detail);
             }
 
+            order.OriginalAmount = total;
             order.TotalAmount = total;
             await _context.SaveChangesAsync();
 
@@ -336,12 +349,13 @@ namespace KD_Restaurant.Controllers
             ViewBag.Order = order;
             ViewBag.OrderDetails = orderDetails;
             ViewBag.PaymentError = TempData["PaymentError"];
+            ViewBag.MembershipInfo = await BuildMembershipInfoAsync(order);
 
             return View();
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ConfirmPayment(int id, string paymentMethod)
+        public async Task<IActionResult> ConfirmPayment(int id, string paymentMethod, int? redeemPoints)
         {
             var order = await _context.tblOrder
                 .Include(o => o.Booking)
@@ -356,9 +370,45 @@ namespace KD_Restaurant.Controllers
 
             var normalizedMethod = paymentMethod?.Trim() ?? string.Empty;
             var displayMethod = ResolvePaymentMethodName(normalizedMethod);
+            var requestedPoints = redeemPoints.GetValueOrDefault();
+
+            if (requestedPoints > 0 && !IsMomoPayment(normalizedMethod))
+            {
+                TempData["PaymentError"] = "Sử dụng điểm chỉ áp dụng cho các phương thức thanh toán online qua MoMo.";
+                return RedirectToAction(nameof(Checkout), new { id });
+            }
+
+            if (requestedPoints > 0)
+            {
+                var (appliedPoints, redeemAmount, error) = await PrepareRedemptionPreviewAsync(order, requestedPoints);
+                if (!string.IsNullOrWhiteSpace(error))
+                {
+                    TempData["PaymentError"] = error;
+                    return RedirectToAction(nameof(Checkout), new { id });
+                }
+
+                order.PointsRedeemed = appliedPoints;
+                order.RedeemAmount = redeemAmount;
+            }
+            else if ((order.PointsRedeemed ?? 0) > 0 || (order.RedeemAmount ?? 0) > 0)
+            {
+                order.PointsRedeemed = 0;
+                order.RedeemAmount = 0;
+            }
+
+            await _context.SaveChangesAsync();
 
             if (IsMomoPayment(normalizedMethod))
             {
+                var payableAmount = order.PayableAmount;
+                if (payableAmount <= 0)
+                {
+                    await MarkOrderPaidAsync(order, "Điểm thành viên");
+                    HttpContext.Session.Remove("Cart");
+                    TempData["SuccessMessage"] = "Bạn đã dùng điểm để thanh toán toàn bộ đơn. Hẹn gặp bạn tại nhà hàng!";
+                    return RedirectToAction(nameof(Success));
+                }
+
                 if (!order.TotalAmount.HasValue || order.TotalAmount.Value <= 0)
                 {
                     TempData["PaymentError"] = "Đơn đặt bàn chưa có tổng tiền để thanh toán.";
@@ -369,7 +419,7 @@ namespace KD_Restaurant.Controllers
                 {
                     OrderId = $"{order.IdOrder}-{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}",
                     OrderInfo = $"Thanh toán MoMo cho đơn #{order.IdOrder}",
-                    Amount = order.TotalAmount.Value,
+                    Amount = payableAmount,
                     ReturnUrl = BuildAbsoluteUrl(nameof(MomoReturn)) ?? string.Empty,
                     NotifyUrl = BuildAbsoluteUrl(nameof(MomoNotify)) ?? string.Empty,
                     ExtraData = EncodeExtraData(order.IdOrder, normalizedMethod)
@@ -490,11 +540,105 @@ namespace KD_Restaurant.Controllers
             return View();
         }
 
+        private async Task<MembershipCheckoutViewModel> BuildMembershipInfoAsync(tblOrder order)
+        {
+            var model = new MembershipCheckoutViewModel
+            {
+                EarnUnit = _membershipService.EarnUnitVnd,
+                RedeemUnit = _membershipService.RedeemUnitVnd,
+                PayableAmount = order.PayableAmount,
+                CurrentRedeemPoints = order.PointsRedeemed ?? 0,
+                RedeemAmount = order.RedeemAmount ?? 0
+            };
+
+            var customer = order.Booking?.Customer;
+            if (customer == null)
+            {
+                model.Message = "Không tìm thấy thông tin khách hàng để hiển thị ưu đãi thành viên.";
+                return model;
+            }
+
+            var card = await _membershipService.GetCardByCustomerIdAsync(customer.IdCustomer, cancellationToken: default);
+            if (card == null)
+            {
+                model.Message = "Đăng nhập và kích hoạt thẻ thành viên để tích lũy & dùng điểm.";
+                return model;
+            }
+
+            model.IsMember = true;
+            model.Status = card.Status;
+            model.CardNumber = card.CardNumber;
+            model.AvailablePoints = card.Points;
+            model.CanRedeem = string.Equals(card.Status, "Active", StringComparison.OrdinalIgnoreCase);
+            var baseAmount = order.TotalAmount ?? order.OriginalAmount ?? 0;
+            model.MaxRedeemPoints = model.CanRedeem
+                ? Math.Min(card.Points, _membershipService.ConvertAmountToPoints(baseAmount))
+                : 0;
+
+            if (!model.CanRedeem)
+            {
+                model.Message = "Thẻ thành viên đang tạm khóa, vui lòng liên hệ lễ tân để kích hoạt lại.";
+            }
+            else if (model.AvailablePoints <= 0)
+            {
+                model.Message = "Bạn chưa có điểm thưởng để sử dụng.";
+            }
+
+            return model;
+        }
+
+        private async Task<(int points, int amount, string? error)> PrepareRedemptionPreviewAsync(tblOrder order, int requestedPoints)
+        {
+            if (requestedPoints <= 0)
+            {
+                return (0, 0, "Số điểm yêu cầu không hợp lệ.");
+            }
+
+            var customer = order.Booking?.Customer;
+            if (customer == null)
+            {
+                return (0, 0, "Không tìm thấy khách hàng để tính điểm.");
+            }
+
+            var card = customer.MembershipCard ?? await _membershipService.GetCardByCustomerIdAsync(customer.IdCustomer);
+            if (card == null)
+            {
+                return (0, 0, "Bạn chưa có thẻ thành viên để sử dụng điểm.");
+            }
+
+            if (!string.Equals(card.Status, "Active", StringComparison.OrdinalIgnoreCase))
+            {
+                return (0, 0, "Thẻ thành viên đang tạm khóa, không thể sử dụng điểm.");
+            }
+
+            var baseAmount = order.TotalAmount ?? order.OriginalAmount ?? 0;
+            var maxByAmount = _membershipService.ConvertAmountToPoints(baseAmount);
+            var sanitizedPoints = Math.Min(Math.Min(requestedPoints, card.Points), maxByAmount);
+            if (sanitizedPoints <= 0)
+            {
+                return (0, 0, "Số điểm yêu cầu vượt quá giới hạn cho phép.");
+            }
+
+            var redeemAmount = _membershipService.ConvertPointsToAmount(sanitizedPoints);
+            if (redeemAmount <= 0)
+            {
+                return (0, 0, "Số điểm chưa đủ để quy đổi thành tiền.");
+            }
+
+            redeemAmount = Math.Min(redeemAmount, baseAmount);
+            return (sanitizedPoints, redeemAmount, null);
+        }
+
         private async Task MarkOrderPaidAsync(tblOrder order, string paymentMethod)
         {
             if (order.Booking == null)
             {
                 await _context.Entry(order).Reference(o => o.Booking).LoadAsync();
+            }
+
+            if (order.Booking != null && order.Booking.Customer == null)
+            {
+                await _context.Entry(order.Booking).Reference(b => b.Customer).LoadAsync();
             }
 
             order.PaymentMethod = paymentMethod;
@@ -504,6 +648,30 @@ namespace KD_Restaurant.Controllers
             if (order.Booking != null && (!order.Booking.IdStatus.HasValue || order.Booking.IdStatus == 1))
             {
                 order.Booking.IdStatus = 1;
+            }
+
+            var customer = order.Booking?.Customer;
+            if (customer != null)
+            {
+                if ((order.PointsRedeemed ?? 0) > 0 && (order.RedeemAmount ?? 0) > 0)
+                {
+                    var (redeemedPoints, redeemAmount, error) = await _membershipService.RedeemPointsAsync(customer, order.PointsRedeemed!.Value, order.IdOrder);
+                    if (string.IsNullOrWhiteSpace(error))
+                    {
+                        order.PointsRedeemed = redeemedPoints;
+                        order.RedeemAmount = redeemAmount;
+                    }
+                    else if (!error.Contains("đã sử dụng điểm", StringComparison.OrdinalIgnoreCase))
+                    {
+                        _logger.LogWarning("Không thể trừ điểm cho đơn {OrderId}: {Error}", order.IdOrder, error);
+                    }
+                }
+
+                var earnedPoints = await _membershipService.AwardPointsAsync(customer, order.IdOrder, order.PayableAmount);
+                if (earnedPoints > 0)
+                {
+                    order.PointsEarned = earnedPoints;
+                }
             }
 
             await _context.SaveChangesAsync();

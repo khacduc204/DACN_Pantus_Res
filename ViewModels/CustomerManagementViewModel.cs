@@ -30,6 +30,10 @@ namespace KD_Restaurant.ViewModels
         public bool IsActive { get; set; }
         public string? AccountUserName { get; set; }
         public bool HasAccount => !string.IsNullOrWhiteSpace(AccountUserName);
+        public bool HasMembershipCard { get; set; }
+        public string? MembershipCardNumber { get; set; }
+        public int MembershipPoints { get; set; }
+        public DateTime? MembershipCreatedDate { get; set; }
     }
 
     public class CustomerFormModel
@@ -71,6 +75,13 @@ namespace KD_Restaurant.ViewModels
         public int BookingCount { get; set; }
         public int OrderCount { get; set; }
         public List<CustomerTimelineItem> RecentBookings { get; set; } = new();
+        public bool HasMembershipCard { get; set; }
+        public string? MembershipCardNumber { get; set; }
+        public int MembershipPoints { get; set; }
+        public string? MembershipStatus { get; set; }
+        public DateTime? MembershipCreatedDate { get; set; }
+        public DateTime? LastPointActivity { get; set; }
+        public List<CustomerPointHistoryItem> MembershipHistory { get; set; } = new();
     }
 
     public class CustomerTimelineItem
@@ -80,5 +91,13 @@ namespace KD_Restaurant.ViewModels
         public string? TimeSlot { get; set; }
         public string? Status { get; set; }
         public int? NumberGuests { get; set; }
+    }
+
+    public class CustomerPointHistoryItem
+    {
+        public DateTime CreatedDate { get; set; }
+        public string ChangeType { get; set; } = string.Empty;
+        public int Points { get; set; }
+        public int? ReferenceId { get; set; }
     }
 }

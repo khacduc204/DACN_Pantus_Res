@@ -18,6 +18,8 @@ namespace KD_Restaurant.Models
 
         [ForeignKey(nameof(IdUser))]
         public virtual tblUser? User { get; set; }
+
+        [InverseProperty(nameof(tblMembershipCard.Customer))]
         public virtual tblMembershipCard? MembershipCard { get; set; }
 
         public virtual ICollection<tblBooking> tblBooking { get; set; } = new HashSet<tblBooking>();

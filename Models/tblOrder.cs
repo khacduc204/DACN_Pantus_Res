@@ -15,11 +15,18 @@ namespace KD_Restaurant.Models
         public DateTime? TimeIn { get; set; }
         public DateTime? TimeOut { get; set; }
         public int? TotalCost { get; set; }
+        public int? OriginalAmount { get; set; }
         public int? TotalAmount { get; set; }
+        public int? RedeemAmount { get; set; }
+        public int? PointsRedeemed { get; set; }
+        public int? PointsEarned { get; set; }
         public string? PaymentMethod { get; set; }
         public DateTime? PaymentTime { get; set; }
         public int? Status { get; set; }
         public string? Notes { get; set; }
+
+        [NotMapped]
+        public int PayableAmount => Math.Max((TotalAmount ?? 0) - (RedeemAmount ?? 0), 0);
 
         [ForeignKey("IdBooking")]
         public virtual tblBooking Booking { get; set; } = null!;
